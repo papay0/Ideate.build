@@ -5,14 +5,15 @@
  *
  * A Figma-like canvas for displaying generated app screens.
  * Features:
- * - Horizontal layout with zoom/pan (using react-zoom-pan-pinch)
+ * - Horizontal layout with zoom/pan (using @use-gesture/react)
+ * - Two-finger scroll to pan, pinch to zoom
  * - Real-time streaming preview
  * - Completed screens displayed in phone or browser mockups
  * - Platform-aware rendering (mobile vs desktop)
  */
 
 import { useRef, useState, useEffect, memo } from "react";
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import { useGesture } from "@use-gesture/react";
 import { ZoomIn, ZoomOut, RotateCcw, Smartphone, Monitor, Loader2, Copy, Check } from "lucide-react";
 import type { ParsedScreen } from "./StreamingScreenPreview";
 import { BrowserMockup, StreamingBrowserMockup } from "./BrowserMockup";
@@ -350,9 +351,122 @@ export function DesignCanvas({
 
   // Platform-specific settings
   const isMobile = platform === "mobile";
-  const initialScale = isMobile ? 0.5 : 0.35; // Desktop is larger, so smaller initial scale
+  const initialScale = isMobile ? 0.5 : 0.35;
   const PlatformIcon = isMobile ? Smartphone : Monitor;
   const platformLabel = isMobile ? "app" : "website";
+
+  // Canvas transform state
+  const [transform, setTransform] = useState({ x: 0, y: 0, scale: initialScale });
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Reset transform when platform changes
+  useEffect(() => {
+    setTransform({ x: 0, y: 0, scale: initialScale });
+  }, [initialScale]);
+
+  // Gesture handlers using @use-gesture/react
+  useGesture(
+    {
+      onWheel: ({ event, delta: [dx, dy], ctrlKey }) => {
+        event.preventDefault();
+
+        if (ctrlKey) {
+          // Pinch-to-zoom towards mouse position
+          const rect = containerRef.current?.getBoundingClientRect();
+          if (!rect) return;
+
+          const mouseX = (event as WheelEvent).clientX - rect.left;
+          const mouseY = (event as WheelEvent).clientY - rect.top;
+
+          const zoomFactor = 1 - dy * 0.01;
+
+          setTransform((prev) => {
+            const newScale = Math.min(Math.max(prev.scale * zoomFactor, 0.1), 2);
+            const scaleChange = newScale / prev.scale;
+
+            // Adjust position to zoom towards mouse
+            const newX = mouseX - (mouseX - prev.x) * scaleChange;
+            const newY = mouseY - (mouseY - prev.y) * scaleChange;
+
+            return { x: newX, y: newY, scale: newScale };
+          });
+        } else {
+          // Two-finger scroll → pan
+          setTransform((prev) => ({
+            ...prev,
+            x: prev.x - dx,
+            y: prev.y - dy,
+          }));
+        }
+      },
+      onPinch: ({ offset: [scale], origin: [ox, oy], event }) => {
+        event?.preventDefault();
+        const rect = containerRef.current?.getBoundingClientRect();
+        if (!rect) return;
+
+        const mouseX = ox - rect.left;
+        const mouseY = oy - rect.top;
+
+        setTransform((prev) => {
+          const newScale = Math.min(Math.max(scale, 0.1), 2);
+          const scaleChange = newScale / prev.scale;
+
+          const newX = mouseX - (mouseX - prev.x) * scaleChange;
+          const newY = mouseY - (mouseY - prev.y) * scaleChange;
+
+          return { x: newX, y: newY, scale: newScale };
+        });
+      },
+      onDrag: ({ delta: [dx, dy], buttons }) => {
+        // Left click drag to pan
+        if (buttons === 1) {
+          setTransform((prev) => ({
+            ...prev,
+            x: prev.x + dx,
+            y: prev.y + dy,
+          }));
+        }
+      },
+    },
+    {
+      target: containerRef,
+      wheel: { eventOptions: { passive: false } },
+      drag: { pointer: { buttons: [1] } },
+      pinch: {
+        scaleBounds: { min: 0.1, max: 2 },
+        from: () => [transform.scale, 0],
+      },
+    }
+  );
+
+  // Prevent Safari gesture zoom on the document
+  useEffect(() => {
+    const preventDefault = (e: Event) => e.preventDefault();
+    document.addEventListener("gesturestart", preventDefault);
+    document.addEventListener("gesturechange", preventDefault);
+    return () => {
+      document.removeEventListener("gesturestart", preventDefault);
+      document.removeEventListener("gesturechange", preventDefault);
+    };
+  }, []);
+
+  const handleZoomIn = () => {
+    setTransform((prev) => ({
+      ...prev,
+      scale: Math.min(prev.scale * 1.2, 2),
+    }));
+  };
+
+  const handleZoomOut = () => {
+    setTransform((prev) => ({
+      ...prev,
+      scale: Math.max(prev.scale / 1.2, 0.1),
+    }));
+  };
+
+  const handleReset = () => {
+    setTransform({ x: 0, y: 0, scale: initialScale });
+  };
 
   return (
     <div className="flex-1 flex flex-col bg-[#F0EDE8] overflow-hidden">
@@ -366,12 +480,12 @@ export function DesignCanvas({
           </span>
         </div>
         <div className="flex items-center gap-1 text-sm text-[#9A9A9A]">
-          <span>Scroll to pan, pinch to zoom</span>
+          <span>Two-finger drag to pan, pinch to zoom</span>
         </div>
       </div>
 
       {/* Canvas Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden relative">
         {!hasScreens ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-16 h-16 rounded-2xl bg-[#E8E4E0] flex items-center justify-center mb-4">
@@ -390,102 +504,94 @@ export function DesignCanvas({
             )}
           </div>
         ) : (
-          <TransformWrapper
-            initialScale={initialScale}
-            minScale={0.1}
-            maxScale={2}
-            centerOnInit
-            limitToBounds={false}
-          >
-            {({ zoomIn, zoomOut, resetTransform }) => (
-              <>
-                {/* Zoom controls */}
-                <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2 bg-white rounded-lg shadow-lg p-1 border border-[#E8E4E0]">
-                  <button
-                    onClick={() => zoomOut()}
-                    className="p-2 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F2EF] rounded transition-colors"
-                    title="Zoom out"
-                  >
-                    <ZoomOut className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => resetTransform()}
-                    className="p-2 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F2EF] rounded transition-colors"
-                    title="Reset zoom"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => zoomIn()}
-                    className="p-2 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F2EF] rounded transition-colors"
-                    title="Zoom in"
-                  >
-                    <ZoomIn className="w-4 h-4" />
-                  </button>
-                </div>
+          <>
+            {/* Zoom controls */}
+            <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2 bg-white rounded-lg shadow-lg p-1 border border-[#E8E4E0]">
+              <button
+                onClick={handleZoomOut}
+                className="p-2 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F2EF] rounded transition-colors"
+                title="Zoom out"
+              >
+                <ZoomOut className="w-4 h-4" />
+              </button>
+              <span className="text-xs text-[#9A9A9A] min-w-[3rem] text-center">
+                {Math.round(transform.scale * 100)}%
+              </span>
+              <button
+                onClick={handleReset}
+                className="p-2 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F2EF] rounded transition-colors"
+                title="Reset zoom"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleZoomIn}
+                className="p-2 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F2EF] rounded transition-colors"
+                title="Zoom in"
+              >
+                <ZoomIn className="w-4 h-4" />
+              </button>
+            </div>
 
-                <TransformComponent
-                  wrapperStyle={{
-                    width: "100%",
-                    height: "100%",
-                  }}
-                  contentStyle={{
-                    display: "flex",
-                    flexDirection: "row",
-                    gap: "60px",
-                    padding: "80px",
-                    minWidth: "max-content",
-                  }}
-                >
-                  {/* Completed screens - render appropriate mockup based on platform */}
-                  {completedScreens.map((screen) =>
-                    isMobile ? (
-                      <PhoneMockup
-                        key={screen.name}
-                        screen={screen}
-                        isEditing={editingScreenNames.has(screen.name)}
-                        streamingHtml={getStreamingHtmlForScreen(
-                          screen.name,
-                          currentScreenName,
-                          isEditingExistingScreen,
-                          currentStreamingHtml
-                        )}
-                      />
-                    ) : (
-                      <BrowserMockup
-                        key={screen.name}
-                        screen={screen}
-                        isEditing={editingScreenNames.has(screen.name)}
-                        streamingHtml={getStreamingHtmlForScreen(
-                          screen.name,
-                          currentScreenName,
-                          isEditingExistingScreen,
-                          currentStreamingHtml
-                        )}
-                      />
-                    )
-                  )}
+            {/* Canvas with gestures */}
+            <div
+              ref={containerRef}
+              className="w-full h-full touch-none"
+            >
+              <div
+                className="flex flex-row gap-[60px] p-20 min-w-max origin-top-left"
+                style={{
+                  transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
+                }}
+              >
+                {/* Completed screens - render appropriate mockup based on platform */}
+                {completedScreens.map((screen) =>
+                  isMobile ? (
+                    <PhoneMockup
+                      key={screen.name}
+                      screen={screen}
+                      isEditing={editingScreenNames.has(screen.name)}
+                      streamingHtml={getStreamingHtmlForScreen(
+                        screen.name,
+                        currentScreenName,
+                        isEditingExistingScreen,
+                        currentStreamingHtml
+                      )}
+                    />
+                  ) : (
+                    <BrowserMockup
+                      key={screen.name}
+                      screen={screen}
+                      isEditing={editingScreenNames.has(screen.name)}
+                      streamingHtml={getStreamingHtmlForScreen(
+                        screen.name,
+                        currentScreenName,
+                        isEditingExistingScreen,
+                        currentStreamingHtml
+                      )}
+                    />
+                  )
+                )}
 
-                  {/* Currently streaming NEW screen (not editing existing) */}
-                  {isStreaming &&
-                    currentScreenName &&
-                    currentStreamingHtml &&
-                    !isEditingExistingScreen &&
-                    (isMobile ? (
-                      <StreamingPhoneMockup
-                        html={currentStreamingHtml}
-                        screenName={currentScreenName}
-                      />
-                    ) : (
-                      <StreamingBrowserMockup
-                        html={currentStreamingHtml}
-                        screenName={currentScreenName}
-                      />
-                    ))}
-                </TransformComponent>
-              </>
-            )}
-          </TransformWrapper>
+                {/* Currently streaming NEW screen (not editing existing) */}
+                {isStreaming &&
+                  currentScreenName &&
+                  currentStreamingHtml &&
+                  !isEditingExistingScreen &&
+                  (isMobile ? (
+                    <StreamingPhoneMockup
+                      html={currentStreamingHtml}
+                      screenName={currentScreenName}
+                    />
+                  ) : (
+                    <StreamingBrowserMockup
+                      html={currentStreamingHtml}
+                      screenName={currentScreenName}
+                    />
+                  ))}
+              </div>
+            </div>
+          </>
         )}
       </div>
     </div>
