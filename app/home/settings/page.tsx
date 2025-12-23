@@ -445,6 +445,36 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
+
+          {/* How to get API keys */}
+          <div className="bg-white border border-[#E8E4E0] rounded-xl p-4">
+            <h3 className="font-medium text-[#1A1A1A] mb-3">How to get an API key</h3>
+            <div className="space-y-4 text-sm">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Zap className="w-4 h-4 text-[#B8956F]" />
+                  <span className="font-medium text-[#1A1A1A]">OpenRouter</span>
+                  <span className="text-xs bg-[#B8956F]/10 text-[#B8956F] px-2 py-0.5 rounded-full">Recommended</span>
+                </div>
+                <ol className="list-decimal list-inside text-[#6B6B6B] space-y-1 ml-6">
+                  <li>Go to <a href="https://openrouter.ai" target="_blank" rel="noopener noreferrer" className="text-[#B8956F] hover:underline">openrouter.ai</a> and sign up</li>
+                  <li>Navigate to <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-[#B8956F] hover:underline">Keys</a> in your dashboard</li>
+                  <li>Click &quot;Create Key&quot; and copy your new API key</li>
+                </ol>
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Sparkles className="w-4 h-4 text-[#9A9A9A]" />
+                  <span className="font-medium text-[#1A1A1A]">Google Gemini</span>
+                </div>
+                <ol className="list-decimal list-inside text-[#6B6B6B] space-y-1 ml-6">
+                  <li>Go to <a href="https://aistudio.google.com" target="_blank" rel="noopener noreferrer" className="text-[#B8956F] hover:underline">aistudio.google.com</a> and sign in</li>
+                  <li>Click on <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="text-[#B8956F] hover:underline">Get API key</a> in the sidebar</li>
+                  <li>Create a new API key or use an existing one</li>
+                </ol>
+              </div>
+            </div>
+          </div>
         </div>
       </motion.div>
     </div>
