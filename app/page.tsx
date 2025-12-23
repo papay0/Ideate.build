@@ -243,7 +243,7 @@ function HeroSection() {
   };
 
   return (
-    <section className="pt-32 pb-24 px-6">
+    <section className="pt-32 pb-24 px-6" aria-label="AI App Designer Hero">
       <div className="max-w-6xl mx-auto">
         {/* Editorial badge */}
         <motion.div
@@ -258,18 +258,18 @@ function HeroSection() {
           </span>
         </motion.div>
 
-        {/* Main headline - Large serif typography */}
+        {/* Main headline - Large serif typography with SEO keywords */}
         <motion.h1
           variants={slideUp}
           initial="hidden"
           animate="visible"
           className="font-serif text-5xl md:text-7xl lg:text-8xl text-[#1A1A1A] tracking-tight leading-[1.05] mb-8 max-w-4xl"
         >
-          Design anything{" "}
-          <span className="text-[#B8956F] italic">in minutes</span>
+          AI App Designer —{" "}
+          <span className="text-[#B8956F] italic">mockups in minutes</span>
         </motion.h1>
 
-        {/* Subheadline */}
+        {/* Subheadline with SEO keywords */}
         <motion.p
           variants={slideUp}
           initial="hidden"
@@ -277,8 +277,8 @@ function HeroSection() {
           transition={{ delay: 0.1 }}
           className="text-xl md:text-2xl text-[#6B6B6B] max-w-2xl mb-12 leading-relaxed"
         >
-          Go from idea to beautiful mockups through conversation.
-          Bring your own API key. No design skills required.
+          Transform your app ideas into stunning mobile and desktop UI mockups instantly.
+          Open source AI design tool — bring your own API key, no design skills required.
         </motion.p>
 
         {/* Main Input Form */}
@@ -345,7 +345,7 @@ function HeroSection() {
 
 function FeaturesSection() {
   return (
-    <section className="py-24 px-6 bg-[#F5F2EF]">
+    <section className="py-24 px-6 bg-[#F5F2EF]" aria-label="How OpenDesign AI App Designer Works">
       <div className="max-w-6xl mx-auto">
         {/* Section Header */}
         <motion.div
@@ -356,10 +356,10 @@ function FeaturesSection() {
           className="mb-16"
         >
           <h2 className="font-serif text-4xl md:text-5xl text-[#1A1A1A] tracking-tight mb-4">
-            How it works
+            How the AI Design Generator Works
           </h2>
           <p className="text-lg text-[#6B6B6B] max-w-xl">
-            A thoughtfully simple workflow that gets out of your way
+            Create mobile and desktop app mockups in three simple steps
           </p>
         </motion.div>
 
@@ -404,7 +404,7 @@ function FeaturesSection() {
 
 function CTASection() {
   return (
-    <section className="py-24 px-6 bg-[#1A1A1A]">
+    <section className="py-24 px-6 bg-[#1A1A1A]" aria-label="Get Started with OpenDesign">
       <motion.div
         variants={slideUp}
         initial="hidden"
@@ -413,11 +413,11 @@ function CTASection() {
         className="max-w-4xl mx-auto text-center"
       >
         <h2 className="font-serif text-4xl md:text-5xl text-white tracking-tight mb-6">
-          Ready to design?
+          Start Designing Your App Today
         </h2>
         <p className="text-lg text-zinc-400 mb-10 max-w-xl mx-auto">
-          Start creating beautiful app designs in minutes.
-          Open source, free to use, bring your own API key.
+          Create beautiful mobile and desktop UI mockups in minutes with AI.
+          Open source, free forever — just bring your own API key.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

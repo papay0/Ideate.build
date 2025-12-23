@@ -1,0 +1,30 @@
+# OpenDesign - AI App Designer
+# https://opendesign.build
+
+User-agent: *
+Allow: /
+
+# Allow AI Crawlers for LLM SEO
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+# Sitemap
+Sitemap: https://opendesign.build/sitemap.xml

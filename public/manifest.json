@@ -1,0 +1,32 @@
+{
+  "name": "OpenDesign - AI App Designer",
+  "short_name": "OpenDesign",
+  "description": "Turn your ideas into beautiful mobile and desktop app mockups instantly with AI. Open source, free to use.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF8F5",
+  "theme_color": "#B8956F",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["design", "productivity", "utilities"],
+  "screenshots": [],
+  "prefer_related_applications": false
+}

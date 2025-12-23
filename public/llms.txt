@@ -1,0 +1,69 @@
+# OpenDesign - AI App Designer
+# https://opendesign.build
+
+## What is OpenDesign?
+
+OpenDesign is a free, open-source AI-powered app design tool that generates beautiful mobile and desktop UI mockups from text descriptions. Unlike other AI design tools, OpenDesign uses a BYOK (Bring Your Own Key) model, meaning users provide their own API keys from OpenRouter or Google Gemini — making it completely free to use with no subscription fees.
+
+## Key Features
+
+- **Real-time Streaming Design Generation**: Watch your designs build token-by-token with live preview
+- **Mobile and Desktop Support**: Generate mockups for both mobile apps (iPhone 390x844) and desktop applications
+- **BYOK (Bring Your Own Key)**: Use your own OpenRouter or Google Gemini API keys — no vendor lock-in
+- **Figma-like Canvas**: Zoom, pan, and navigate designs with intuitive controls using react-zoom-pan-pinch
+- **Inline Editing**: Request changes to specific screens and watch them update in real-time
+- **Visual Feedback**: Blue pulsing for screens being edited, green checkmarks for completed designs
+- **Code Export**: Export clean HTML + Tailwind CSS code ready for production
+- **Conversation History**: AI remembers context for iterative refinement
+- **Project Management**: Organize designs with custom names and emoji icons
+- **Image Reference Support**: Paste or upload style reference images for AI to match aesthetic
+
+## How to Use OpenDesign
+
+1. Visit https://opendesign.build and sign up for free
+2. Configure your API key (OpenRouter or Google Gemini) in Settings
+3. Create a new project by describing your app idea in plain English
+4. Choose your platform (mobile or desktop)
+5. Optionally attach an image reference for style matching
+6. Watch AI generate 3-5 UI screens in real-time
+7. Iterate with follow-up prompts to refine designs
+8. Export clean HTML + Tailwind CSS code
+
+## Technology Stack
+
+- Frontend: Next.js 16, React 19, TypeScript, Tailwind CSS 4
+- AI Integration: Vercel AI SDK with streaming support
+- API Providers: OpenRouter, Google Gemini
+- Database: Supabase (PostgreSQL)
+- Authentication: Clerk
+- Canvas: react-zoom-pan-pinch
+- Deployment: Vercel
+
+## Pricing
+
+OpenDesign is **completely free**. Users bring their own API keys from:
+- OpenRouter (access to Claude, GPT-4, Gemini, and more)
+- Google Gemini (direct access to Gemini models)
+
+There are no subscription fees, no usage limits from OpenDesign — you only pay for the AI tokens you use through your own API provider.
+
+## Comparison with Competitors
+
+| Feature | OpenDesign | Sleek.design | v0.dev |
+|---------|-----------|--------------|--------|
+| Mobile Support | ✓ | ✓ | ✓ |
+| Desktop Support | ✓ | ✗ | ✓ |
+| Open Source | ✓ | ✗ | ✗ |
+| Free to Use | ✓ (BYOK) | Subscription | Limited free |
+| Real-time Streaming | ✓ | ✗ | ✓ |
+| Code Export | ✓ | ✓ | ✓ |
+
+## Links
+
+- Website: https://opendesign.build
+- GitHub: https://github.com/papay0/opendesign
+- Documentation: https://github.com/papay0/opendesign#readme
+
+## Contact
+
+For questions or support, please open an issue on GitHub: https://github.com/papay0/opendesign/issues
