@@ -82,10 +82,11 @@ export const metadata: Metadata = {
       "Turn your ideas into beautiful app mockups instantly with AI. Open source, free to use, bring your own API key.",
     images: [
       {
-        url: "/og-image.png",
+        url: "/api/og",
         width: 1200,
         height: 630,
         alt: "OpenDesign - AI App Designer",
+        type: "image/png",
       },
     ],
   },
@@ -94,8 +95,9 @@ export const metadata: Metadata = {
     title: "OpenDesign - AI App Designer",
     description:
       "Turn ideas into beautiful mobile & desktop app mockups with AI. Open source & free.",
-    images: ["/og-image.png"],
+    images: ["/api/og"],
     creator: "@opendesignai",
+    site: "@opendesignai",
   },
   alternates: {
     canonical: "https://opendesign.build",
