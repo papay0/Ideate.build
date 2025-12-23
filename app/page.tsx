@@ -129,6 +129,12 @@ function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
+            <Link
+              href="/blog"
+              className="text-sm text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors"
+            >
+              Blog
+            </Link>
             <span className="text-sm text-[#9A9A9A] flex items-center gap-1.5 cursor-not-allowed">
               Pricing
               <span className="text-[10px] bg-[#F5F2EF] text-[#6B6B6B] px-1.5 py-0.5 rounded">
@@ -198,6 +204,9 @@ function Header() {
             className="md:hidden py-4 border-b border-[#E8E4E0]"
           >
             <div className="flex flex-col gap-4">
+              <Link href="/blog" className="text-sm text-[#6B6B6B] hover:text-[#1A1A1A]">
+                Blog
+              </Link>
               <span className="text-sm text-[#9A9A9A]">Pricing (Coming Soon)</span>
               <span className="text-sm text-[#9A9A9A]">Explore (Coming Soon)</span>
               <SignedOut>
