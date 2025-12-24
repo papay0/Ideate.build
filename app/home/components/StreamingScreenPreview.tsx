@@ -35,6 +35,13 @@ export interface UsageData {
   provider: 'openrouter' | 'gemini';
 }
 
+export interface QuotaExceededData {
+  message: string;
+  code: string;
+  plan: string;
+  messagesRemaining: number;
+}
+
 export interface StreamingCallbacks {
   onMessage?: (message: string) => void;
   onProjectName?: (name: string) => void;
@@ -45,6 +52,7 @@ export interface StreamingCallbacks {
   onStreamComplete?: (screens: ParsedScreen[]) => void;
   onUsage?: (usage: UsageData) => void;
   onError?: (error: string) => void;
+  onQuotaExceeded?: (data: QuotaExceededData) => void;
 }
 
 interface StreamingScreenPreviewProps {
@@ -207,7 +215,32 @@ export function useDesignStreaming(callbacks: StreamingCallbacks) {
         });
 
         if (!response.ok) {
-          throw new Error(await response.text());
+          const errorText = await response.text();
+          // Try to parse as JSON to detect QUOTA_EXCEEDED
+          try {
+            const errorData = JSON.parse(errorText);
+            if (errorData.code === "QUOTA_EXCEEDED") {
+              callbacks.onQuotaExceeded?.({
+                message: errorData.error || "You've used all your messages",
+                code: errorData.code,
+                plan: errorData.plan || "free",
+                messagesRemaining: errorData.messagesRemaining ?? 0,
+              });
+              setIsStreaming(false);
+              return; // Don't throw - handled by callback
+            }
+            if (errorData.code === "MODEL_RESTRICTED") {
+              throw new Error("This model is only available for Pro users. Please upgrade or use the Flash model.");
+            }
+            // Other JSON error - extract message
+            throw new Error(errorData.error || errorText);
+          } catch (parseError) {
+            // Not JSON, throw as-is
+            if (parseError instanceof SyntaxError) {
+              throw new Error(errorText);
+            }
+            throw parseError;
+          }
         }
 
         const reader = response.body?.getReader();
@@ -356,6 +389,7 @@ export function useDesignStreaming(callbacks: StreamingCallbacks) {
                     setCompletedScreens([...screens]);
                     callbacks.onScreenComplete?.(partialScreen);
                   }
+
                   console.log(`[Stream] DONE - Final screens: ${screens.length}`, screens.map(s => `${s.name}${s.isEdit ? ' (edit)' : ''}`));
                   callbacks.onStreamComplete?.(screens);
                 }

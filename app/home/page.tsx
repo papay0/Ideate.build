@@ -24,8 +24,6 @@ import { motion } from "framer-motion";
 import {
   Sparkles,
   Clock,
-  ArrowRight,
-  Key,
   Loader2,
   FolderOpen,
   Trash2,
@@ -39,7 +37,10 @@ import { DashboardSkeleton } from "./components/Skeleton";
 import { ImageUploadButton } from "./components/ImageUploadButton";
 import { ImageLightbox, ClickableImage } from "./components/ImageLightbox";
 import { ModelSelector, getSelectedModel, type ModelId } from "./components/ModelSelector";
+import type { PlanType } from "@/lib/constants/plans";
 import { useUserSync } from "@/lib/hooks/useUserSync";
+import { useSubscription } from "@/lib/hooks/useSubscription";
+import { QuotaExceededBanner } from "./components/QuotaExceededBanner";
 import type { Platform } from "@/lib/constants/platforms";
 import {
   validateImage,
@@ -84,44 +85,6 @@ function getStoredApiKey(): { key: string; provider: string } | null {
   }
 }
 
-// ============================================================================
-// Component: API Key Banner
-// Prompts user to configure their API key if not set
-// ============================================================================
-
-function ApiKeyBanner() {
-  const router = useRouter();
-
-  return (
-    <motion.div
-      variants={fadeInUp}
-      initial="hidden"
-      animate="visible"
-      className="bg-[#FEF3E7] border border-[#F5D5B5] rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8"
-    >
-      <div className="flex items-start gap-3 sm:gap-4">
-        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[#B8956F]/20 flex items-center justify-center flex-shrink-0">
-          <Key className="w-4 h-4 sm:w-5 sm:h-5 text-[#B8956F]" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-serif text-base sm:text-lg text-[#1A1A1A] mb-1">
-            Set up your API key
-          </h3>
-          <p className="text-sm text-[#6B6B6B] mb-3 sm:mb-4">
-            OpenDesign uses your own API key to generate designs. Configure your OpenRouter or Gemini key.
-          </p>
-          <button
-            onClick={() => router.push("/home/settings")}
-            className="inline-flex items-center gap-2 text-sm bg-[#B8956F] hover:bg-[#A6845F] text-white px-4 py-2 rounded-lg transition-colors"
-          >
-            Configure API Key
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
 
 // ============================================================================
 // Component: Project Card
@@ -265,25 +228,27 @@ function PromptInput({
   isLoading,
   userId,
   isAdmin,
+  userPlan,
 }: {
   onSubmit: (prompt: string, platform: Platform, imageUrl: string | null, model: ModelId) => Promise<void>;
   isLoading: boolean;
   userId: string;
   isAdmin: boolean;
+  userPlan: PlanType;
 }) {
   const [prompt, setPrompt] = useState("");
   const [platform, setPlatform] = useState<Platform>("mobile");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isPasting, setIsPasting] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
-  const [selectedModel, setSelectedModelState] = useState<ModelId>("gemini-3-pro-preview");
+  const [selectedModel, setSelectedModelState] = useState<ModelId>("gemini-3-flash-preview");
   // Generate a temporary project ID for uploading before project creation
   const [tempProjectId] = useState(() => crypto.randomUUID());
 
-  // Load selected model on mount
+  // Load selected model on mount, respecting user's plan
   useEffect(() => {
-    setSelectedModelState(getSelectedModel());
-  }, []);
+    setSelectedModelState(getSelectedModel(userPlan));
+  }, [userPlan]);
 
   const handleSubmit = async () => {
     if (!prompt.trim() || isLoading) return;
@@ -449,6 +414,7 @@ function PromptInput({
                     value={selectedModel}
                     onChange={setSelectedModelState}
                     compact
+                    userPlan={userPlan}
                   />
                 </>
               )}
@@ -494,6 +460,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const { dbUser } = useUserSync();
   const isAdmin = dbUser?.role === "admin";
+  const { messagesRemaining, isLoading: isSubscriptionLoading } = useSubscription();
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -505,6 +472,15 @@ export default function DashboardPage() {
     const apiConfig = getStoredApiKey();
     setHasApiKey(!!apiConfig?.key);
   }, []);
+
+  // Determine if quota is exceeded (no BYOK and no messages remaining)
+  // Wait for subscription to load before determining - if no API key, we need accurate quota info
+  const isQuotaExceeded = !hasApiKey && !isSubscriptionLoading && messagesRemaining <= 0;
+  // User can generate if: has API key OR (subscription loaded AND has messages remaining)
+  // If no API key and subscription is loading, don't assume they can generate
+  const userCanGenerate = hasApiKey || (!isSubscriptionLoading && messagesRemaining > 0);
+  // Show loading state while waiting for subscription (only if no API key)
+  const isCheckingQuota = !hasApiKey && isSubscriptionLoading;
 
   // Fetch projects on mount
   useEffect(() => {
@@ -605,17 +581,60 @@ export default function DashboardPage() {
         </p>
       </motion.div>
 
-      {/* API Key Banner (if not configured) */}
-      {!hasApiKey && <ApiKeyBanner />}
+      {/* Loading state while checking quota (only when no API key) */}
+      {isCheckingQuota && (
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          animate="visible"
+          className="mb-6 sm:mb-8"
+        >
+          <div className="bg-white rounded-2xl p-6 border border-[#E8E4E0]">
+            <div className="flex items-center gap-3">
+              <Loader2 className="w-5 h-5 text-[#B8956F] animate-spin" />
+              <span className="text-[#6B6B6B]">Checking your subscription...</span>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
-      {/* Prompt Input (only show if API key is configured) */}
-      {hasApiKey && user && (
-        <PromptInput
-          onSubmit={handleCreateProject}
-          isLoading={isCreating}
-          userId={user.id}
-          isAdmin={isAdmin}
-        />
+      {/* Quota Exceeded Banner (show when no API key AND no messages remaining) */}
+      {isQuotaExceeded && (
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          animate="visible"
+          className="mb-6 sm:mb-8"
+        >
+          <QuotaExceededBanner />
+        </motion.div>
+      )}
+
+      {/* Prompt Input (show if user can generate) */}
+      {userCanGenerate && user && (
+        <>
+          {/* Messages remaining indicator - only show for users without API key */}
+          {!hasApiKey && !isSubscriptionLoading && messagesRemaining > 0 && messagesRemaining <= 5 && (
+            <motion.div
+              variants={fadeInUp}
+              initial="hidden"
+              animate="visible"
+              className="mb-4"
+            >
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-sm text-amber-700">
+                <span className="font-medium">{messagesRemaining}</span>
+                <span>message{messagesRemaining !== 1 ? "s" : ""} remaining this month</span>
+              </div>
+            </motion.div>
+          )}
+          <PromptInput
+            onSubmit={handleCreateProject}
+            isLoading={isCreating}
+            userId={user.id}
+            isAdmin={isAdmin}
+            userPlan={(dbUser?.plan as PlanType) || "free"}
+          />
+        </>
       )}
 
       {/* Projects Section */}

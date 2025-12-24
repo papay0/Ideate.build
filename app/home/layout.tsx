@@ -15,7 +15,7 @@
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings, Layers } from "lucide-react";
+import { Settings, Layers, Crown } from "lucide-react";
 import { useUserSync } from "@/lib/hooks/useUserSync";
 
 // ============================================================================
@@ -30,8 +30,9 @@ export default function AuthenticatedLayout({
   const pathname = usePathname();
   const isProjectPage = pathname?.includes("/projects/");
 
-  // Sync user data to Supabase on first visit
-  useUserSync();
+  // Sync user data to Supabase on first visit and get user info
+  const { dbUser } = useUserSync();
+  const isFreePlan = !dbUser?.plan || dbUser.plan === "free";
 
   // Project pages have their own full-screen layout
   if (isProjectPage) {
@@ -57,7 +58,17 @@ export default function AuthenticatedLayout({
             </Link>
 
             {/* Right side - User menu */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              {/* Upgrade button - only for free users */}
+              {isFreePlan && (
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-all shadow-sm hover:shadow-md"
+                >
+                  <Crown className="w-3.5 h-3.5" />
+                  <span>Upgrade</span>
+                </Link>
+              )}
               <Link
                 href="/home/settings"
                 className="text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors p-2"

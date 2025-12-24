@@ -72,8 +72,14 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    // Check if user has messages remaining
-    if (dbUser.messages_remaining <= 0) {
+    // Get user's API key from headers FIRST (BYOK)
+    // This check must happen BEFORE quota check - BYOK users are not subject to quota
+    const userApiKey = request.headers.get("x-api-key");
+    const userProvider = request.headers.get("x-provider") as "openrouter" | "gemini" | null;
+
+    // Check if user has messages remaining - BUT only if they don't have their own API key
+    // BYOK users can use the service without quota restrictions
+    if (!userApiKey && dbUser.messages_remaining <= 0) {
       const upgradeMessage = dbUser.plan === "free"
         ? "You've used all your free messages this month. Upgrade to Pro for 50 messages/month!"
         : "You've used all your messages this month. Purchase more messages to continue.";
@@ -89,16 +95,38 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    // Get user's API key from headers (BYOK)
-    const apiKey = request.headers.get("x-api-key");
-    const provider = request.headers.get("x-provider") as "openrouter" | "gemini";
+    // Determine which API key to use
+    // Priority: 1) User's BYOK key, 2) Platform key for users with quota
+    const platformApiKey = process.env.OPENROUTER_API_KEY;
+    const hasQuota = dbUser.messages_remaining > 0;
 
-    if (!apiKey) {
+    let apiKey: string;
+    let provider: "openrouter" | "gemini";
+    let usingPlatformKey = false;
+
+    if (userApiKey) {
+      // User provided their own key (BYOK mode) - no quota consumed
+      apiKey = userApiKey;
+      provider = userProvider || "openrouter";
+      console.log("[Design Stream] Using user's own API key (BYOK mode - no quota consumed)");
+    } else if (hasQuota && platformApiKey) {
+      // User has quota and platform key is available
+      apiKey = platformApiKey;
+      provider = "openrouter";
+      usingPlatformKey = true;
+    } else {
       return new Response(
-        JSON.stringify({ error: "API key is required. Please configure your API key in Settings." }),
+        JSON.stringify({
+          error: hasQuota
+            ? "Platform API key not configured. Please contact support or use your own API key."
+            : "You've used all your messages. Upgrade to Pro or configure your own API key in Settings.",
+          code: hasQuota ? "PLATFORM_KEY_MISSING" : "QUOTA_EXCEEDED",
+        }),
         { status: 401, headers: { "Content-Type": "application/json" } }
       );
     }
+
+    console.log(`[Design Stream] Using ${usingPlatformKey ? "platform" : "user"} API key`);
 
     // Parse request body
     const { prompt, existingScreens, conversationHistory, platform, imageUrl, model: requestedModel } = await request.json();
@@ -289,28 +317,36 @@ IMPORTANT:
 
           // ================================================================
           // Decrement user's message quota after successful generation
+          // ONLY when using platform key - BYOK users don't consume quota
           // ================================================================
-          try {
-            const { error: decrementError } = await supabaseAdmin
-              .from("users")
-              .update({
-                messages_remaining: dbUser.messages_remaining - 1,
-              })
-              .eq("id", dbUser.id);
+          let updatedMessagesRemaining = dbUser.messages_remaining;
 
-            if (decrementError) {
-              console.error("[Design Stream] Failed to decrement messages:", decrementError);
-            } else {
-              console.log(`[Design Stream] Decremented messages for user ${dbUser.id}. Remaining: ${dbUser.messages_remaining - 1}`);
+          if (usingPlatformKey) {
+            try {
+              const { error: decrementError } = await supabaseAdmin
+                .from("users")
+                .update({
+                  messages_remaining: dbUser.messages_remaining - 1,
+                })
+                .eq("id", dbUser.id);
+
+              if (decrementError) {
+                console.error("[Design Stream] Failed to decrement messages:", decrementError);
+              } else {
+                updatedMessagesRemaining = dbUser.messages_remaining - 1;
+                console.log(`[Design Stream] Decremented messages for user ${dbUser.id}. Remaining: ${updatedMessagesRemaining}`);
+              }
+            } catch (decrementErr) {
+              console.error("[Design Stream] Error decrementing messages:", decrementErr);
             }
-          } catch (decrementErr) {
-            console.error("[Design Stream] Error decrementing messages:", decrementErr);
+          } else {
+            console.log("[Design Stream] Using BYOK - no quota consumed");
           }
 
           // Send updated quota info with completion signal
           const doneData = `data: ${JSON.stringify({
             done: true,
-            messagesRemaining: Math.max(0, dbUser.messages_remaining - 1),
+            messagesRemaining: Math.max(0, updatedMessagesRemaining),
           })}\n\n`;
           controller.enqueue(encoder.encode(doneData));
 

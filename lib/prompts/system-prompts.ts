@@ -52,9 +52,15 @@ const HTML_CSS_RULES = `HTML/CSS RULES:
 - Include realistic placeholder content (names, dates, numbers, descriptions)`;
 
 const IMAGE_RULES = `IMAGES - CRITICAL:
-- ONLY use picsum.photos: https://picsum.photos/seed/{unique-seed}/{width}/{height}
-- Use unique seeds per image (e.g., seed/profile1, seed/hero-main, seed/food-1)
-- NEVER use placeholder.com, unsplash.com, or other services`;
+- Use this URL format for ALL images: https://www.opendesign.build/api/image?q=KEYWORDS&w=WIDTH&h=HEIGHT
+- Keywords should describe WHAT should be in the image (comma-separated, specific to the design)
+- Examples:
+  - Avatar: https://www.opendesign.build/api/image?q=professional,headshot,portrait&w=48&h=48
+  - Food app: https://www.opendesign.build/api/image?q=sushi,japanese,restaurant&w=400&h=300
+  - Pokemon: https://www.opendesign.build/api/image?q=pokemon,pikachu,yellow-creature&w=200&h=200
+  - Fitness: https://www.opendesign.build/api/image?q=gym,workout,fitness&w=600&h=400
+- Use 2-4 descriptive keywords that match the design context
+- NEVER use placeholder.com, unsplash.com, picsum.photos, or other image services`;
 
 const ICON_RULES = `ICONS - Use inline SVG:
 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="..."></path></svg>
@@ -107,7 +113,7 @@ const MOBILE_EXAMPLE = `EXAMPLE OUTPUT (notice the order - name and icon FIRST):
         <p class="text-sm text-orange-600">Good morning</p>
         <h1 class="text-2xl font-bold text-gray-900">What's cooking?</h1>
       </div>
-      <img src="https://picsum.photos/seed/chef-avatar/48/48" class="w-12 h-12 rounded-full" />
+      <img src="https://www.opendesign.build/api/image?q=chef,cooking,portrait&w=48&h=48" class="w-12 h-12 rounded-full" />
     </div>
   </header>
   <main class="px-6">

@@ -38,7 +38,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import type { Project, UsageLog } from "@/lib/supabase/types";
 import { EditableProjectHeader } from "../../components/EditableProjectHeader";
-import { useDesignStreaming, type ParsedScreen, type UsageData } from "../../components/StreamingScreenPreview";
+import { useDesignStreaming, type ParsedScreen, type UsageData, type QuotaExceededData } from "../../components/StreamingScreenPreview";
 import { DesignCanvas } from "../../components/DesignCanvas";
 import { CodeView } from "../../components/CodeView";
 import { ProjectSkeleton } from "../../components/Skeleton";
@@ -55,6 +55,9 @@ import { CostIndicator } from "../../components/CostIndicator";
 import { ModelSelector, getSelectedModel, setSelectedModel, type ModelId } from "../../components/ModelSelector";
 import { calculateCost } from "@/lib/constants/pricing";
 import { useUserSync } from "@/lib/hooks/useUserSync";
+import { useSubscription } from "@/lib/hooks/useSubscription";
+import { QuotaExceededBanner } from "../../components/QuotaExceededBanner";
+import type { PlanType } from "@/lib/constants/plans";
 
 // ============================================================================
 // Types
@@ -200,6 +203,7 @@ function ChatInput({
   selectedModel,
   onModelChange,
   isAdmin,
+  userPlan,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -214,6 +218,7 @@ function ChatInput({
   selectedModel: ModelId;
   onModelChange: (model: ModelId) => void;
   isAdmin: boolean;
+  userPlan: PlanType;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isPasting, setIsPasting] = useState(false);
@@ -333,6 +338,7 @@ function ChatInput({
                   value={selectedModel}
                   onChange={onModelChange}
                   compact
+                  userPlan={userPlan}
                 />
               </>
             )}
@@ -414,6 +420,13 @@ export default function DesignPage() {
   const { dbUser } = useUserSync();
   const isAdmin = dbUser?.role === "admin";
 
+  // Subscription state for quota management
+  const { messagesRemaining, isLoading: isSubscriptionLoading, refresh: refreshSubscription } = useSubscription();
+
+  // Local quota exceeded state - set when API returns QUOTA_EXCEEDED
+  // This is more reliable than checking messagesRemaining because it's set immediately
+  const [localQuotaExceeded, setLocalQuotaExceeded] = useState(false);
+
   // Ref to always have latest dbUser in callbacks
   const dbUserRef = useRef(dbUser);
   useEffect(() => {
@@ -494,11 +507,19 @@ export default function DesignPage() {
     setHasApiKey(!!config?.key);
   }, []);
 
-  // Load selected model from localStorage on mount
+  // Load selected model from localStorage on mount, respecting user's plan
+  const userPlan: PlanType = (dbUser?.plan as PlanType) || "free";
   useEffect(() => {
-    const savedModel = getSelectedModel();
+    const savedModel = getSelectedModel(userPlan);
     setSelectedModelState(savedModel);
-  }, []);
+  }, [userPlan]);
+
+  // Determine if quota is exceeded
+  // Use local state OR subscription state - whichever indicates exceeded
+  // User can still send if they have their own API key (BYOK mode)
+  const isQuotaExceeded = !hasApiKey && (localQuotaExceeded || (messagesRemaining <= 0 && !isSubscriptionLoading));
+  // User can send if: has API key OR (has messages remaining AND not locally marked as exceeded)
+  const canSendMessage = hasApiKey || (messagesRemaining > 0 && !localQuotaExceeded);
 
   // Handle model change
   const handleModelChange = useCallback((model: ModelId) => {
@@ -638,6 +659,9 @@ export default function DesignPage() {
         return mergedScreens;
       });
 
+      // Refresh subscription to get updated messages remaining
+      refreshSubscription();
+
       // Save to database
       const supabase = createClient();
 
@@ -735,7 +759,24 @@ export default function DesignPage() {
       };
       setMessages((prev) => [...prev, errorMessage]);
     },
-  }), [projectId, project?.name, project?.icon, handleNameChange, handleIconChange]);
+    onQuotaExceeded: (data: QuotaExceededData) => {
+      console.log("[Page] Quota exceeded:", data);
+      // Set local state immediately
+      setLocalQuotaExceeded(true);
+      // Refresh subscription to sync state
+      refreshSubscription();
+      // Show user-friendly message in chat (not raw JSON!)
+      const friendlyMessage: Message = {
+        id: `quota-${Date.now()}`,
+        role: "assistant",
+        content: data.plan === "free"
+          ? "You've used all your free messages this month. Upgrade to Pro for 50 messages/month, or configure your own API key in Settings to continue for free!"
+          : "You've used all your messages this month. Purchase more messages or configure your own API key in Settings.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, friendlyMessage]);
+    },
+  }), [projectId, project?.name, project?.icon, handleNameChange, handleIconChange, refreshSubscription]);
 
   // Use streaming hook
   const {
@@ -864,7 +905,7 @@ export default function DesignPage() {
 
   // Handle submit - uses streaming hook
   const handleSubmit = useCallback(async () => {
-    if (!input.trim() || isStreaming || !hasApiKey) return;
+    if (!input.trim() || isStreaming || !canSendMessage) return;
 
     // Clear completion indicator when sending new message
     setJustCompleted(false);
@@ -898,19 +939,14 @@ export default function DesignPage() {
     setInput("");
     setPendingImageUrl(null);
 
-    // Get API config
+    // Get API config (may be null if using platform key)
     const apiConfig = getApiConfig();
-    if (!apiConfig) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `error-${Date.now()}`,
-          role: "assistant",
-          content: "Error: API key not configured",
-          timestamp: new Date(),
-        },
-      ]);
-      return;
+
+    // Prepare headers - only include API key if user has their own (BYOK)
+    const headers: Record<string, string> = {};
+    if (apiConfig?.key) {
+      headers["x-api-key"] = apiConfig.key;
+      headers["x-provider"] = apiConfig.provider;
     }
 
     // Start streaming with platform, image, and model
@@ -929,12 +965,9 @@ export default function DesignPage() {
         imageUrl: currentImageUrl,
         model: selectedModel,
       },
-      {
-        "x-api-key": apiConfig.key,
-        "x-provider": apiConfig.provider,
-      }
+      headers
     );
-  }, [input, isStreaming, hasApiKey, startStreaming, projectId, savedScreens, messages, project?.platform, pendingImageUrl, selectedModel]);
+  }, [input, isStreaming, canSendMessage, startStreaming, projectId, savedScreens, messages, project?.platform, pendingImageUrl, selectedModel]);
 
   // Store handleSubmit in ref for auto-generation
   submitRef.current = handleSubmit;
@@ -944,7 +977,7 @@ export default function DesignPage() {
     if (
       !isPageLoading &&
       !hasAutoGenerated &&
-      hasApiKey &&
+      canSendMessage &&
       project?.app_idea &&
       messages.length === 0 &&
       input.trim() &&
@@ -956,7 +989,7 @@ export default function DesignPage() {
         submitRef.current?.();
       }, 100);
     }
-  }, [isPageLoading, hasAutoGenerated, hasApiKey, project?.app_idea, messages.length, input, isStreaming]);
+  }, [isPageLoading, hasAutoGenerated, canSendMessage, project?.app_idea, messages.length, input, isStreaming]);
 
   // Loading state
   if (!isLoaded || isPageLoading) {
@@ -1042,9 +1075,9 @@ export default function DesignPage() {
             >
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.length === 0 && !hasApiKey && <ApiKeyWarning />}
+                {messages.length === 0 && !canSendMessage && !isQuotaExceeded && <ApiKeyWarning />}
 
-                {messages.length === 0 && hasApiKey && (
+                {messages.length === 0 && canSendMessage && (
                   <div className="text-center py-8">
                     <Sparkles className="w-8 h-8 mx-auto mb-3 text-[#D4CFC9]" />
                     <p className="text-sm text-[#9A9A9A]">
@@ -1105,22 +1138,29 @@ export default function DesignPage() {
                 </div>
               )}
 
-              {/* Input */}
-              <ChatInput
-                value={input}
-                onChange={setInput}
-                onSubmit={handleSubmit}
-                isLoading={isStreaming}
-                disabled={!hasApiKey}
-                userId={user?.id || ""}
-                projectId={projectId}
-                imageUrl={pendingImageUrl}
-                onImageChange={setPendingImageUrl}
-                onImageClick={setLightboxImage}
-                selectedModel={selectedModel}
-                onModelChange={handleModelChange}
-                isAdmin={isAdmin}
-              />
+              {/* Input or Quota Exceeded Banner */}
+              {isQuotaExceeded ? (
+                <div className="p-3">
+                  <QuotaExceededBanner />
+                </div>
+              ) : (
+                <ChatInput
+                  value={input}
+                  onChange={setInput}
+                  onSubmit={handleSubmit}
+                  isLoading={isStreaming}
+                  disabled={!canSendMessage}
+                  userId={user?.id || ""}
+                  projectId={projectId}
+                  imageUrl={pendingImageUrl}
+                  onImageChange={setPendingImageUrl}
+                  onImageClick={setLightboxImage}
+                  selectedModel={selectedModel}
+                  onModelChange={handleModelChange}
+                  isAdmin={isAdmin}
+                  userPlan={userPlan}
+                />
+              )}
             </div>
 
             {/* Resize Handle */}
@@ -1163,9 +1203,9 @@ export default function DesignPage() {
           <div className="flex-1 flex flex-col bg-white">
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.length === 0 && !hasApiKey && <ApiKeyWarning />}
+              {messages.length === 0 && !canSendMessage && !isQuotaExceeded && <ApiKeyWarning />}
 
-              {messages.length === 0 && hasApiKey && (
+              {messages.length === 0 && canSendMessage && (
                 <div className="text-center py-8">
                   <Sparkles className="w-8 h-8 mx-auto mb-3 text-[#D4CFC9]" />
                   <p className="text-sm text-[#9A9A9A]">
@@ -1226,22 +1266,29 @@ export default function DesignPage() {
               </div>
             )}
 
-            {/* Input */}
-            <ChatInput
-              value={input}
-              onChange={setInput}
-              onSubmit={handleSubmit}
-              isLoading={isStreaming}
-              disabled={!hasApiKey}
-              userId={user?.id || ""}
-              projectId={projectId}
-              imageUrl={pendingImageUrl}
-              onImageChange={setPendingImageUrl}
-              onImageClick={setLightboxImage}
-              selectedModel={selectedModel}
-              onModelChange={handleModelChange}
-              isAdmin={isAdmin}
-            />
+            {/* Input or Quota Exceeded Banner */}
+            {isQuotaExceeded ? (
+              <div className="p-3">
+                <QuotaExceededBanner />
+              </div>
+            ) : (
+              <ChatInput
+                value={input}
+                onChange={setInput}
+                onSubmit={handleSubmit}
+                isLoading={isStreaming}
+                disabled={!canSendMessage}
+                userId={user?.id || ""}
+                projectId={projectId}
+                imageUrl={pendingImageUrl}
+                onImageChange={setPendingImageUrl}
+                onImageClick={setLightboxImage}
+                selectedModel={selectedModel}
+                onModelChange={handleModelChange}
+                isAdmin={isAdmin}
+                userPlan={userPlan}
+              />
+            )}
           </div>
         )}
 

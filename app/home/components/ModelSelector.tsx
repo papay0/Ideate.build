@@ -41,13 +41,31 @@ const MODEL_STORAGE_KEY = "opendesign_selected_model";
 // Helper Functions
 // ============================================================================
 
-export function getSelectedModel(): ModelId {
-  if (typeof window === "undefined") return "gemini-3-pro-preview";
+/**
+ * Get the default model for a user's plan
+ * Free users default to Flash, Pro users default to Pro
+ */
+export function getDefaultModelForPlan(plan: PlanType = "free"): ModelId {
+  return plan === "pro" ? "gemini-3-pro-preview" : "gemini-3-flash-preview";
+}
+
+/**
+ * Get the selected model from localStorage, respecting user's plan
+ * If stored model isn't allowed for plan, returns the default for that plan
+ */
+export function getSelectedModel(plan: PlanType = "free"): ModelId {
+  if (typeof window === "undefined") return getDefaultModelForPlan(plan);
+
   const stored = localStorage.getItem(MODEL_STORAGE_KEY);
   if (stored && AVAILABLE_MODELS.some((m) => m.id === stored)) {
-    return stored as ModelId;
+    // Check if stored model is allowed for user's plan
+    if (isModelAllowedForPlan(stored, plan)) {
+      return stored as ModelId;
+    }
   }
-  return "gemini-3-pro-preview";
+
+  // Return default for this plan
+  return getDefaultModelForPlan(plan);
 }
 
 export function setSelectedModel(model: ModelId): void {
