@@ -26,6 +26,15 @@ export interface ParsedScreen {
   isEdit?: boolean;
 }
 
+export interface UsageData {
+  inputTokens: number;
+  outputTokens: number;
+  cachedTokens: number;
+  totalTokens: number;
+  model: string;
+  provider: 'openrouter' | 'gemini';
+}
+
 export interface StreamingCallbacks {
   onMessage?: (message: string) => void;
   onProjectName?: (name: string) => void;
@@ -34,6 +43,7 @@ export interface StreamingCallbacks {
   onScreenEditStart?: (screenName: string) => void;
   onScreenComplete?: (screen: ParsedScreen) => void;
   onStreamComplete?: (screens: ParsedScreen[]) => void;
+  onUsage?: (usage: UsageData) => void;
   onError?: (error: string) => void;
 }
 
@@ -317,6 +327,20 @@ export function useDesignStreaming(callbacks: StreamingCallbacks) {
                       rawContent = "";
                     }
                   }
+                }
+
+                // Handle usage data
+                if (data.usage) {
+                  console.log(`[Stream] USAGE received:`, data.usage);
+                  const usageData: UsageData = {
+                    inputTokens: data.usage.inputTokens || 0,
+                    outputTokens: data.usage.outputTokens || 0,
+                    cachedTokens: data.usage.cachedTokens || 0,
+                    totalTokens: data.usage.totalTokens || 0,
+                    model: data.usage.model || 'gemini-3-pro-preview',
+                    provider: data.usage.provider || 'openrouter',
+                  };
+                  callbacks.onUsage?.(usageData);
                 }
 
                 if (data.done) {

@@ -182,6 +182,29 @@ IMPORTANT:
             controller.enqueue(encoder.encode(sseData));
           }
 
+          // Get token usage after streaming completes
+          try {
+            const usage = await result.usage;
+            const modelName = provider === "gemini" ? "gemini-3-pro-preview" : "google/gemini-3-pro-preview";
+
+            // Send usage data before completion signal
+            const usageData = `data: ${JSON.stringify({
+              usage: {
+                inputTokens: usage.inputTokens || 0,
+                outputTokens: usage.outputTokens || 0,
+                cachedTokens: usage.cachedInputTokens || 0,
+                totalTokens: usage.totalTokens || 0,
+                model: modelName,
+                provider: provider || "openrouter",
+              }
+            })}\n\n`;
+            controller.enqueue(encoder.encode(usageData));
+
+            console.log(`[Design Stream] Usage - Input: ${usage.inputTokens}, Output: ${usage.outputTokens}, Cached: ${usage.cachedInputTokens || 0}`);
+          } catch (usageError) {
+            console.error("[Design Stream] Failed to get usage:", usageError);
+          }
+
           // Send completion signal
           const doneData = `data: ${JSON.stringify({ done: true })}\n\n`;
           controller.enqueue(encoder.encode(doneData));

@@ -148,6 +148,71 @@ export interface Database {
       }
 
       /**
+       * Usage logs table - tracks AI generation costs
+       * Stores token usage and calculated costs per generation
+       */
+      usage_logs: {
+        Row: {
+          id: string
+          project_id: string              // Foreign key to projects
+          user_id: string                 // Foreign key to users
+          input_tokens: number            // Number of input tokens
+          output_tokens: number           // Number of output tokens
+          cached_tokens: number           // Number of cached input tokens
+          input_cost: number              // Cost for input tokens in USD
+          output_cost: number             // Cost for output tokens in USD
+          total_cost: number              // Total cost in USD
+          model: string                   // Model used (e.g., 'gemini-3-pro-preview')
+          provider: string                // Provider (e.g., 'openrouter', 'gemini')
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          user_id: string
+          input_tokens: number
+          output_tokens: number
+          cached_tokens?: number
+          input_cost: number
+          output_cost: number
+          total_cost: number
+          model: string
+          provider: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          user_id?: string
+          input_tokens?: number
+          output_tokens?: number
+          cached_tokens?: number
+          input_cost?: number
+          output_cost?: number
+          total_cost?: number
+          model?: string
+          provider?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_logs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "usage_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+
+      /**
        * Users table - stores user profile data synced from Clerk
        * Created on first sign-in, updated on subsequent sign-ins
        */
@@ -237,3 +302,10 @@ export type User = Database['public']['Tables']['users']['Row']
 export type UserInsert = Database['public']['Tables']['users']['Insert']
 /** User update type */
 export type UserUpdate = Database['public']['Tables']['users']['Update']
+
+/** Usage log row type */
+export type UsageLog = Database['public']['Tables']['usage_logs']['Row']
+/** Usage log insert type */
+export type UsageLogInsert = Database['public']['Tables']['usage_logs']['Insert']
+/** Usage log update type */
+export type UsageLogUpdate = Database['public']['Tables']['usage_logs']['Update']

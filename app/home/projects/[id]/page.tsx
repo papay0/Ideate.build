@@ -256,76 +256,95 @@ function ChatInput({
   };
 
   return (
-    <div className="border-t border-[#E8E4E0] p-3 bg-white">
-      {/* Unified input container */}
-      <div className="bg-[#F5F2EF] rounded-2xl border border-[#E8E4E0] overflow-hidden transition-all focus-within:border-[#B8956F] focus-within:ring-2 focus-within:ring-[#B8956F]/10">
-        {/* Image preview - compact for chat */}
-        {imageUrl && (
-          <div className="px-3 pt-3 pb-1">
-            <div className="flex items-center gap-2.5 p-2 bg-white/60 rounded-lg border border-[#E8E4E0]/50">
-              <ClickableImage
-                src={imageUrl}
-                alt="Reference"
-                className="w-10 h-10 rounded-md shadow-sm overflow-hidden"
-                onClick={() => onImageClick?.(imageUrl)}
-              />
-              <span className="text-sm text-[#6B6B6B] flex-1">Reference image</span>
-              <button
-                onClick={() => onImageChange(null)}
-                className="text-xs text-[#9A9A9A] hover:text-red-500 px-1.5 py-1 rounded hover:bg-red-50 transition-colors"
-                type="button"
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        )}
+    <div className="p-3 bg-gradient-to-t from-white via-white to-white/95">
+      {/* Elevated input container with subtle shadow */}
+      <div className="relative">
+        {/* Soft glow effect behind */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#B8956F]/5 to-[#B8956F]/10 rounded-2xl blur-xl scale-[1.02] pointer-events-none" />
 
-        {/* Input row */}
-        <div className="flex items-end gap-2 p-2 relative">
-          <ImageUploadButton
-            userId={userId}
-            projectId={projectId}
-            onImageUploaded={onImageChange}
-            onImageRemoved={() => onImageChange(null)}
-            currentImageUrl={imageUrl}
-            disabled={disabled || isLoading || isPasting}
-          />
-          <textarea
-            ref={textareaRef}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onPaste={handlePaste}
-            placeholder={
-              disabled
-                ? "Configure your API key in Settings first..."
-                : "Describe changes or paste an image..."
-            }
-            disabled={disabled || isPasting}
-            rows={1}
-            className="flex-1 bg-transparent py-2.5 px-1 text-[#1A1A1A] placeholder-[#9A9A9A] focus:outline-none resize-none max-h-32 disabled:opacity-50 disabled:cursor-not-allowed"
-          />
-          <button
-            onClick={onSubmit}
-            disabled={disabled || isLoading || isPasting || !value.trim()}
-            className="w-10 h-10 bg-[#B8956F] rounded-xl flex items-center justify-center hover:bg-[#A6845F] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-sm hover:shadow-md active:scale-95"
-          >
-            {isLoading ? (
-              <Loader2 className="w-4 h-4 text-white animate-spin" />
-            ) : (
-              <Send className="w-4 h-4 text-white" />
-            )}
-          </button>
-          {/* Paste upload overlay */}
-          {isPasting && (
-            <div className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
-              <div className="flex items-center gap-2 text-[#B8956F]">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-sm font-medium">Uploading...</span>
+        {/* Main container */}
+        <div className="relative bg-white rounded-2xl shadow-[0_2px_16px_-2px_rgba(184,149,111,0.12)] border border-[#E8E4E0]/80 overflow-hidden transition-all duration-300 focus-within:shadow-[0_4px_20px_-2px_rgba(184,149,111,0.18)] focus-within:border-[#B8956F]/30">
+          {/* Image preview - elegant card when attached */}
+          {imageUrl && (
+            <div className="px-3 pt-3">
+              <div className="flex items-center gap-3 p-2.5 bg-gradient-to-r from-[#FAF8F5] to-[#F5F2EF] rounded-xl border border-[#E8E4E0]/60">
+                <div className="relative">
+                  <ClickableImage
+                    src={imageUrl}
+                    alt="Reference"
+                    className="w-11 h-11 rounded-lg shadow-sm ring-2 ring-white overflow-hidden"
+                    onClick={() => onImageClick?.(imageUrl)}
+                  />
+                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-[#B8956F] rounded-full flex items-center justify-center shadow-sm pointer-events-none">
+                    <Sparkles className="w-2.5 h-2.5 text-white" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-[#1A1A1A]">Reference attached</p>
+                  <p className="text-xs text-[#9A9A9A]">Click to preview</p>
+                </div>
+                <button
+                  onClick={() => onImageChange(null)}
+                  className="text-xs text-[#9A9A9A] hover:text-red-500 px-2 py-1 rounded-md hover:bg-red-50/80 transition-all"
+                  type="button"
+                >
+                  Remove
+                </button>
               </div>
             </div>
           )}
+
+          {/* Input row */}
+          <div className="flex items-end gap-2 p-2.5 relative">
+            {/* Image upload button - hide when image attached */}
+            {!imageUrl && (
+              <ImageUploadButton
+                userId={userId}
+                projectId={projectId}
+                onImageUploaded={onImageChange}
+                onImageRemoved={() => onImageChange(null)}
+                currentImageUrl={imageUrl}
+                disabled={disabled || isLoading || isPasting}
+              />
+            )}
+            <div className="flex-1 relative">
+              <textarea
+                ref={textareaRef}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
+                placeholder={
+                  disabled
+                    ? "Configure your API key in Settings first..."
+                    : "Describe changes or paste an image..."
+                }
+                disabled={disabled || isPasting}
+                rows={1}
+                className="w-full bg-[#FAF8F5]/60 rounded-xl py-2.5 px-3.5 text-[#1A1A1A] placeholder-[#B5B0A8] focus:outline-none focus:bg-[#FAF8F5] resize-none max-h-32 disabled:opacity-50 disabled:cursor-not-allowed transition-colors border border-transparent focus:border-[#E8E4E0]"
+              />
+            </div>
+            <button
+              onClick={onSubmit}
+              disabled={disabled || isLoading || isPasting || !value.trim()}
+              className="w-10 h-10 bg-gradient-to-br from-[#B8956F] to-[#A6845F] rounded-xl flex items-center justify-center hover:from-[#A6845F] hover:to-[#957555] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-md hover:shadow-lg hover:shadow-[#B8956F]/15 active:scale-[0.96]"
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 text-white animate-spin" />
+              ) : (
+                <Send className="w-4 h-4 text-white" />
+              )}
+            </button>
+            {/* Paste upload overlay */}
+            {isPasting && (
+              <div className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
+                <div className="flex items-center gap-2 text-[#B8956F]">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm font-medium">Uploading...</span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -379,6 +398,12 @@ export default function DesignPage() {
   // User sync for admin role check
   const { dbUser } = useUserSync();
   const isAdmin = dbUser?.role === "admin";
+
+  // Ref to always have latest dbUser in callbacks
+  const dbUserRef = useRef(dbUser);
+  useEffect(() => {
+    dbUserRef.current = dbUser;
+  }, [dbUser]);
 
   // State
   const [project, setProject] = useState<Project | null>(null);
@@ -604,6 +629,75 @@ export default function DesignPage() {
 
       // Project name and icon are now updated immediately in onProjectName/onProjectIcon callbacks
     },
+    onUsage: async (usage: UsageData) => {
+      console.log(`[Page] Usage received:`, usage);
+
+      // Get the latest dbUser from ref (avoids stale closure)
+      const currentDbUser = dbUserRef.current;
+
+      // Calculate cost
+      const costBreakdown = calculateCost(
+        usage.inputTokens,
+        usage.outputTokens,
+        usage.cachedTokens,
+        usage.model,
+        usage.provider
+      );
+
+      // Create usage log entry
+      const usageLog: UsageLog = {
+        id: `temp-${Date.now()}`,
+        project_id: projectId,
+        user_id: currentDbUser?.id || "",
+        input_tokens: usage.inputTokens,
+        output_tokens: usage.outputTokens,
+        cached_tokens: usage.cachedTokens,
+        input_cost: costBreakdown.inputCost,
+        output_cost: costBreakdown.outputCost,
+        total_cost: costBreakdown.totalCost,
+        model: usage.model,
+        provider: usage.provider,
+        created_at: new Date().toISOString(),
+      };
+
+      // Update local state
+      setUsageLogs((prev) => [...prev, usageLog]);
+      setTotalSessionCost((prev) => prev + costBreakdown.totalCost);
+
+      // Save to database if we have a valid user
+      if (currentDbUser?.id) {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from("usage_logs")
+          .insert({
+            project_id: projectId,
+            user_id: currentDbUser.id,
+            input_tokens: usage.inputTokens,
+            output_tokens: usage.outputTokens,
+            cached_tokens: usage.cachedTokens,
+            input_cost: costBreakdown.inputCost,
+            output_cost: costBreakdown.outputCost,
+            total_cost: costBreakdown.totalCost,
+            model: usage.model,
+            provider: usage.provider,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error("[Page] Failed to save usage log:", error);
+        } else {
+          // Update with real ID from database
+          setUsageLogs((prev) =>
+            prev.map((log) =>
+              log.id === usageLog.id ? { ...log, id: data.id } : log
+            )
+          );
+        }
+      } else {
+        console.warn("[Page] No dbUser available, usage not saved to database");
+      }
+    },
     onError: (error: string) => {
       const errorMessage: Message = {
         id: `error-${Date.now()}`,
@@ -707,6 +801,19 @@ export default function DesignPage() {
             timestamp: new Date(m.created_at),
           }))
         );
+      }
+
+      // Fetch usage logs for this session (admin only)
+      const { data: usageData } = await supabase
+        .from("usage_logs")
+        .select("*")
+        .eq("project_id", projectId)
+        .order("created_at");
+
+      if (usageData && usageData.length > 0) {
+        setUsageLogs(usageData);
+        const total = usageData.reduce((sum, log) => sum + log.total_cost, 0);
+        setTotalSessionCost(total);
       }
 
       // Auto-start with app idea if no messages yet
@@ -958,6 +1065,17 @@ export default function DesignPage() {
                 <div ref={messagesEndRef} />
               </div>
 
+              {/* Cost Indicator (admin only) */}
+              {isAdmin && (
+                <div className="px-3 py-2 border-t border-[#E8E4E0]">
+                  <CostIndicator
+                    usageLogs={usageLogs}
+                    totalCost={totalSessionCost}
+                    isVisible={usageLogs.length > 0}
+                  />
+                </div>
+              )}
+
               {/* Input */}
               <ChatInput
                 value={input}
@@ -1064,6 +1182,17 @@ export default function DesignPage() {
 
               <div ref={messagesEndRef} />
             </div>
+
+            {/* Cost Indicator (admin only) */}
+            {isAdmin && (
+              <div className="px-3 py-2 border-t border-[#E8E4E0]">
+                <CostIndicator
+                  usageLogs={usageLogs}
+                  totalCost={totalSessionCost}
+                  isVisible={usageLogs.length > 0}
+                />
+              </div>
+            )}
 
             {/* Input */}
             <ChatInput
