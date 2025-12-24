@@ -32,6 +32,8 @@ import {
   Code2,
   Copy,
   Check,
+  MessageSquare,
+  Layers,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Project } from "@/lib/supabase/types";
@@ -42,6 +44,8 @@ import { CodeView } from "../../components/CodeView";
 import { ProjectSkeleton } from "../../components/Skeleton";
 import { ImageUploadButton } from "../../components/ImageUploadButton";
 import { ImageLightbox, ClickableImage } from "../../components/ImageLightbox";
+import { SegmentedControl } from "../../components/SegmentedControl";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import {
   validateImage,
   uploadImage,
@@ -60,6 +64,7 @@ interface Message {
 }
 
 type ViewMode = "preview" | "code";
+type MobileTab = "chat" | "canvas";
 
 // ============================================================================
 // Constants
@@ -365,6 +370,9 @@ export default function DesignPage() {
   const { user, isLoaded } = useUser();
   const projectId = params.id as string;
 
+  // Mobile detection
+  const isMobile = useIsMobile();
+
   // State
   const [project, setProject] = useState<Project | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -380,6 +388,7 @@ export default function DesignPage() {
   const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [mobileActiveTab, setMobileActiveTab] = useState<MobileTab>("chat");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const userMessageRef = useRef<Message | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -812,10 +821,12 @@ export default function DesignPage() {
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <div className="flex items-center gap-4 px-6 py-4 border-b border-[#E8E4E0] bg-white">
+      <div className={`flex items-center border-b border-[#E8E4E0] bg-white ${
+        isMobile ? "gap-2 px-3 py-3" : "gap-4 px-6 py-4"
+      }`}>
         <button
           onClick={() => router.push("/home")}
-          className="p-2 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F2EF] rounded-lg transition-colors"
+          className="p-2 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F2EF] rounded-lg transition-colors flex-shrink-0"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -823,146 +834,266 @@ export default function DesignPage() {
           <EditableProjectHeader
             name={project.name}
             icon={project.icon}
-            description={project.app_idea}
+            description={isMobile ? undefined : project.app_idea}
             onNameChange={handleNameChange}
             onIconChange={handleIconChange}
+            compact={isMobile}
           />
         )}
 
         {/* Preview/Code Toggle */}
-        <div className="flex bg-[#F5F2EF] rounded-lg p-1 border border-[#E8E4E0] ml-auto">
+        <div className={`flex bg-[#F5F2EF] rounded-lg p-1 border border-[#E8E4E0] ml-auto flex-shrink-0 ${
+          isMobile ? "text-xs" : ""
+        }`}>
           <button
             onClick={() => setViewMode("preview")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+            className={`flex items-center gap-1 px-2 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              isMobile ? "px-2 text-xs" : "gap-1.5 px-3"
+            } ${
               viewMode === "preview"
                 ? "bg-white text-[#1A1A1A] shadow-sm"
                 : "text-[#6B6B6B] hover:text-[#1A1A1A]"
             }`}
           >
-            <Eye className="w-4 h-4" />
-            Preview
+            <Eye className={isMobile ? "w-3.5 h-3.5" : "w-4 h-4"} />
+            {!isMobile && "Preview"}
           </button>
           <button
             onClick={() => setViewMode("code")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+            className={`flex items-center gap-1 px-2 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              isMobile ? "px-2 text-xs" : "gap-1.5 px-3"
+            } ${
               viewMode === "code"
                 ? "bg-white text-[#1A1A1A] shadow-sm"
                 : "text-[#6B6B6B] hover:text-[#1A1A1A]"
             }`}
           >
-            <Code2 className="w-4 h-4" />
-            Code
+            <Code2 className={isMobile ? "w-3.5 h-3.5" : "w-4 h-4"} />
+            {!isMobile && "Code"}
           </button>
         </div>
       </div>
 
-      {/* Main Content - Split View */}
+      {/* Mobile Tab Switcher */}
+      {isMobile && (
+        <div className="px-4 py-3 border-b border-[#E8E4E0] bg-white">
+          <SegmentedControl
+            options={[
+              { value: "chat" as MobileTab, label: "Chat", icon: <MessageSquare className="w-4 h-4" /> },
+              { value: "canvas" as MobileTab, label: "Canvas", icon: <Layers className="w-4 h-4" /> },
+            ]}
+            value={mobileActiveTab}
+            onChange={setMobileActiveTab}
+          />
+        </div>
+      )}
+
+      {/* Main Content */}
       <div ref={containerRef} className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Chat */}
-        <div
-          style={{ width: sidebarWidth }}
-          className="flex-shrink-0 flex flex-col border-r border-[#E8E4E0] bg-white"
-        >
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.length === 0 && !hasApiKey && <ApiKeyWarning />}
+        {/* Desktop: Split View */}
+        {!isMobile && (
+          <>
+            {/* Left Panel - Chat */}
+            <div
+              style={{ width: sidebarWidth }}
+              className="flex-shrink-0 flex flex-col border-r border-[#E8E4E0] bg-white"
+            >
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {messages.length === 0 && !hasApiKey && <ApiKeyWarning />}
 
-            {messages.length === 0 && hasApiKey && (
-              <div className="text-center py-8">
-                <Sparkles className="w-8 h-8 mx-auto mb-3 text-[#D4CFC9]" />
-                <p className="text-sm text-[#9A9A9A]">
-                  Describe your app and I&apos;ll generate UI designs
-                </p>
+                {messages.length === 0 && hasApiKey && (
+                  <div className="text-center py-8">
+                    <Sparkles className="w-8 h-8 mx-auto mb-3 text-[#D4CFC9]" />
+                    <p className="text-sm text-[#9A9A9A]">
+                      Describe your app and I&apos;ll generate UI designs
+                    </p>
+                  </div>
+                )}
+
+                {messages.map((message) => (
+                  <ChatMessage
+                    key={message.id}
+                    message={message}
+                    userImageUrl={user?.imageUrl}
+                    onImageClick={setLightboxImage}
+                  />
+                ))}
+
+                {isStreaming && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    <div className="bg-white border border-[#E8E4E0] rounded-2xl px-4 py-3">
+                      <div className="flex items-center gap-2 text-sm text-[#6B6B6B]">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {currentScreenName ? `Generating ${currentScreenName}...` : "Generating designs..."}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {justCompleted && !isStreaming && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <div className="bg-green-50 border border-green-200 rounded-2xl px-4 py-3">
+                      <div className="flex items-center gap-2 text-sm text-green-700">
+                        <CheckCircle2 className="w-4 h-4" />
+                        Generation complete! {displayScreens.length} screen{displayScreens.length !== 1 ? "s" : ""} ready.
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                <div ref={messagesEndRef} />
               </div>
-            )}
 
-            {messages.map((message) => (
-              <ChatMessage
-                key={message.id}
-                message={message}
-                userImageUrl={user?.imageUrl}
+              {/* Input */}
+              <ChatInput
+                value={input}
+                onChange={setInput}
+                onSubmit={handleSubmit}
+                isLoading={isStreaming}
+                disabled={!hasApiKey}
+                userId={user?.id || ""}
+                projectId={projectId}
+                imageUrl={pendingImageUrl}
+                onImageChange={setPendingImageUrl}
                 onImageClick={setLightboxImage}
               />
-            ))}
+            </div>
 
-            {isStreaming && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                <div className="bg-white border border-[#E8E4E0] rounded-2xl px-4 py-3">
-                  <div className="flex items-center gap-2 text-sm text-[#6B6B6B]">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    {currentScreenName ? `Generating ${currentScreenName}...` : "Generating designs..."}
-                  </div>
-                </div>
-              </motion.div>
+            {/* Resize Handle */}
+            <div
+              onMouseDown={handleMouseDown}
+              className={`w-1 cursor-col-resize bg-transparent hover:bg-[#B8956F]/30 transition-colors relative group ${
+                isResizing ? "bg-[#B8956F]/50" : ""
+              }`}
+            >
+              <div className="absolute inset-y-0 -left-1 -right-1" />
+              <div
+                className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-8 rounded-full transition-colors ${
+                  isResizing ? "bg-[#B8956F]" : "bg-[#D4CFC9] group-hover:bg-[#B8956F]"
+                }`}
+              />
+            </div>
+
+            {/* Right Panel - Canvas or Code View */}
+            {viewMode === "preview" ? (
+              <DesignCanvas
+                completedScreens={displayScreens}
+                currentStreamingHtml={currentStreamingHtml}
+                currentScreenName={currentScreenName}
+                isStreaming={isStreaming}
+                editingScreenNames={editingScreenNames}
+                isEditingExistingScreen={isEditingExistingScreen}
+                platform={project?.platform || "mobile"}
+              />
+            ) : (
+              <CodeView
+                screens={displayScreens}
+                projectName={project?.name || "Untitled"}
+              />
             )}
+          </>
+        )}
 
-            {justCompleted && !isStreaming && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                <div className="bg-green-50 border border-green-200 rounded-2xl px-4 py-3">
-                  <div className="flex items-center gap-2 text-sm text-green-700">
-                    <CheckCircle2 className="w-4 h-4" />
-                    Generation complete! {displayScreens.length} screen{displayScreens.length !== 1 ? "s" : ""} ready.
-                  </div>
+        {/* Mobile: Chat Tab */}
+        {isMobile && mobileActiveTab === "chat" && (
+          <div className="flex-1 flex flex-col bg-white">
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {messages.length === 0 && !hasApiKey && <ApiKeyWarning />}
+
+              {messages.length === 0 && hasApiKey && (
+                <div className="text-center py-8">
+                  <Sparkles className="w-8 h-8 mx-auto mb-3 text-[#D4CFC9]" />
+                  <p className="text-sm text-[#9A9A9A]">
+                    Describe your app and I&apos;ll generate UI designs
+                  </p>
                 </div>
-              </motion.div>
-            )}
+              )}
 
-            <div ref={messagesEndRef} />
+              {messages.map((message) => (
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                  userImageUrl={user?.imageUrl}
+                  onImageClick={setLightboxImage}
+                />
+              ))}
+
+              {isStreaming && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <div className="bg-white border border-[#E8E4E0] rounded-2xl px-4 py-3">
+                    <div className="flex items-center gap-2 text-sm text-[#6B6B6B]">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {currentScreenName ? `Generating ${currentScreenName}...` : "Generating designs..."}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {justCompleted && !isStreaming && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <div className="bg-green-50 border border-green-200 rounded-2xl px-4 py-3">
+                    <div className="flex items-center gap-2 text-sm text-green-700">
+                      <CheckCircle2 className="w-4 h-4" />
+                      Generation complete! {displayScreens.length} screen{displayScreens.length !== 1 ? "s" : ""} ready.
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input */}
+            <ChatInput
+              value={input}
+              onChange={setInput}
+              onSubmit={handleSubmit}
+              isLoading={isStreaming}
+              disabled={!hasApiKey}
+              userId={user?.id || ""}
+              projectId={projectId}
+              imageUrl={pendingImageUrl}
+              onImageChange={setPendingImageUrl}
+              onImageClick={setLightboxImage}
+            />
           </div>
+        )}
 
-          {/* Input */}
-          <ChatInput
-            value={input}
-            onChange={setInput}
-            onSubmit={handleSubmit}
-            isLoading={isStreaming}
-            disabled={!hasApiKey}
-            userId={user?.id || ""}
-            projectId={projectId}
-            imageUrl={pendingImageUrl}
-            onImageChange={setPendingImageUrl}
-            onImageClick={setLightboxImage}
-          />
-        </div>
-
-        {/* Resize Handle */}
-        <div
-          onMouseDown={handleMouseDown}
-          className={`w-1 cursor-col-resize bg-transparent hover:bg-[#B8956F]/30 transition-colors relative group ${
-            isResizing ? "bg-[#B8956F]/50" : ""
-          }`}
-        >
-          <div className="absolute inset-y-0 -left-1 -right-1" />
-          <div
-            className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-8 rounded-full transition-colors ${
-              isResizing ? "bg-[#B8956F]" : "bg-[#D4CFC9] group-hover:bg-[#B8956F]"
-            }`}
-          />
-        </div>
-
-        {/* Right Panel - Canvas or Code View */}
-        {viewMode === "preview" ? (
-          <DesignCanvas
-            completedScreens={displayScreens}
-            currentStreamingHtml={currentStreamingHtml}
-            currentScreenName={currentScreenName}
-            isStreaming={isStreaming}
-            editingScreenNames={editingScreenNames}
-            isEditingExistingScreen={isEditingExistingScreen}
-            platform={project?.platform || "mobile"}
-          />
-        ) : (
-          <CodeView
-            screens={displayScreens}
-            projectName={project?.name || "Untitled"}
-          />
+        {/* Mobile: Canvas Tab */}
+        {isMobile && mobileActiveTab === "canvas" && (
+          viewMode === "preview" ? (
+            <DesignCanvas
+              completedScreens={displayScreens}
+              currentStreamingHtml={currentStreamingHtml}
+              currentScreenName={currentScreenName}
+              isStreaming={isStreaming}
+              editingScreenNames={editingScreenNames}
+              isEditingExistingScreen={isEditingExistingScreen}
+              platform={project?.platform || "mobile"}
+              isMobileView={true}
+            />
+          ) : (
+            <CodeView
+              screens={displayScreens}
+              projectName={project?.name || "Untitled"}
+            />
+          )
         )}
       </div>
 

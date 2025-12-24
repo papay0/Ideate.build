@@ -20,6 +20,8 @@ interface EditableProjectHeaderProps {
   description?: string | null;
   onNameChange: (newName: string) => Promise<void>;
   onIconChange?: (newIcon: string) => Promise<void>;
+  /** Compact mode for mobile - smaller icon, truncated name, no description */
+  compact?: boolean;
 }
 
 export function EditableProjectHeader({
@@ -28,6 +30,7 @@ export function EditableProjectHeader({
   description,
   onNameChange,
   onIconChange,
+  compact = false,
 }: EditableProjectHeaderProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(name);
@@ -93,17 +96,19 @@ export function EditableProjectHeader({
   };
 
   return (
-    <div className="flex items-center gap-3">
+    <div className={`flex items-center ${compact ? "gap-2" : "gap-3"} min-w-0`}>
       {/* Icon Button with Emoji Picker */}
-      <div className="relative">
+      <div className="relative flex-shrink-0">
         <button
           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
           disabled={isSavingIcon}
-          className="w-10 h-10 flex items-center justify-center text-2xl bg-[#F5F2EF] hover:bg-[#EBE7E3] rounded-xl transition-colors disabled:opacity-50"
+          className={`flex items-center justify-center bg-[#F5F2EF] hover:bg-[#EBE7E3] rounded-xl transition-colors disabled:opacity-50 ${
+            compact ? "w-8 h-8 text-xl" : "w-10 h-10 text-2xl"
+          }`}
           title="Change icon"
         >
           {isSavingIcon ? (
-            <Loader2 className="w-5 h-5 animate-spin text-[#B8956F]" />
+            <Loader2 className={`animate-spin text-[#B8956F] ${compact ? "w-4 h-4" : "w-5 h-5"}`} />
           ) : (
             icon
           )}
@@ -118,7 +123,7 @@ export function EditableProjectHeader({
       </div>
 
       {/* Name and Description */}
-      <div>
+      <div className="min-w-0">
         <div className="flex items-center gap-2">
           {isEditing ? (
           <input
@@ -128,20 +133,24 @@ export function EditableProjectHeader({
             onBlur={handleSave}
             onKeyDown={handleKeyDown}
             disabled={isSaving}
-            className="font-semibold bg-[#F5F2EF] border border-[#E8E4E0] rounded px-2 py-1 text-[#1A1A1A] focus:outline-none focus:border-[#B8956F] focus:ring-2 focus:ring-[#B8956F]/10 transition-colors"
+            className={`font-semibold bg-[#F5F2EF] border border-[#E8E4E0] rounded px-2 py-1 text-[#1A1A1A] focus:outline-none focus:border-[#B8956F] focus:ring-2 focus:ring-[#B8956F]/10 transition-colors ${
+              compact ? "text-sm max-w-[150px]" : ""
+            }`}
           />
         ) : (
           <h1
             onClick={() => setIsEditing(true)}
-            className="font-semibold text-[#1A1A1A] cursor-pointer hover:text-[#B8956F] transition-colors group flex items-center gap-2"
+            className={`font-semibold text-[#1A1A1A] cursor-pointer hover:text-[#B8956F] transition-colors group flex items-center gap-2 ${
+              compact ? "text-sm truncate max-w-[150px]" : ""
+            }`}
           >
             {name}
-            <Pencil className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-[#9A9A9A]" />
+            {!compact && <Pencil className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-[#9A9A9A]" />}
           </h1>
         )}
           {isSaving && <Loader2 className="w-4 h-4 animate-spin text-[#B8956F]" />}
         </div>
-        {description && (
+        {!compact && description && (
           <p className="text-sm text-[#6B6B6B] truncate max-w-md">{description}</p>
         )}
       </div>

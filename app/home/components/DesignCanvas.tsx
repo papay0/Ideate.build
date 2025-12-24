@@ -30,6 +30,8 @@ interface DesignCanvasProps {
   editingScreenNames?: Set<string>;
   isEditingExistingScreen?: boolean;
   platform: Platform;
+  /** Whether the viewport is mobile-sized (for responsive layout) */
+  isMobileView?: boolean;
 }
 
 /**
@@ -346,14 +348,16 @@ export function DesignCanvas({
   editingScreenNames = new Set(),
   isEditingExistingScreen = false,
   platform,
+  isMobileView = false,
 }: DesignCanvasProps) {
   const hasScreens = completedScreens.length > 0 || (isStreaming && currentScreenName && !isEditingExistingScreen);
 
-  // Platform-specific settings
-  const isMobile = platform === "mobile";
-  const initialScale = isMobile ? 0.5 : 0.35;
-  const PlatformIcon = isMobile ? Smartphone : Monitor;
-  const platformLabel = isMobile ? "app" : "website";
+  // Platform-specific settings (mobile vs desktop design platform)
+  const isMobilePlatform = platform === "mobile";
+  // Viewport-aware scale: larger default zoom on mobile viewports
+  const initialScale = isMobileView ? 0.7 : (isMobilePlatform ? 0.5 : 0.35);
+  const PlatformIcon = isMobilePlatform ? Smartphone : Monitor;
+  const platformLabel = isMobilePlatform ? "app" : "website";
 
   // Canvas transform state
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: initialScale });
@@ -470,19 +474,21 @@ export function DesignCanvas({
 
   return (
     <div className="flex-1 flex flex-col bg-[#F0EDE8] overflow-hidden">
-      {/* Canvas Toolbar */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#E8E4E0] bg-white/50">
-        <div className="flex items-center gap-2">
-          <PlatformIcon className="w-4 h-4 text-[#9A9A9A]" />
-          <span className="text-sm text-[#6B6B6B]">
-            {completedScreens.length} screen{completedScreens.length !== 1 ? "s" : ""}
-            {isStreaming && currentScreenName && " (streaming...)"}
-          </span>
+      {/* Canvas Toolbar - hidden on mobile */}
+      {!isMobileView && (
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[#E8E4E0] bg-white/50">
+          <div className="flex items-center gap-2">
+            <PlatformIcon className="w-4 h-4 text-[#9A9A9A]" />
+            <span className="text-sm text-[#6B6B6B]">
+              {completedScreens.length} screen{completedScreens.length !== 1 ? "s" : ""}
+              {isStreaming && currentScreenName && " (streaming...)"}
+            </span>
+          </div>
+          <div className="flex items-center gap-1 text-sm text-[#9A9A9A]">
+            <span>Two-finger drag to pan, pinch to zoom</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1 text-sm text-[#9A9A9A]">
-          <span>Two-finger drag to pan, pinch to zoom</span>
-        </div>
-      </div>
+      )}
 
       {/* Canvas Content */}
       <div className="flex-1 overflow-hidden relative">
@@ -546,7 +552,7 @@ export function DesignCanvas({
               >
                 {/* Completed screens - render appropriate mockup based on platform */}
                 {completedScreens.map((screen) =>
-                  isMobile ? (
+                  isMobilePlatform ? (
                     <PhoneMockup
                       key={screen.name}
                       screen={screen}
@@ -578,7 +584,7 @@ export function DesignCanvas({
                   currentScreenName &&
                   currentStreamingHtml &&
                   !isEditingExistingScreen &&
-                  (isMobile ? (
+                  (isMobilePlatform ? (
                     <StreamingPhoneMockup
                       html={currentStreamingHtml}
                       screenName={currentScreenName}

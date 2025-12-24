@@ -86,8 +86,8 @@ export function DashboardSkeleton() {
   );
 }
 
-// Project detail page skeleton
-export function ProjectSkeleton() {
+// Project detail page skeleton - Desktop version
+function ProjectSkeletonDesktop() {
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
@@ -154,5 +154,79 @@ export function ProjectSkeleton() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Project detail page skeleton - Mobile version
+function ProjectSkeletonMobile() {
+  return (
+    <div className="flex flex-col h-screen">
+      {/* Header - Compact */}
+      <div className="flex items-center gap-2 px-3 py-3 border-b border-[#E8E4E0] bg-white">
+        <Skeleton className="w-9 h-9 rounded-lg flex-shrink-0" />
+        <div className="flex items-center gap-2 min-w-0">
+          <Skeleton className="w-8 h-8 rounded-xl flex-shrink-0" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+        <div className="ml-auto flex items-center gap-1">
+          <Skeleton className="h-8 w-8 rounded-lg" />
+          <Skeleton className="h-8 w-8 rounded-lg" />
+        </div>
+      </div>
+
+      {/* Segmented Control */}
+      <div className="px-4 py-3 border-b border-[#E8E4E0] bg-white">
+        <Skeleton className="h-11 w-full rounded-xl" />
+      </div>
+
+      {/* Chat Content - Full width */}
+      <div className="flex-1 flex flex-col bg-white">
+        {/* Messages area */}
+        <div className="flex-1 p-4 space-y-4">
+          {/* User message */}
+          <div className="flex justify-end">
+            <Skeleton className="h-16 w-4/5 rounded-2xl" />
+          </div>
+          {/* Assistant message */}
+          <div className="flex">
+            <Skeleton className="h-20 w-full rounded-2xl" />
+          </div>
+          {/* Another user message */}
+          <div className="flex justify-end">
+            <Skeleton className="h-12 w-3/4 rounded-2xl" />
+          </div>
+          {/* Another assistant message */}
+          <div className="flex">
+            <Skeleton className="h-16 w-full rounded-2xl" />
+          </div>
+        </div>
+        {/* Input area */}
+        <div className="p-3 border-t border-[#E8E4E0]">
+          <div className="bg-[#F5F2EF] rounded-2xl border border-[#E8E4E0] p-2">
+            <div className="flex items-end gap-2">
+              <Skeleton className="w-10 h-10 rounded-xl flex-shrink-0" />
+              <Skeleton className="h-10 flex-1 rounded-lg" />
+              <Skeleton className="w-10 h-10 rounded-xl flex-shrink-0" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Project detail page skeleton - Responsive
+export function ProjectSkeleton() {
+  return (
+    <>
+      {/* Desktop skeleton - hidden on mobile */}
+      <div className="hidden md:block h-screen">
+        <ProjectSkeletonDesktop />
+      </div>
+      {/* Mobile skeleton - hidden on desktop */}
+      <div className="block md:hidden h-screen">
+        <ProjectSkeletonMobile />
+      </div>
+    </>
   );
 }
