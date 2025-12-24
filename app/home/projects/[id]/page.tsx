@@ -30,6 +30,8 @@ import {
   CheckCircle2,
   Eye,
   Code2,
+  Copy,
+  Check,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Project } from "@/lib/supabase/types";
@@ -94,12 +96,19 @@ function ChatMessage({
   onImageClick?: (imageUrl: string) => void;
 }) {
   const isUser = message.role === "user";
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyPrompt = async () => {
+    await navigator.clipboard.writeText(message.content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}
+      className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""} group`}
     >
       {/* Avatar - only for user messages */}
       {isUser && (
@@ -118,12 +127,26 @@ function ChatMessage({
 
       {/* Message Content */}
       <div
-        className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+        className={`relative max-w-[80%] rounded-2xl px-4 py-3 ${
           isUser
             ? "bg-[#B8956F]/10 border border-[#B8956F]/20"
             : "bg-white border border-[#E8E4E0]"
         }`}
       >
+        {/* Copy button - only for user messages */}
+        {isUser && (
+          <button
+            onClick={handleCopyPrompt}
+            className="absolute -top-2 -right-2 p-1.5 text-[#6B6B6B] hover:text-[#1A1A1A] bg-white hover:bg-[#F5F2EF] border border-[#E8E4E0] rounded-lg transition-all opacity-0 group-hover:opacity-100 shadow-sm"
+            title="Copy prompt"
+          >
+            {copied ? (
+              <Check className="w-3.5 h-3.5 text-green-600" />
+            ) : (
+              <Copy className="w-3.5 h-3.5" />
+            )}
+          </button>
+        )}
         {/* Attached image - clickable */}
         {message.imageUrl && (
           <div className="mb-2">
