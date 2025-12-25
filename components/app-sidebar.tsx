@@ -56,7 +56,7 @@ export function AppSidebar() {
         <Link
           href="/home"
           onClick={handleNavClick}
-          className="flex items-center gap-2.5 px-2 py-2 cursor-pointer hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2.5 px-2 py-2 cursor-pointer hover:opacity-80 transition-opacity group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
         >
           <Layers className="w-6 h-6 text-[#B8956F] shrink-0" />
           <span className="font-medium text-[#1A1A1A] tracking-tight group-data-[collapsible=icon]:hidden">
