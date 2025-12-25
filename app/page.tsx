@@ -30,7 +30,12 @@ import {
   Menu,
   X,
   Layers,
+  Check,
+  Crown,
+  Zap,
+  MessageSquare,
 } from "lucide-react";
+import { PLANS, MESSAGE_PACK } from "@/lib/constants/plans";
 import {
   SignInButton,
   SignUpButton,
@@ -163,12 +168,12 @@ function Header() {
             >
               Blog
             </Link>
-            <span className="text-sm text-[#9A9A9A] flex items-center gap-1.5 cursor-not-allowed">
+            <a
+              href="#pricing"
+              className="text-sm text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors"
+            >
               Pricing
-              <span className="text-[10px] bg-[#F5F2EF] text-[#6B6B6B] px-1.5 py-0.5 rounded">
-                Soon
-              </span>
-            </span>
+            </a>
             <span className="text-sm text-[#9A9A9A] flex items-center gap-1.5 cursor-not-allowed">
               Explore
               <span className="text-[10px] bg-[#F5F2EF] text-[#6B6B6B] px-1.5 py-0.5 rounded">
@@ -235,7 +240,9 @@ function Header() {
               <Link href="/blog" className="text-sm text-[#6B6B6B] hover:text-[#1A1A1A]">
                 Blog
               </Link>
-              <span className="text-sm text-[#9A9A9A]">Pricing (Coming Soon)</span>
+              <a href="#pricing" className="text-sm text-[#6B6B6B] hover:text-[#1A1A1A]">
+                Pricing
+              </a>
               <span className="text-sm text-[#9A9A9A]">Explore (Coming Soon)</span>
               <SignedOut>
                 <SignInButton mode="modal">
@@ -492,6 +499,349 @@ function UseCasesSection() {
 }
 
 // ============================================================================
+// Component: Pricing Section
+// Clean, transparent pricing with the editorial aesthetic
+// ============================================================================
+
+function PricingSection() {
+  const [isAnnual, setIsAnnual] = useState(false);
+
+  // For annual, give 2 months free (10/12 = ~17% discount)
+  const annualPrice = Math.round((PLANS.pro.price * 10) / 12);
+
+  return (
+    <section id="pricing" className="py-24 px-6 bg-[#F5F2EF]" aria-label="Pricing Plans">
+      <div className="max-w-6xl mx-auto">
+        {/* Section Header */}
+        <motion.div
+          variants={slideUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="text-center mb-12"
+        >
+          <h2 className="font-serif text-4xl md:text-5xl text-[#1A1A1A] tracking-tight mb-4">
+            Simple, transparent pricing
+          </h2>
+          <p className="text-lg text-[#6B6B6B] max-w-xl mx-auto">
+            Start for free, upgrade when you need more. No hidden fees.
+          </p>
+        </motion.div>
+
+        {/* Billing Toggle */}
+        <motion.div
+          variants={fadeIn}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="flex items-center justify-center gap-4 mb-12"
+        >
+          <span
+            className={`text-sm font-medium transition-colors ${
+              !isAnnual ? "text-[#1A1A1A]" : "text-[#6B6B6B]"
+            }`}
+          >
+            Monthly
+          </span>
+          <button
+            onClick={() => setIsAnnual(!isAnnual)}
+            className={`relative w-12 h-6 rounded-full transition-colors ${
+              isAnnual ? "bg-[#B8956F]" : "bg-[#D4CFC9]"
+            }`}
+          >
+            <motion.div
+              animate={{ x: isAnnual ? 24 : 2 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+            />
+          </button>
+          <span
+            className={`text-sm font-medium transition-colors ${
+              isAnnual ? "text-[#1A1A1A]" : "text-[#6B6B6B]"
+            }`}
+          >
+            Annual
+            <span className="ml-1.5 text-xs bg-[#E8F5E9] text-[#2E7D32] px-2 py-0.5 rounded-full">
+              2 months free
+            </span>
+          </span>
+        </motion.div>
+
+        {/* Pricing Cards */}
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto"
+        >
+          {/* Free Plan */}
+          <motion.div
+            variants={slideUp}
+            className="bg-white border border-[#E8E4E0] rounded-2xl p-8 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] border border-[#E8E4E0] flex items-center justify-center">
+                <Zap className="w-5 h-5 text-[#6B6B6B]" />
+              </div>
+              <h3 className="font-serif text-2xl text-[#1A1A1A]">Free</h3>
+            </div>
+
+            <div className="mb-6">
+              <span className="text-4xl font-bold text-[#1A1A1A]">$0</span>
+              <span className="text-[#6B6B6B] ml-1">/month</span>
+            </div>
+
+            <div className="flex items-center gap-2 mb-6 p-3 bg-[#FAF8F5] rounded-xl border border-[#E8E4E0]">
+              <MessageSquare className="w-4 h-4 text-[#6B6B6B]" />
+              <span className="text-sm text-[#1A1A1A]">
+                <strong>{PLANS.free.messagesPerMonth}</strong> AI generations/month
+              </span>
+            </div>
+
+            <ul className="space-y-3 mb-8">
+              {PLANS.free.features.map((feature) => (
+                <li
+                  key={feature}
+                  className="flex items-center gap-3 text-sm text-[#6B6B6B]"
+                >
+                  <Check className="w-4 h-4 text-[#2E7D32] flex-shrink-0" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+
+            <SignedOut>
+              <SignUpButton mode="modal">
+                <button className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-[#E8E4E0] text-[#1A1A1A] rounded-xl font-medium hover:bg-[#FAF8F5] hover:border-[#D4CFC9] transition-all">
+                  Get Started
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </SignUpButton>
+            </SignedOut>
+            <SignedIn>
+              <Link
+                href="/home"
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-[#E8E4E0] text-[#1A1A1A] rounded-xl font-medium hover:bg-[#FAF8F5] hover:border-[#D4CFC9] transition-all"
+              >
+                Go to Dashboard
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </SignedIn>
+          </motion.div>
+
+          {/* Pro Plan */}
+          <motion.div
+            variants={slideUp}
+            className="bg-white border-2 border-[#B8956F] rounded-2xl p-8 relative hover:shadow-lg transition-all"
+          >
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#B8956F] text-white text-xs font-medium px-4 py-1 rounded-full">
+              Most Popular
+            </div>
+
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-[#B8956F] flex items-center justify-center">
+                <Crown className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="font-serif text-2xl text-[#1A1A1A]">Pro</h3>
+            </div>
+
+            <div className="mb-6">
+              <span className="text-4xl font-bold text-[#1A1A1A]">
+                ${isAnnual ? annualPrice : PLANS.pro.price}
+              </span>
+              <span className="text-[#6B6B6B] ml-1">/month</span>
+              {isAnnual && (
+                <span className="ml-2 text-sm text-[#2E7D32]">
+                  (${PLANS.pro.price * 10}/year)
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 mb-6 p-3 bg-[#FFF8F0] rounded-xl border border-[#F5E6D3]">
+              <MessageSquare className="w-4 h-4 text-[#B8956F]" />
+              <span className="text-sm text-[#1A1A1A]">
+                <strong>{PLANS.pro.messagesPerMonth}</strong> AI generations/month
+              </span>
+            </div>
+
+            <ul className="space-y-3 mb-8">
+              {PLANS.pro.features.map((feature) => (
+                <li
+                  key={feature}
+                  className="flex items-center gap-3 text-sm text-[#1A1A1A]"
+                >
+                  <Check className="w-4 h-4 text-[#B8956F] flex-shrink-0" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+
+            <SignedOut>
+              <SignUpButton mode="modal">
+                <button className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-[#B8956F] text-white rounded-xl font-medium hover:bg-[#A6845F] transition-colors">
+                  Upgrade to Pro
+                  <Crown className="w-4 h-4" />
+                </button>
+              </SignUpButton>
+            </SignedOut>
+            <SignedIn>
+              <Link
+                href="/home"
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-[#B8956F] text-white rounded-xl font-medium hover:bg-[#A6845F] transition-colors"
+              >
+                Upgrade to Pro
+                <Crown className="w-4 h-4" />
+              </Link>
+            </SignedIn>
+          </motion.div>
+        </motion.div>
+
+        {/* BYOK and Message Pack Add-ons */}
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="max-w-3xl mx-auto mt-8 space-y-4"
+        >
+          {/* BYOK Option */}
+          <motion.div
+            variants={slideUp}
+            className="bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-[#B8956F]" />
+              </div>
+              <div>
+                <p className="font-medium text-white">Bring Your Own Key</p>
+                <p className="text-sm text-zinc-400">
+                  Use your own API key for unlimited generations
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs bg-[#B8956F]/20 text-[#B8956F] px-3 py-1 rounded-full font-medium">
+                Unlimited
+              </span>
+              <span className="text-xl font-bold text-white">Free</span>
+            </div>
+          </motion.div>
+
+          {/* Message Pack Add-on */}
+          <motion.div
+            variants={slideUp}
+            className="bg-white rounded-xl border border-[#E8E4E0] p-5 flex flex-col sm:flex-row items-center justify-between gap-4"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] border border-[#E8E4E0] flex items-center justify-center">
+                <Zap className="w-5 h-5 text-[#B8956F]" />
+              </div>
+              <div>
+                <p className="font-medium text-[#1A1A1A]">Need more messages?</p>
+                <p className="text-sm text-[#6B6B6B]">
+                  Pro users can purchase extra message packs anytime
+                </p>
+              </div>
+            </div>
+            <div className="text-center sm:text-right">
+              <p className="text-xl font-bold text-[#1A1A1A]">
+                ${MESSAGE_PACK.priceUsd}
+              </p>
+              <p className="text-sm text-[#6B6B6B]">
+                for {MESSAGE_PACK.messages} messages
+              </p>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* FAQ Section */}
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="max-w-2xl mx-auto mt-16"
+        >
+          <h3 className="font-serif text-2xl text-[#1A1A1A] text-center mb-8">
+            Frequently Asked Questions
+          </h3>
+
+          <div className="space-y-4">
+            <motion.details
+              variants={fadeIn}
+              className="bg-white rounded-xl border border-[#E8E4E0] p-5 group"
+            >
+              <summary className="font-medium text-[#1A1A1A] cursor-pointer list-none flex items-center justify-between">
+                What counts as a &quot;message&quot;?
+                <span className="text-[#6B6B6B] group-open:rotate-180 transition-transform">
+                  ▼
+                </span>
+              </summary>
+              <p className="mt-4 text-sm text-[#6B6B6B] leading-relaxed">
+                Each AI generation request counts as one message. This includes
+                creating new screens and editing existing ones. Viewing, exporting,
+                or navigating your designs does not count.
+              </p>
+            </motion.details>
+
+            <motion.details
+              variants={fadeIn}
+              className="bg-white rounded-xl border border-[#E8E4E0] p-5 group"
+            >
+              <summary className="font-medium text-[#1A1A1A] cursor-pointer list-none flex items-center justify-between">
+                What&apos;s the difference between Flash and Pro models?
+                <span className="text-[#6B6B6B] group-open:rotate-180 transition-transform">
+                  ▼
+                </span>
+              </summary>
+              <p className="mt-4 text-sm text-[#6B6B6B] leading-relaxed">
+                Flash is faster and great for quick iterations. Pro produces higher
+                quality designs with more attention to detail. Free users have access
+                to Flash only, while Pro subscribers can use both.
+              </p>
+            </motion.details>
+
+            <motion.details
+              variants={fadeIn}
+              className="bg-white rounded-xl border border-[#E8E4E0] p-5 group"
+            >
+              <summary className="font-medium text-[#1A1A1A] cursor-pointer list-none flex items-center justify-between">
+                Do unused messages roll over?
+                <span className="text-[#6B6B6B] group-open:rotate-180 transition-transform">
+                  ▼
+                </span>
+              </summary>
+              <p className="mt-4 text-sm text-[#6B6B6B] leading-relaxed">
+                Monthly message allowances reset at the start of each billing cycle.
+                However, any extra message packs you purchase never expire.
+              </p>
+            </motion.details>
+
+            <motion.details
+              variants={fadeIn}
+              className="bg-white rounded-xl border border-[#E8E4E0] p-5 group"
+            >
+              <summary className="font-medium text-[#1A1A1A] cursor-pointer list-none flex items-center justify-between">
+                Can I cancel anytime?
+                <span className="text-[#6B6B6B] group-open:rotate-180 transition-transform">
+                  ▼
+                </span>
+              </summary>
+              <p className="mt-4 text-sm text-[#6B6B6B] leading-relaxed">
+                Yes! You can cancel your subscription at any time. You&apos;ll continue
+                to have Pro access until the end of your current billing period.
+              </p>
+            </motion.details>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ============================================================================
 // Component: CTA Section
 // Clean, confident call-to-action
 // ============================================================================
@@ -634,6 +984,7 @@ export default function LandingPage() {
         <HeroSection />
         <FeaturesSection />
         <UseCasesSection />
+        <PricingSection />
         <CTASection />
       </main>
       <Footer />
