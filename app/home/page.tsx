@@ -582,9 +582,8 @@ export default function DashboardPage() {
   }, [isLoaded, user, isAutoCreating, getPendingPrompt, clearPendingPrompt, router]);
 
   // Create new project from prompt
-  const handleCreateProject = async (prompt: string, platform: Platform, imageUrl: string | null, _model: ModelId) => {
+  const handleCreateProject = async (prompt: string, platform: Platform, imageUrl: string | null, model: ModelId) => {
     if (!user) return;
-    // Note: model is stored in localStorage and will be used when generating designs
 
     setIsCreating(true);
     const supabase = createClient();
@@ -597,6 +596,7 @@ export default function DashboardPage() {
         app_idea: prompt,
         platform: platform,
         initial_image_url: imageUrl,
+        model: model,  // Store the selected model with the project
       })
       .select()
       .single();

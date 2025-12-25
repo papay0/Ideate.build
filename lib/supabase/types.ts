@@ -36,6 +36,7 @@ export interface Database {
           icon: string             // Emoji icon for the project
           platform: 'mobile' | 'desktop'  // Target platform for designs
           initial_image_url: string | null  // Reference image attached during creation
+          model: string            // AI model to use (e.g., 'gemini-3-flash-preview')
           created_at: string
           updated_at: string
         }
@@ -47,6 +48,7 @@ export interface Database {
           icon?: string
           platform: 'mobile' | 'desktop'  // Required: mobile or desktop
           initial_image_url?: string | null  // Reference image attached during creation
+          model?: string           // AI model to use (defaults to 'gemini-3-flash-preview')
           created_at?: string
           updated_at?: string
         }
@@ -58,6 +60,7 @@ export interface Database {
           icon?: string
           platform?: 'mobile' | 'desktop'
           initial_image_url?: string | null  // Reference image attached during creation
+          model?: string           // AI model to use
           created_at?: string
           updated_at?: string
         }
