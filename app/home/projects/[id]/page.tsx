@@ -42,6 +42,7 @@ import { EditableProjectHeader } from "../../components/EditableProjectHeader";
 import { useDesignStreaming, type ParsedScreen, type UsageData, type QuotaExceededData } from "../../components/StreamingScreenPreview";
 import { DesignCanvas } from "../../components/DesignCanvas";
 import { CodeView } from "../../components/CodeView";
+import { ExportMenu } from "../../components/ExportMenu";
 import { ProjectSkeleton } from "../../components/Skeleton";
 import { ImageUploadButton } from "../../components/ImageUploadButton";
 import { ImageLightbox, ClickableImage } from "../../components/ImageLightbox";
@@ -996,31 +997,38 @@ export default function DesignPage() {
           />
         )}
 
-        {/* Preview/Code Toggle - Desktop only */}
+        {/* Preview/Code Toggle + Export - Desktop only */}
         {!isMobile && (
-          <div className="flex bg-[#F5F2EF] rounded-lg p-1 border border-[#E8E4E0] ml-auto flex-shrink-0">
-            <button
-              onClick={() => setViewMode("preview")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                viewMode === "preview"
-                  ? "bg-white text-[#1A1A1A] shadow-sm"
-                  : "text-[#6B6B6B] hover:text-[#1A1A1A]"
-              }`}
-            >
-              <Eye className="w-4 h-4" />
-              Preview
-            </button>
-            <button
-              onClick={() => setViewMode("code")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                viewMode === "code"
-                  ? "bg-white text-[#1A1A1A] shadow-sm"
-                  : "text-[#6B6B6B] hover:text-[#1A1A1A]"
-              }`}
-            >
-              <Code2 className="w-4 h-4" />
-              Code
-            </button>
+          <div className="flex items-center gap-3 ml-auto flex-shrink-0">
+            <div className="flex bg-[#F5F2EF] rounded-lg p-1 border border-[#E8E4E0]">
+              <button
+                onClick={() => setViewMode("preview")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  viewMode === "preview"
+                    ? "bg-white text-[#1A1A1A] shadow-sm"
+                    : "text-[#6B6B6B] hover:text-[#1A1A1A]"
+                }`}
+              >
+                <Eye className="w-4 h-4" />
+                Preview
+              </button>
+              <button
+                onClick={() => setViewMode("code")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  viewMode === "code"
+                    ? "bg-white text-[#1A1A1A] shadow-sm"
+                    : "text-[#6B6B6B] hover:text-[#1A1A1A]"
+                }`}
+              >
+                <Code2 className="w-4 h-4" />
+                Code
+              </button>
+            </div>
+            <ExportMenu
+              screens={displayScreens}
+              projectName={project?.name || "Untitled"}
+              platform={project?.platform || "mobile"}
+            />
           </div>
         )}
       </div>

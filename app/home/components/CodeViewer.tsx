@@ -140,7 +140,7 @@ export function CodeViewer({ screen, fileName, isMobileView = false }: CodeViewe
       )}
 
       {/* Code display - lightweight pre for mobile, Monaco for desktop */}
-      <div className={isMobileView ? "h-[calc(100vh-180px)] overflow-y-auto bg-[#FAF8F5]" : "flex-1 overflow-hidden"}>
+      <div className={isMobileView ? "h-[calc(100vh-180px)] overflow-y-auto bg-[#FAF8F5]" : "flex-1 min-h-0 h-full overflow-hidden"}>
         {isMobileView ? (
           <SyntaxHighlighter
             language="html"

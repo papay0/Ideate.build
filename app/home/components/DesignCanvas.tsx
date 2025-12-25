@@ -14,7 +14,8 @@
 
 import { useRef, useState, useEffect, memo } from "react";
 import { useGesture } from "@use-gesture/react";
-import { ZoomIn, ZoomOut, RotateCcw, Smartphone, Monitor, Loader2, Copy, Check } from "lucide-react";
+import { ZoomIn, ZoomOut, RotateCcw, Smartphone, Monitor, Loader2, Copy, Check, Camera } from "lucide-react";
+import { captureElement, downloadBlob, toScreenFilename } from "@/lib/utils/screenshot";
 import type { ParsedScreen } from "./StreamingScreenPreview";
 import { BrowserMockup, StreamingBrowserMockup } from "./BrowserMockup";
 import { PLATFORM_CONFIG, type Platform } from "@/lib/constants/platforms";
@@ -67,7 +68,9 @@ const PhoneMockup = memo(function PhoneMockup({
   streamingHtml?: string | null;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const mockupRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const initializedRef = useRef(false);
 
   // The HTML to display - streaming HTML if editing, otherwise completed HTML
@@ -151,13 +154,26 @@ const PhoneMockup = memo(function PhoneMockup({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleExport = async () => {
+    if (!mockupRef.current || exporting) return;
+    setExporting(true);
+    try {
+      const blob = await captureElement(mockupRef.current, { scale: 2 });
+      downloadBlob(blob, toScreenFilename(screen.name));
+    } catch (error) {
+      console.error("Failed to export screenshot:", error);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center gap-3 flex-shrink-0">
+    <div className="flex flex-col items-center gap-3 flex-shrink-0" data-screen-name={screen.name} data-mockup-type="phone">
       {/* Phone Frame */}
-      <div className={`relative bg-[#1A1A1A] rounded-[3rem] p-3 shadow-2xl transition-all duration-300 ${
-        isEditing
-          ? "ring-4 ring-blue-500/50 animate-pulse"
-          : "ring-2 ring-green-500/30"
+      <div
+        ref={mockupRef}
+        className={`relative bg-[#1A1A1A] rounded-[3rem] p-3 shadow-2xl transition-all duration-300 ${
+        isEditing ? "ring-4 ring-blue-500/50 animate-pulse" : ""
       }`}>
         {/* Editing/Complete indicator badge */}
         {isEditing && (
@@ -207,6 +223,18 @@ const PhoneMockup = memo(function PhoneMockup({
             <Check className="w-4 h-4 text-green-500" />
           ) : (
             <Copy className="w-4 h-4" />
+          )}
+        </button>
+        <button
+          onClick={handleExport}
+          disabled={exporting}
+          className="text-[#9A9A9A] hover:text-[#6B6B6B] p-1 rounded transition-colors disabled:opacity-50"
+          title="Export as PNG"
+        >
+          {exporting ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Camera className="w-4 h-4" />
           )}
         </button>
       </div>

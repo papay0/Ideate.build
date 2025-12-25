@@ -90,9 +90,9 @@ export function CodeView({ screens, projectName, isMobileView = false }: CodeVie
 
   // Desktop layout
   return (
-    <div className="flex-1 flex flex-col bg-[#FAF8F5] overflow-hidden">
+    <div className="flex-1 flex flex-col bg-[#FAF8F5] overflow-hidden h-full">
       <CodeViewToolbar screens={screens} projectName={projectName} />
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-h-0">
         <CodeFileSidebar
           screens={screens}
           selectedFile={selectedFile}
