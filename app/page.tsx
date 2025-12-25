@@ -422,12 +422,12 @@ function HeroSection() {
   return (
     <section className="pt-32 pb-24 px-6" aria-label="AI App Designer Hero">
       <div className="max-w-6xl mx-auto">
-        {/* Open Source badge */}
+        {/* Badges */}
         <motion.div
           variants={fadeIn}
           initial="hidden"
           animate="visible"
-          className="mb-8"
+          className="mb-8 flex flex-wrap items-center gap-3"
         >
           <a
             href="https://github.com/papay0/opendesign"
@@ -439,6 +439,10 @@ function HeroSection() {
             Open Source
             <ArrowRight className="w-3 h-3 text-[#6B6B6B]" />
           </a>
+          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#E8E4E0] bg-white/50 text-sm text-[#6B6B6B]">
+            <Sparkles className="w-4 h-4 text-[#B8956F]" />
+            1,000+ designs created
+          </span>
         </motion.div>
 
         {/* Main headline - Large serif typography with SEO keywords */}
@@ -452,7 +456,7 @@ function HeroSection() {
           <span className="text-[#B8956F] italic">Mockups in minutes.</span>
         </motion.h1>
 
-        {/* Subheadline with SEO keywords */}
+        {/* Subheadline */}
         <motion.p
           variants={slideUp}
           initial="hidden"
@@ -460,8 +464,7 @@ function HeroSection() {
           transition={{ delay: 0.1 }}
           className="text-xl md:text-2xl text-[#6B6B6B] max-w-2xl mb-12 leading-relaxed"
         >
-          Transform your app ideas into stunning mobile and desktop UI mockups instantly.
-          Open source AI design tool — bring your own API key, no design skills required.
+          From idea to beautiful mockups in minutes. Just describe what you want.
         </motion.p>
 
         {/* Main Input Form */}
