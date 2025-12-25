@@ -224,6 +224,7 @@ function PromptInput({
   isAdmin,
   userPlan,
   isBYOKActive,
+  onUpgradeClick,
 }: {
   onSubmit: (prompt: string, platform: Platform, imageUrl: string | null, model: ModelId) => Promise<void>;
   isLoading: boolean;
@@ -231,6 +232,7 @@ function PromptInput({
   isAdmin: boolean;
   userPlan: PlanType;
   isBYOKActive: boolean;
+  onUpgradeClick: () => void;
 }) {
   const [prompt, setPrompt] = useState("");
   const [platform, setPlatform] = useState<Platform>("mobile");
@@ -412,6 +414,7 @@ function PromptInput({
                     compact
                     userPlan={userPlan}
                     isBYOKActive={isBYOKActive}
+                    onUpgradeClick={onUpgradeClick}
                   />
                 </>
               )}
@@ -693,6 +696,7 @@ export default function DashboardPage() {
             isAdmin={isAdmin}
             userPlan={(dbUser?.plan as PlanType) || "free"}
             isBYOKActive={isBYOKActive}
+            onUpgradeClick={() => router.push('/home/settings')}
           />
         </>
       )}

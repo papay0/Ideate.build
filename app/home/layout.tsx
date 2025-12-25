@@ -4,24 +4,27 @@
  * Authenticated App Layout
  *
  * This layout wraps all authenticated pages (/home/*).
- * It provides:
- * - Consistent header with user menu (hidden on project pages)
- * - Navigation to settings
+ * Features:
+ * - Collapsible sidebar with navigation (Home, Settings)
+ * - Simplified header with sidebar trigger
  * - Editorial/magazine aesthetic styling
  *
  * Protected by Clerk middleware - only authenticated users can access.
  */
 
-import { UserButton } from "@clerk/nextjs";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings, Layers, Crown, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { Crown, Loader2 } from "lucide-react";
+import { UserButton } from "@clerk/nextjs";
+import { AppSidebar } from "@/components/app-sidebar";
+import {
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 import { useUserSync } from "@/lib/hooks/useUserSync";
 import { useBYOK } from "@/lib/hooks/useBYOK";
-
-// ============================================================================
-// Layout Component
-// ============================================================================
 
 export default function AuthenticatedLayout({
   children,
@@ -36,7 +39,7 @@ export default function AuthenticatedLayout({
   const { isBYOKActive } = useBYOK();
   const isFreePlan = !dbUser?.plan || dbUser.plan === "free";
 
-  // Project pages have their own full-screen layout
+  // Project pages have their own full-screen layout without sidebar
   if (isProjectPage) {
     return (
       <div className="min-h-screen bg-[#FAF8F5]">
@@ -46,65 +49,51 @@ export default function AuthenticatedLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5]">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#FAF8F5]/90 backdrop-blur-sm border-b border-[#E8E4E0]">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="/home" className="flex items-center gap-2.5">
-              <Layers className="w-6 h-6 text-[#B8956F]" />
-              <span className="font-medium text-[#1A1A1A] tracking-tight">
-                OpenDesign
-              </span>
+    <SidebarProvider defaultOpen={true}>
+      <AppSidebar />
+      <SidebarInset>
+        {/* Simplified Header */}
+        <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b border-[#E8E4E0] bg-[#FAF8F5]/90 backdrop-blur-sm px-4">
+          <SidebarTrigger className="-ml-1 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F2EF]" />
+          <Separator orientation="vertical" className="h-4 bg-[#E8E4E0]" />
+
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Plan indicator / Upgrade button */}
+          {dbUser === undefined ? (
+            <Loader2 className="w-4 h-4 animate-spin text-[#9A9A9A]" />
+          ) : isFreePlan && !isBYOKActive ? (
+            <Link
+              href="/home/settings"
+              className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-all shadow-sm hover:shadow-md"
+            >
+              <Crown className="w-3.5 h-3.5" />
+              <span>Upgrade</span>
             </Link>
-
-            {/* Right side - User menu */}
-            <div className="flex items-center gap-3">
-              {/* Plan indicator */}
-              {dbUser === undefined ? (
-                // Loading state
-                <div className="flex items-center gap-1.5 px-3 py-1.5">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#9A9A9A]" />
-                </div>
-              ) : isFreePlan && !isBYOKActive ? (
-                // Free plan - show upgrade button
-                <Link
-                  href="/home/settings"
-                  className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-all shadow-sm hover:shadow-md"
-                >
-                  <Crown className="w-3.5 h-3.5" />
-                  <span>Upgrade</span>
-                </Link>
-              ) : !isBYOKActive && dbUser?.plan === "pro" ? (
-                // Pro plan - show Pro badge
-                <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-medium px-3 py-1.5 rounded-lg">
-                  <Crown className="w-3.5 h-3.5" />
-                  <span>Pro</span>
-                </div>
-              ) : null}
-              <Link
-                href="/home/settings"
-                className="text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors p-2"
-                title="Settings"
-              >
-                <Settings className="w-5 h-5" />
-              </Link>
-              <UserButton
-                afterSignOutUrl="/"
-                appearance={{
-                  elements: {
-                    avatarBox: "w-9 h-9",
-                  },
-                }}
-              />
+          ) : dbUser?.plan === "pro" && !isBYOKActive ? (
+            <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-medium px-3 py-1.5 rounded-lg">
+              <Crown className="w-3.5 h-3.5" />
+              <span>Pro</span>
             </div>
-          </div>
-        </div>
-      </header>
+          ) : null}
 
-      {/* Main Content */}
-      <main className="pt-20 min-h-screen">{children}</main>
-    </div>
+          {/* User profile */}
+          <UserButton
+            afterSignOutUrl="/"
+            appearance={{
+              elements: {
+                avatarBox: "h-8 w-8",
+              },
+            }}
+          />
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-auto p-6">
+          {children}
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

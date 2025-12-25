@@ -276,7 +276,7 @@ function ChatInput({
   };
 
   return (
-    <div className="p-3">
+    <div className="px-3 pb-3">
       {/* Main container - white floating card with subtle shadow */}
       <div className="relative bg-white rounded-[20px] px-4 py-3 shadow-[0_2px_12px_rgba(0,0,0,0.08)]">
         {/* Image preview */}
@@ -1112,7 +1112,7 @@ export default function DesignPage() {
 
               {/* Cost Indicator (admin only) */}
               {isAdmin && (
-                <div className="px-3 pt-2">
+                <div className="px-3 py-2">
                   <CostIndicator
                     usageLogs={usageLogs}
                     totalCost={totalSessionCost}

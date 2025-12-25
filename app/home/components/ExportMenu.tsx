@@ -140,7 +140,7 @@ export function ExportMenu({ screens, projectName, platform }: ExportMenuProps) 
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={isDisabled}
-        className="flex items-center gap-2 px-3 py-1.5 text-sm text-[#6B6B6B] hover:text-[#1A1A1A] bg-white hover:bg-[#F5F2EF] rounded-lg border border-[#E8E4E0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex items-center gap-2 px-3 py-2.5 text-sm text-[#6B6B6B] hover:text-[#1A1A1A] bg-white hover:bg-[#F5F2EF] rounded-lg border border-[#E8E4E0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {exporting ? (
           <Loader2 className="w-4 h-4 animate-spin" />
