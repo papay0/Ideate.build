@@ -501,11 +501,11 @@ export function DesignCanvas({
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-[#F0EDE8] overflow-hidden">
+    <div className="h-full w-full bg-[#F0EDE8] overflow-hidden">
       {/* Canvas Content */}
-      <div className="flex-1 overflow-hidden relative">
+      <div className="h-full w-full overflow-hidden relative">
         {!hasScreens ? (
-          <div className="w-full h-full flex flex-col items-center justify-center text-center">
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
             <div className="w-16 h-16 rounded-2xl bg-[#E8E4E0] flex items-center justify-center mb-4">
               <PlatformIcon className="w-8 h-8 text-[#9A9A9A]" />
             </div>
