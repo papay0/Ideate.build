@@ -85,6 +85,8 @@ const REMEMBER_RULES = `REMEMBER:
 - Make every screen feel polished and complete
 - Use consistent styling across all screens
 - Include realistic, engaging placeholder content
+- Use PRESENT CONTINUOUS tense in messages (e.g., "I'm creating...", "Now designing...") since screens stream in real-time
+- NEVER use past tense like "I've designed" or "I created" - the user sees screens being built live
 - ALWAYS end with a final <!-- MESSAGE: ... --> summarizing what you created and inviting follow-up requests`;
 
 // ============================================================================
@@ -130,7 +132,7 @@ MOBILE-SPECIFIC GUIDELINES:
 const MOBILE_EXAMPLE = `EXAMPLE OUTPUT (notice the order - name and icon FIRST):
 <!-- PROJECT_NAME: Culinary Canvas -->
 <!-- PROJECT_ICON: 🍳 -->
-<!-- MESSAGE: I'll create a beautiful recipe app with a warm, appetizing design! -->
+<!-- MESSAGE: I'm creating a beautiful recipe app with a warm, appetizing design! -->
 <!-- SCREEN_START: Home -->
 <div class="min-h-screen bg-gradient-to-b from-orange-50 to-white">
   <header class="pt-14 px-6 pb-4">
@@ -148,7 +150,7 @@ const MOBILE_EXAMPLE = `EXAMPLE OUTPUT (notice the order - name and icon FIRST):
   </main>
 </div>
 <!-- SCREEN_END -->
-<!-- MESSAGE: Next, let's create the recipe detail screen... -->`;
+<!-- MESSAGE: Now creating the recipe detail screen... -->`;
 
 // ============================================================================
 // DESKTOP-SPECIFIC PIECES
@@ -202,7 +204,7 @@ DESKTOP-SPECIFIC GUIDELINES:
 const DESKTOP_EXAMPLE = `EXAMPLE OUTPUT (notice the order - name and icon FIRST):
 <!-- PROJECT_NAME: TechFlow -->
 <!-- PROJECT_ICON: 💼 -->
-<!-- MESSAGE: I'll create a modern SaaS landing page with a clean, professional design! -->
+<!-- MESSAGE: I'm creating a modern SaaS landing page with a clean, professional design! -->
 <!-- SCREEN_START: Home -->
 <div class="min-h-screen bg-gradient-to-b from-slate-50 to-white">
   <header class="sticky top-0 h-16 bg-white/80 backdrop-blur-md border-b px-8 flex items-center justify-between z-50">
@@ -233,7 +235,7 @@ const DESKTOP_EXAMPLE = `EXAMPLE OUTPUT (notice the order - name and icon FIRST)
   </main>
 </div>
 <!-- SCREEN_END -->
-<!-- MESSAGE: Next, let's create the features page... -->`;
+<!-- MESSAGE: Now creating the features page... -->`;
 
 // ============================================================================
 // PRE-COMPOSED FINAL PROMPTS (no runtime conditionals)
