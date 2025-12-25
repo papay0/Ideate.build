@@ -202,7 +202,6 @@ function ChatInput({
   onImageClick,
   selectedModel,
   onModelChange,
-  isAdmin,
   userPlan,
   isBYOKActive,
 }: {
@@ -218,7 +217,6 @@ function ChatInput({
   onImageClick?: (imageUrl: string) => void;
   selectedModel: ModelId;
   onModelChange: (model: ModelId) => void;
-  isAdmin: boolean;
   userPlan: PlanType;
   isBYOKActive: boolean;
 }) {
@@ -332,36 +330,32 @@ function ChatInput({
               currentImageUrl={null}
               disabled={disabled || isLoading || isPasting || !!imageUrl}
             />
-            {/* Model selector - admin only */}
-            {isAdmin && (
+            {/* Model selector */}
+            <div className="w-px h-5 bg-[#E8E4E0] mx-1" />
+            <ModelSelector
+              value={selectedModel}
+              onChange={onModelChange}
+              compact
+              userPlan={userPlan}
+              isBYOKActive={isBYOKActive}
+            />
+            {/* BYOK indicator - compact infinity badge */}
+            {isBYOKActive && (
               <>
                 <div className="w-px h-5 bg-[#E8E4E0] mx-1" />
-                <ModelSelector
-                  value={selectedModel}
-                  onChange={onModelChange}
-                  compact
-                  userPlan={userPlan}
-                  isBYOKActive={isBYOKActive}
-                />
-                {/* BYOK indicator - compact infinity badge */}
-                {isBYOKActive && (
-                  <>
-                    <div className="w-px h-5 bg-[#E8E4E0] mx-1" />
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-[#F5EFE7] text-[#B8956F] cursor-help">
-                            <Infinity className="w-4 h-4" />
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Unlimited generations</p>
-                          <p className="text-[10px] opacity-70">Using your own API key</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </>
-                )}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-[#F5EFE7] text-[#B8956F] cursor-help">
+                        <Infinity className="w-4 h-4" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Unlimited generations</p>
+                      <p className="text-[10px] opacity-70">Using your own API key</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </>
             )}
           </div>
@@ -1165,7 +1159,6 @@ export default function DesignPage() {
                   onImageClick={setLightboxImage}
                   selectedModel={selectedModel}
                   onModelChange={handleModelChange}
-                  isAdmin={isAdmin}
                   userPlan={userPlan}
                   isBYOKActive={isBYOKActive}
                 />
@@ -1285,7 +1278,6 @@ export default function DesignPage() {
                 onImageClick={setLightboxImage}
                 selectedModel={selectedModel}
                 onModelChange={handleModelChange}
-                isAdmin={isAdmin}
                 userPlan={userPlan}
                 isBYOKActive={isBYOKActive}
               />

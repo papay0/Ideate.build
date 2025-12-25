@@ -222,7 +222,6 @@ function PromptInput({
   onSubmit,
   isLoading,
   userId,
-  isAdmin,
   userPlan,
   isBYOKActive,
   onUpgradeClick,
@@ -230,7 +229,6 @@ function PromptInput({
   onSubmit: (prompt: string, platform: Platform, imageUrl: string | null, model: ModelId) => Promise<void>;
   isLoading: boolean;
   userId: string;
-  isAdmin: boolean;
   userPlan: PlanType;
   isBYOKActive: boolean;
   onUpgradeClick: () => void;
@@ -405,20 +403,16 @@ function PromptInput({
                   disabled={isLoading}
                 />
               )}
-              {/* Model selector - admin only */}
-              {isAdmin && (
-                <>
-                  {!imageUrl && <div className="w-px h-5 bg-[#E8E4E0]" />}
-                  <ModelSelector
-                    value={selectedModel}
-                    onChange={setSelectedModelState}
-                    compact
-                    userPlan={userPlan}
-                    isBYOKActive={isBYOKActive}
-                    onUpgradeClick={onUpgradeClick}
-                  />
-                </>
-              )}
+              {/* Model selector */}
+              {!imageUrl && <div className="w-px h-5 bg-[#E8E4E0]" />}
+              <ModelSelector
+                value={selectedModel}
+                onChange={setSelectedModelState}
+                compact
+                userPlan={userPlan}
+                isBYOKActive={isBYOKActive}
+                onUpgradeClick={onUpgradeClick}
+              />
               {/* BYOK indicator - compact infinity badge */}
               {isBYOKActive && (
                 <>
@@ -479,7 +473,6 @@ export default function DashboardPage() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
   const { dbUser } = useUserSync();
-  const isAdmin = dbUser?.role === "admin";
   const { messagesRemaining, bonusMessagesRemaining, isLoading: isSubscriptionLoading } = useSubscription();
   const { isBYOKActive } = useBYOK();
 
@@ -709,7 +702,6 @@ export default function DashboardPage() {
             onSubmit={handleCreateProject}
             isLoading={isCreating}
             userId={user.id}
-            isAdmin={isAdmin}
             userPlan={(dbUser?.plan as PlanType) || "free"}
             isBYOKActive={isBYOKActive}
             onUpgradeClick={() => router.push('/home/settings')}
