@@ -12,7 +12,7 @@ const isPublicRoute = createRouteMatcher([
   '/api/og(.*)',
 ])
 
-const isAdminRoute = createRouteMatcher(['/home/admin(.*)'])
+const isAdminRoute = createRouteMatcher(['/admin(.*)'])
 
 // Lazy Supabase client for admin check (only used on admin routes)
 function getSupabaseAdmin() {
