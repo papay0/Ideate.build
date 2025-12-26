@@ -327,7 +327,7 @@ function PromptInput({
                 : "Describe your vision and let AI bring it to life"}
             </p>
           </div>
-          <div className="flex items-center gap-3 self-start sm:self-center">
+          <div className="flex items-center gap-2 sm:gap-3 self-start sm:self-center flex-wrap">
             {/* Admin-only mode toggle */}
             {isAdmin && <ModeToggle mode={mode} onChange={setMode} />}
             <PlatformSelector selected={platform} onChange={setPlatform} />

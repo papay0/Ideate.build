@@ -14,7 +14,7 @@ export function PlatformSelector({ selected, onChange }: PlatformSelectorProps) 
       <button
         type="button"
         onClick={() => onChange("mobile")}
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+        className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
           selected === "mobile"
             ? "bg-white text-[#1A1A1A] shadow-sm"
             : "text-[#9A9A9A] hover:text-[#6B6B6B]"
@@ -22,12 +22,12 @@ export function PlatformSelector({ selected, onChange }: PlatformSelectorProps) 
         title={PLATFORM_CONFIG.mobile.description}
       >
         <Smartphone className="w-4 h-4" />
-        <span>Mobile</span>
+        <span className="hidden sm:inline">Mobile</span>
       </button>
       <button
         type="button"
         onClick={() => onChange("desktop")}
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+        className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
           selected === "desktop"
             ? "bg-white text-[#1A1A1A] shadow-sm"
             : "text-[#9A9A9A] hover:text-[#6B6B6B]"
@@ -35,7 +35,7 @@ export function PlatformSelector({ selected, onChange }: PlatformSelectorProps) 
         title={PLATFORM_CONFIG.desktop.description}
       >
         <Monitor className="w-4 h-4" />
-        <span>Desktop</span>
+        <span className="hidden sm:inline">Desktop</span>
       </button>
     </div>
   );

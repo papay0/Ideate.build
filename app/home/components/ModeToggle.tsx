@@ -26,11 +26,12 @@ export function ModeToggle({ mode, onChange }: ModeToggleProps) {
       <button
         type="button"
         onClick={() => onChange("design")}
-        className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+        className={`relative flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
           mode === "design"
             ? "text-[#1A1A1A]"
             : "text-[#9A9A9A] hover:text-[#6B6B6B]"
         }`}
+        title="Design mode"
       >
         {mode === "design" && (
           <motion.div
@@ -40,16 +41,17 @@ export function ModeToggle({ mode, onChange }: ModeToggleProps) {
           />
         )}
         <Paintbrush className="w-3.5 h-3.5 relative z-10" />
-        <span className="relative z-10">Design</span>
+        <span className="relative z-10 hidden sm:inline">Design</span>
       </button>
       <button
         type="button"
         onClick={() => onChange("prototype")}
-        className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+        className={`relative flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
           mode === "prototype"
             ? "text-[#1A1A1A]"
             : "text-[#9A9A9A] hover:text-[#6B6B6B]"
         }`}
+        title="Prototype mode"
       >
         {mode === "prototype" && (
           <motion.div
@@ -59,7 +61,7 @@ export function ModeToggle({ mode, onChange }: ModeToggleProps) {
           />
         )}
         <Play className="w-3.5 h-3.5 relative z-10" />
-        <span className="relative z-10">Prototype</span>
+        <span className="relative z-10 hidden sm:inline">Prototype</span>
       </button>
     </div>
   );
