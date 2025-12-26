@@ -8,9 +8,13 @@
  * - All models unlocked (Flash + Pro)
  * - Unlimited messages (no quota consumption)
  * - No upgrade prompts or premium badges
+ *
+ * Storage is scoped by user ID to prevent data leakage between accounts.
  */
 
 import { useState, useEffect, useCallback } from "react";
+import { useUser } from "@clerk/nextjs";
+import { getUserStorageKey, getUserStorageItem, setUserStorageItem, removeUserStorageItem } from "@/lib/utils/user-storage";
 
 // ============================================================================
 // Types
@@ -42,16 +46,16 @@ export interface UseBYOKReturn {
 // Constants
 // ============================================================================
 
-const STORAGE_KEY = "opendesign_api_config";
+const BASE_STORAGE_KEY = "opendesign_api_config";
 
 // ============================================================================
 // Helper Functions
 // ============================================================================
 
-function getStoredConfig(): ApiConfig | null {
-  if (typeof window === "undefined") return null;
+function getStoredConfig(userId: string | null): ApiConfig | null {
+  if (typeof window === "undefined" || !userId) return null;
 
-  const stored = localStorage.getItem(STORAGE_KEY);
+  const stored = getUserStorageItem(BASE_STORAGE_KEY, userId);
   if (!stored) return null;
 
   try {
@@ -71,52 +75,72 @@ function getStoredConfig(): ApiConfig | null {
 // ============================================================================
 
 export function useBYOK(): UseBYOKReturn {
+  const { user, isLoaded: isUserLoaded } = useUser();
+  const userId = user?.id || null;
+
   const [apiConfig, setApiConfigState] = useState<ApiConfig | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Load config from localStorage on mount
+  // Load config from localStorage when user is available
   useEffect(() => {
-    setApiConfigState(getStoredConfig());
+    if (!isUserLoaded) return;
+
+    if (userId) {
+      setApiConfigState(getStoredConfig(userId));
+    } else {
+      setApiConfigState(null);
+    }
     setIsInitialized(true);
-  }, []);
+  }, [isUserLoaded, userId]);
 
   // Listen for storage changes (e.g., from other tabs or settings page updates)
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !userId) return;
+
+    const storageKey = getUserStorageKey(BASE_STORAGE_KEY, userId);
 
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY) {
-        setApiConfigState(getStoredConfig());
+      if (e.key === storageKey) {
+        setApiConfigState(getStoredConfig(userId));
       }
     };
 
     // Also listen for custom events (for same-tab updates)
     const handleCustomEvent = () => {
-      setApiConfigState(getStoredConfig());
+      setApiConfigState(getStoredConfig(userId));
+    };
+
+    // Listen for storage cleared on logout
+    const handleStorageCleared = () => {
+      setApiConfigState(null);
     };
 
     window.addEventListener("storage", handleStorageChange);
     window.addEventListener("byok-config-changed", handleCustomEvent);
+    window.addEventListener("user-storage-cleared", handleStorageCleared);
 
     return () => {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("byok-config-changed", handleCustomEvent);
+      window.removeEventListener("user-storage-cleared", handleStorageCleared);
     };
-  }, []);
+  }, [userId]);
 
   const setApiConfig = useCallback((config: ApiConfig) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    if (!userId) return;
+    setUserStorageItem(BASE_STORAGE_KEY, userId, JSON.stringify(config));
     setApiConfigState(config);
     // Dispatch custom event for same-tab listeners
     window.dispatchEvent(new CustomEvent("byok-config-changed"));
-  }, []);
+  }, [userId]);
 
   const clearApiConfig = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
+    if (!userId) return;
+    removeUserStorageItem(BASE_STORAGE_KEY, userId);
     setApiConfigState(null);
     // Dispatch custom event for same-tab listeners
     window.dispatchEvent(new CustomEvent("byok-config-changed"));
-  }, []);
+  }, [userId]);
 
   return {
     isBYOKActive: isInitialized && !!apiConfig?.key,
@@ -130,16 +154,17 @@ export function useBYOK(): UseBYOKReturn {
 
 /**
  * Utility function to check BYOK status without the hook (for non-React contexts)
- * Useful in API calls or utility functions
+ * Requires userId to access user-scoped storage
  */
-export function getApiConfig(): ApiConfig | null {
-  return getStoredConfig();
+export function getApiConfig(userId: string): ApiConfig | null {
+  return getStoredConfig(userId);
 }
 
 /**
  * Check if BYOK is active (non-hook version)
+ * Requires userId to access user-scoped storage
  */
-export function isBYOKEnabled(): boolean {
-  const config = getStoredConfig();
+export function isBYOKEnabled(userId: string): boolean {
+  const config = getStoredConfig(userId);
   return !!config?.key;
 }

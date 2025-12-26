@@ -8,6 +8,8 @@
  * - API Keys: BYOK configuration
  *
  * Design: Refined utilitarian - warm, efficient, no marketing fluff
+ *
+ * Storage is scoped by user ID to prevent data leakage between accounts.
  */
 
 import { useState, useEffect } from "react";
@@ -29,11 +31,13 @@ import {
   Loader2,
   MessageSquare,
 } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 import { useSubscription } from "@/lib/hooks/useSubscription";
 import { useBYOK } from "@/lib/hooks/useBYOK";
 import { PLANS, MESSAGE_PACK } from "@/lib/constants/plans";
 import type { BillingInterval } from "@/lib/stripe";
 import { trackEvent } from "@/lib/hooks/useAnalytics";
+import { getUserStorageItem, setUserStorageItem, removeUserStorageItem } from "@/lib/utils/user-storage";
 
 // ============================================================================
 // Types
@@ -51,7 +55,7 @@ interface ApiConfig {
 // Constants
 // ============================================================================
 
-const STORAGE_KEY = "opendesign_api_config";
+const BASE_STORAGE_KEY = "opendesign_api_config";
 
 const PROVIDERS = [
   {
@@ -83,9 +87,9 @@ const TABS = [
 // Helper Functions
 // ============================================================================
 
-function getStoredConfig(): ApiConfig | null {
-  if (typeof window === "undefined") return null;
-  const stored = localStorage.getItem(STORAGE_KEY);
+function getStoredConfig(userId: string | null): ApiConfig | null {
+  if (typeof window === "undefined" || !userId) return null;
+  const stored = getUserStorageItem(BASE_STORAGE_KEY, userId);
   if (!stored) return null;
   try {
     return JSON.parse(stored);
@@ -94,13 +98,15 @@ function getStoredConfig(): ApiConfig | null {
   }
 }
 
-function saveConfig(config: ApiConfig) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+function saveConfig(userId: string | null, config: ApiConfig) {
+  if (!userId) return;
+  setUserStorageItem(BASE_STORAGE_KEY, userId, JSON.stringify(config));
   window.dispatchEvent(new CustomEvent("byok-config-changed"));
 }
 
-function clearConfig() {
-  localStorage.removeItem(STORAGE_KEY);
+function clearConfig(userId: string | null) {
+  if (!userId) return;
+  removeUserStorageItem(BASE_STORAGE_KEY, userId);
   window.dispatchEvent(new CustomEvent("byok-config-changed"));
 }
 
@@ -446,6 +452,9 @@ function SubscriptionSection() {
 // ============================================================================
 
 function ApiKeysSection() {
+  const { user } = useUser();
+  const userId = user?.id || null;
+
   const [selectedProvider, setSelectedProvider] = useState<Provider>("openrouter");
   const [apiKey, setApiKey] = useState("");
   const [isKeyVisible, setIsKeyVisible] = useState(false);
@@ -453,17 +462,18 @@ function ApiKeysSection() {
   const [hasExistingConfig, setHasExistingConfig] = useState(false);
 
   useEffect(() => {
-    const config = getStoredConfig();
+    if (!userId) return;
+    const config = getStoredConfig(userId);
     if (config) {
       setSelectedProvider(config.provider);
       setApiKey(config.key);
       setHasExistingConfig(true);
     }
-  }, []);
+  }, [userId]);
 
   const handleSave = () => {
     if (!apiKey.trim()) return;
-    saveConfig({ key: apiKey.trim(), provider: selectedProvider });
+    saveConfig(userId, { key: apiKey.trim(), provider: selectedProvider });
     setIsSaved(true);
     setHasExistingConfig(true);
 
@@ -483,7 +493,7 @@ function ApiKeysSection() {
       provider: selectedProvider,
     });
 
-    clearConfig();
+    clearConfig(userId);
     setApiKey("");
     setHasExistingConfig(false);
   };

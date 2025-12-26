@@ -244,8 +244,8 @@ function PromptInput({
 
   // Load selected model on mount, respecting user's plan
   useEffect(() => {
-    setSelectedModelState(getSelectedModel(userPlan));
-  }, [userPlan]);
+    setSelectedModelState(getSelectedModel(userId, userPlan));
+  }, [userId, userPlan]);
 
   const handleSubmit = async () => {
     if (!prompt.trim() || isLoading) return;
@@ -412,6 +412,7 @@ function PromptInput({
                 userPlan={userPlan}
                 isBYOKActive={isBYOKActive}
                 onUpgradeClick={onUpgradeClick}
+                userId={userId}
               />
               {/* BYOK indicator - compact infinity badge */}
               {isBYOKActive && (

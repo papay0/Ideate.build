@@ -5,12 +5,15 @@
  *
  * A compact dropdown for selecting AI models.
  * Shows Pro model as locked for free users.
+ *
+ * Storage is scoped by user ID to prevent model preference leakage between accounts.
  */
 
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown, Check, Cpu, Zap, Lock, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { type PlanType, isModelAllowedForPlan } from "@/lib/constants/plans";
+import { getUserStorageItem, setUserStorageItem } from "@/lib/utils/user-storage";
 
 // ============================================================================
 // Types and Constants
@@ -35,7 +38,7 @@ export const AVAILABLE_MODELS = [
 
 export type ModelId = typeof AVAILABLE_MODELS[number]["id"];
 
-const MODEL_STORAGE_KEY = "opendesign_selected_model";
+const BASE_STORAGE_KEY = "opendesign_selected_model";
 
 // ============================================================================
 // Helper Functions
@@ -48,11 +51,12 @@ export function getDefaultModelForPlan(): ModelId {
 /**
  * Get the selected model from localStorage, respecting user's plan
  * If stored model isn't allowed for plan, returns the default for that plan
+ * Requires userId to access user-scoped storage
  */
-export function getSelectedModel(plan: PlanType = "free"): ModelId {
-  if (typeof window === "undefined") return getDefaultModelForPlan();
+export function getSelectedModel(userId: string | null, plan: PlanType = "free"): ModelId {
+  if (typeof window === "undefined" || !userId) return getDefaultModelForPlan();
 
-  const stored = localStorage.getItem(MODEL_STORAGE_KEY);
+  const stored = getUserStorageItem(BASE_STORAGE_KEY, userId);
   if (stored && AVAILABLE_MODELS.some((m) => m.id === stored)) {
     // Check if stored model is allowed for user's plan
     if (isModelAllowedForPlan(stored, plan)) {
@@ -63,9 +67,13 @@ export function getSelectedModel(plan: PlanType = "free"): ModelId {
   return getDefaultModelForPlan();
 }
 
-export function setSelectedModel(model: ModelId): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(MODEL_STORAGE_KEY, model);
+/**
+ * Save the selected model to localStorage
+ * Requires userId to access user-scoped storage
+ */
+export function setSelectedModel(userId: string | null, model: ModelId): void {
+  if (typeof window === "undefined" || !userId) return;
+  setUserStorageItem(BASE_STORAGE_KEY, userId, model);
 }
 
 // ============================================================================
@@ -80,6 +88,8 @@ interface ModelSelectorProps {
   /** When true, all models are unlocked (BYOK users pay their own API costs) */
   isBYOKActive?: boolean;
   onUpgradeClick?: () => void;
+  /** User ID for scoped localStorage */
+  userId?: string;
 }
 
 export function ModelSelector({
@@ -89,6 +99,7 @@ export function ModelSelector({
   userPlan = "free",
   isBYOKActive = false,
   onUpgradeClick,
+  userId,
 }: ModelSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -123,7 +134,7 @@ export function ModelSelector({
     }
 
     onChange(modelId);
-    setSelectedModel(modelId);
+    setSelectedModel(userId || null, modelId);
     setIsOpen(false);
   };
 

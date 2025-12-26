@@ -25,6 +25,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useUserSync } from "@/lib/hooks/useUserSync";
 import { useBYOK } from "@/lib/hooks/useBYOK";
+import { AuthCleanupProvider } from "@/app/providers/AuthCleanupProvider";
 
 export default function AuthenticatedLayout({
   children,
@@ -42,61 +43,65 @@ export default function AuthenticatedLayout({
   // Project pages have their own full-screen layout without sidebar
   if (isProjectPage) {
     return (
-      <div className="min-h-screen bg-[#FAF8F5]">
-        {children}
-      </div>
+      <AuthCleanupProvider>
+        <div className="min-h-screen bg-[#FAF8F5]">
+          {children}
+        </div>
+      </AuthCleanupProvider>
     );
   }
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <AppSidebar />
-      <SidebarInset>
-        {/* Simplified Header */}
-        <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b border-[#E8E4E0] bg-[#FAF8F5]/90 backdrop-blur-sm px-4">
-          <SidebarTrigger className="-ml-1 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F2EF]" />
-          <Separator orientation="vertical" className="h-4 bg-[#E8E4E0]" />
+    <AuthCleanupProvider>
+      <SidebarProvider defaultOpen={true}>
+        <AppSidebar />
+        <SidebarInset>
+          {/* Simplified Header */}
+          <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b border-[#E8E4E0] bg-[#FAF8F5]/90 backdrop-blur-sm px-4">
+            <SidebarTrigger className="-ml-1 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F2EF]" />
+            <Separator orientation="vertical" className="h-4 bg-[#E8E4E0]" />
 
-          {/* Spacer */}
-          <div className="flex-1" />
+            {/* Spacer */}
+            <div className="flex-1" />
 
-          {/* Plan indicator / Upgrade button */}
-          {dbUser === undefined ? (
-            <Loader2 className="w-4 h-4 animate-spin text-[#9A9A9A]" />
-          ) : isFreePlan && !isBYOKActive ? (
-            <Link
-              href="/home/settings"
-              className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-all shadow-sm hover:shadow-md"
-            >
-              <Crown className="w-3.5 h-3.5" />
-              <span>Upgrade</span>
-            </Link>
-          ) : dbUser?.plan === "pro" && !isBYOKActive ? (
-            <Link
-              href="/home/settings"
-              className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-all shadow-sm hover:shadow-md"
-            >
-              <Crown className="w-3.5 h-3.5" />
-              <span>Pro</span>
-            </Link>
-          ) : null}
+            {/* Plan indicator / Upgrade button */}
+            {dbUser === undefined ? (
+              <Loader2 className="w-4 h-4 animate-spin text-[#9A9A9A]" />
+            ) : isFreePlan && !isBYOKActive ? (
+              <Link
+                href="/home/settings"
+                className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-all shadow-sm hover:shadow-md"
+              >
+                <Crown className="w-3.5 h-3.5" />
+                <span>Upgrade</span>
+              </Link>
+            ) : dbUser?.plan === "pro" && !isBYOKActive ? (
+              <Link
+                href="/home/settings"
+                className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-all shadow-sm hover:shadow-md"
+              >
+                <Crown className="w-3.5 h-3.5" />
+                <span>Pro</span>
+              </Link>
+            ) : null}
 
-          {/* User profile */}
-          <UserButton
-            afterSignOutUrl="/"
-            appearance={{
-              elements: {
-                avatarBox: "h-8 w-8",
-              },
-            }}
-          />
-        </header>
+            {/* User profile */}
+            <UserButton
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: "h-8 w-8",
+                },
+              }}
+            />
+          </header>
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-auto p-6">
-          {children}
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
+          {/* Main Content */}
+          <main className="flex-1 overflow-auto p-6">
+            {children}
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
+    </AuthCleanupProvider>
   );
 }

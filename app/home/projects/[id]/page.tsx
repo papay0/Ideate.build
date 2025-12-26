@@ -338,6 +338,7 @@ function ChatInput({
               compact
               userPlan={userPlan}
               isBYOKActive={isBYOKActive}
+              userId={userId}
             />
             {/* BYOK indicator - compact infinity badge */}
             {isBYOKActive && (
@@ -497,7 +498,7 @@ export default function DesignPage() {
   // Handle model change - update both local state and project in database
   const handleModelChange = useCallback(async (model: ModelId) => {
     setSelectedModelState(model);
-    setSelectedModel(model); // Also save to localStorage for persistence across sessions
+    setSelectedModel(user?.id || null, model); // Also save to localStorage for persistence across sessions
 
     // Update the project's model in the database
     if (project?.id) {
@@ -927,7 +928,7 @@ export default function DesignPage() {
     setPendingImageUrl(null);
 
     // Get API config (may be null if using platform key)
-    const apiConfig = getApiConfig();
+    const apiConfig = user?.id ? getApiConfig(user.id) : null;
 
     // Prepare headers - only include API key if user has their own (BYOK)
     const headers: Record<string, string> = {};
