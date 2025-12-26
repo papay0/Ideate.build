@@ -14,11 +14,13 @@ type AnalyticsEvents = {
     project_id: string
     platform: Platform
     source: 'landing_page' | 'dashboard'
+    type: 'design' | 'prototype'
   }
   design_generated: {
     project_id: string
     model: string
     is_byok: boolean
+    type: 'design' | 'prototype'
   }
   design_exported: {
     project_id: string

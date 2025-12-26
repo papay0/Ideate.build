@@ -118,7 +118,6 @@ export async function POST(request: Request): Promise<Response> {
           plan: dbUser.plan as 'free' | 'pro',
           messagesRemaining: dbUser.messages_remaining,
           bonusRemaining: bonusRemaining,
-          type: 'prototype',
         },
         request,
       });
@@ -377,7 +376,6 @@ IMPORTANT:
               model: selectedModel,
               provider: provider || 'openrouter',
               usingBYOK: !usingPlatformKey,
-              type: 'prototype',
             },
           }).catch(() => {});
         } catch (error) {

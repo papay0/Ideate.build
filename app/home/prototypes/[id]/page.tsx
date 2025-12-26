@@ -89,13 +89,6 @@ interface Message {
 type ViewMode = "preview" | "code";
 type MobileTab = "chat" | "canvas" | "code";
 
-// Extended ParsedScreen with prototype-specific fields
-interface PrototypeParsedScreen extends ParsedScreen {
-  gridCol?: number;
-  gridRow?: number;
-  isRoot?: boolean;
-}
-
 // ============================================================================
 // Component: Chat Message
 // ============================================================================
@@ -433,7 +426,7 @@ export default function PrototypePage() {
   // State
   const [project, setProject] = useState<PrototypeProject | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [savedScreens, setSavedScreens] = useState<PrototypeParsedScreen[]>([]);
+  const [savedScreens, setSavedScreens] = useState<ParsedScreen[]>([]);
   const [input, setInput] = useState("");
   const [pendingImageUrl, setPendingImageUrl] = useState<string | null>(null);
   const [isPageLoading, setIsPageLoading] = useState(true);
@@ -581,17 +574,16 @@ export default function PrototypePage() {
       const supabase = createClient();
       for (let i = 0; i < screens.length; i++) {
         const screen = screens[i];
-        // TODO: Parse grid position and isRoot from screen name
-        // For now, use default values
+        // Use parsed grid position and isRoot from AI response
         await supabase.from("prototype_screens").upsert(
           {
             project_id: projectId,
             screen_name: screen.name,
             html_content: screen.html,
             sort_order: i,
-            grid_col: 0,
-            grid_row: i,
-            is_root: i === 0,
+            grid_col: screen.gridCol ?? 0,
+            grid_row: screen.gridRow ?? i,
+            is_root: screen.isRoot ?? (i === 0),
           },
           { onConflict: "project_id,screen_name" }
         );

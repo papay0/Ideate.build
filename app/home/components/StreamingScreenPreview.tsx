@@ -20,10 +20,46 @@ import { Loader2 } from "lucide-react";
 const PHONE_WIDTH = 390;
 const PHONE_HEIGHT = 844;
 
+/**
+ * Parse prototype screen name to extract grid position and root marker.
+ * Format: "Screen Name [col,row]" or "Screen Name [col,row] [ROOT]"
+ */
+function parsePrototypeScreenName(rawName: string): {
+  name: string;
+  gridCol?: number;
+  gridRow?: number;
+  isRoot?: boolean;
+} {
+  let name = rawName.trim();
+  let gridCol: number | undefined;
+  let gridRow: number | undefined;
+  let isRoot = false;
+
+  // Check for [ROOT] marker
+  if (name.includes("[ROOT]")) {
+    isRoot = true;
+    name = name.replace("[ROOT]", "").trim();
+  }
+
+  // Check for [col,row] grid position
+  const gridMatch = name.match(/\[(\d+),(\d+)\]/);
+  if (gridMatch) {
+    gridCol = parseInt(gridMatch[1], 10);
+    gridRow = parseInt(gridMatch[2], 10);
+    name = name.replace(gridMatch[0], "").trim();
+  }
+
+  return { name, gridCol, gridRow, isRoot };
+}
+
 export interface ParsedScreen {
   name: string;
   html: string;
   isEdit?: boolean;
+  // Prototype-specific fields (parsed from screen name)
+  gridCol?: number;
+  gridRow?: number;
+  isRoot?: boolean;
 }
 
 export interface UsageData {
@@ -201,6 +237,9 @@ export function useDesignStreaming(callbacks: StreamingCallbacks) {
       let screenName = "";
       let screenHtml = "";
       let isEditingScreen = false;
+      let screenGridCol: number | undefined;
+      let screenGridRow: number | undefined;
+      let screenIsRoot = false;
       const screens: ParsedScreen[] = [];
 
       try {
@@ -299,13 +338,19 @@ export function useDesignStreaming(callbacks: StreamingCallbacks) {
                   }
 
                   // Parse SCREEN_START delimiter (new screen)
+                  // Supports both basic "Name" and prototype format "Name [col,row] [ROOT]"
                   const startMatch = rawContent.match(/<!-- SCREEN_START: (.+?) -->/);
                   if (startMatch && !inScreen) {
                     inScreen = true;
                     isEditingScreen = false;
-                    screenName = startMatch[1].trim();
+                    const rawScreenName = startMatch[1].trim();
+                    const parsed = parsePrototypeScreenName(rawScreenName);
+                    screenName = parsed.name;
+                    screenGridCol = parsed.gridCol;
+                    screenGridRow = parsed.gridRow;
+                    screenIsRoot = parsed.isRoot || false;
                     screenHtml = "";
-                    console.log(`[Stream] SCREEN_START (new): "${screenName}"`);
+                    console.log(`[Stream] SCREEN_START (new): "${screenName}"${screenGridCol !== undefined ? ` at [${screenGridCol},${screenGridRow}]` : ""}${screenIsRoot ? " [ROOT]" : ""}`);
                     setCurrentScreenName(screenName);
                     setIsEditingExistingScreen(false);
                     callbacks.onScreenStart?.(screenName);
@@ -339,8 +384,11 @@ export function useDesignStreaming(callbacks: StreamingCallbacks) {
                         name: screenName,
                         html: screenHtml.trim(),
                         isEdit: isEditingScreen,
+                        gridCol: screenGridCol,
+                        gridRow: screenGridRow,
+                        isRoot: screenIsRoot,
                       };
-                      console.log(`[Stream] SCREEN_END: "${screenName}", isEdit: ${isEditingScreen}, HTML length: ${completedScreen.html.length}`);
+                      console.log(`[Stream] SCREEN_END: "${screenName}", isEdit: ${isEditingScreen}, HTML length: ${completedScreen.html.length}${screenGridCol !== undefined ? `, grid: [${screenGridCol},${screenGridRow}]` : ""}${screenIsRoot ? ", ROOT" : ""}`);
                       screens.push(completedScreen);
                       console.log(`[Stream] Total completed screens: ${screens.length}`, screens.map(s => `${s.name}${s.isEdit ? ' (edit)' : ''}`));
                       setCompletedScreens([...screens]);
@@ -350,6 +398,9 @@ export function useDesignStreaming(callbacks: StreamingCallbacks) {
                       screenName = "";
                       screenHtml = "";
                       isEditingScreen = false;
+                      screenGridCol = undefined;
+                      screenGridRow = undefined;
+                      screenIsRoot = false;
                       setCurrentScreenName(null);
                       setCurrentStreamingHtml("");
                       setIsEditingExistingScreen(false);
@@ -384,6 +435,9 @@ export function useDesignStreaming(callbacks: StreamingCallbacks) {
                       name: screenName,
                       html: screenHtml.trim(),
                       isEdit: isEditingScreen,
+                      gridCol: screenGridCol,
+                      gridRow: screenGridRow,
+                      isRoot: screenIsRoot,
                     };
                     screens.push(partialScreen);
                     setCompletedScreens([...screens]);

@@ -942,6 +942,7 @@ export default function DesignPage() {
       project_id: projectId,
       model: selectedModel,
       is_byok: !!apiConfig?.key,
+      type: "design",
     });
 
     // Start streaming with platform, image, and model

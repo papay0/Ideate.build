@@ -572,6 +572,7 @@ export default function DashboardPage() {
         project_id: data.id,
         platform: pendingPrompt!.platform || "mobile",
         source: "landing_page",
+        type: "design",
       });
 
       // Navigate to the new project - auto-generation will kick in on the project page
