@@ -7,6 +7,7 @@ const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/blog(.*)',
+  '/p/(.*)',  // Public prototype viewer
   '/api/webhook(.*)',
   '/api/stripe/webhook(.*)',
   '/api/og(.*)',

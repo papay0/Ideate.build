@@ -37,6 +37,7 @@ import {
   Play,
   Bug,
   X,
+  Share2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { PrototypeProject, PrototypeScreen, UsageLog } from "@/lib/supabase/types";
@@ -472,6 +473,7 @@ export default function PrototypePage() {
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const [playerHtml, setPlayerHtml] = useState<string | null>(null);
   const [isLoadingPlayer, setIsLoadingPlayer] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const userMessageRef = useRef<Message | null>(null);
 
@@ -530,6 +532,14 @@ export default function PrototypePage() {
       setIsLoadingPlayer(false);
     }
   }, [projectId, savedScreens.length]);
+
+  // Share prototype - copy public URL to clipboard
+  const handleShare = useCallback(async () => {
+    const shareUrl = `${window.location.origin}/p/${projectId}`;
+    await navigator.clipboard.writeText(shareUrl);
+    setShareCopied(true);
+    setTimeout(() => setShareCopied(false), 2000);
+  }, [projectId]);
 
   const submitRef = useRef<(() => void) | null>(null);
 
@@ -1090,6 +1100,25 @@ export default function PrototypePage() {
                 <Play className="w-4 h-4 fill-current" />
               )}
               Play
+            </button>
+            {/* Share button */}
+            <button
+              onClick={handleShare}
+              disabled={savedScreens.length === 0}
+              className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#F5F2EF] text-[#1A1A1A] text-sm font-medium rounded-lg border border-[#E8E4E0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Copy shareable link"
+            >
+              {shareCopied ? (
+                <>
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span className="text-green-600">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-4 h-4" />
+                  Share
+                </>
+              )}
             </button>
             <div className="flex bg-[#F5F2EF] rounded-lg p-1 border border-[#E8E4E0]">
               <button
