@@ -405,6 +405,148 @@ export interface Database {
           }
         ]
       }
+
+      // ========================================================================
+      // PROTOTYPE TABLES (Admin Only Feature)
+      // ========================================================================
+
+      /**
+       * Prototype projects table - stores prototype projects (separate from design)
+       * Admin-only feature for interactive prototyping
+       */
+      prototype_projects: {
+        Row: {
+          id: string
+          user_id: string                  // Clerk user ID
+          name: string                     // Project display name
+          app_idea: string | null          // User's initial app description
+          icon: string                     // Emoji icon for the project
+          platform: 'mobile' | 'desktop'   // Target platform
+          initial_image_url: string | null // Reference image URL
+          model: string                    // AI model to use
+          prototype_url: string | null     // Published prototype URL on R2
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          app_idea?: string | null
+          icon?: string
+          platform: 'mobile' | 'desktop'
+          initial_image_url?: string | null
+          model?: string
+          prototype_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          app_idea?: string | null
+          icon?: string
+          platform?: 'mobile' | 'desktop'
+          initial_image_url?: string | null
+          model?: string
+          prototype_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+
+      /**
+       * Prototype screens table - stores screens with grid positions
+       * Each screen has a position on the canvas grid
+       */
+      prototype_screens: {
+        Row: {
+          id: string
+          project_id: string               // Foreign key to prototype_projects
+          screen_name: string              // Display name (e.g., "Home Screen")
+          html_content: string             // Raw HTML with Tailwind CSS
+          sort_order: number               // Order in the screen list
+          grid_col: number                 // Grid column position for canvas
+          grid_row: number                 // Grid row position for canvas
+          is_root: boolean                 // True if this is the entry point screen
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          screen_name: string
+          html_content: string
+          sort_order?: number
+          grid_col?: number
+          grid_row?: number
+          is_root?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          screen_name?: string
+          html_content?: string
+          sort_order?: number
+          grid_col?: number
+          grid_row?: number
+          is_root?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prototype_screens_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "prototype_projects"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+
+      /**
+       * Prototype messages table - stores chat history for prototype projects
+       */
+      prototype_messages: {
+        Row: {
+          id: string
+          project_id: string               // Foreign key to prototype_projects
+          role: 'user' | 'assistant'       // Message sender
+          content: string                  // Message text
+          image_url: string | null         // Optional reference image URL
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          role: 'user' | 'assistant'
+          content: string
+          image_url?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          role?: 'user' | 'assistant'
+          content?: string
+          image_url?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prototype_messages_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "prototype_projects"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -480,3 +622,28 @@ export type AuditLogRow = Database['public']['Tables']['audit_logs']['Row']
 export type AuditLogInsert = Database['public']['Tables']['audit_logs']['Insert']
 /** Audit log update type */
 export type AuditLogUpdate = Database['public']['Tables']['audit_logs']['Update']
+
+// ============================================================================
+// Prototype Helper Types (Admin Only Feature)
+// ============================================================================
+
+/** Prototype project row type */
+export type PrototypeProject = Database['public']['Tables']['prototype_projects']['Row']
+/** Prototype project insert type */
+export type PrototypeProjectInsert = Database['public']['Tables']['prototype_projects']['Insert']
+/** Prototype project update type */
+export type PrototypeProjectUpdate = Database['public']['Tables']['prototype_projects']['Update']
+
+/** Prototype screen row type */
+export type PrototypeScreen = Database['public']['Tables']['prototype_screens']['Row']
+/** Prototype screen insert type */
+export type PrototypeScreenInsert = Database['public']['Tables']['prototype_screens']['Insert']
+/** Prototype screen update type */
+export type PrototypeScreenUpdate = Database['public']['Tables']['prototype_screens']['Update']
+
+/** Prototype message row type */
+export type PrototypeMessage = Database['public']['Tables']['prototype_messages']['Row']
+/** Prototype message insert type */
+export type PrototypeMessageInsert = Database['public']['Tables']['prototype_messages']['Insert']
+/** Prototype message update type */
+export type PrototypeMessageUpdate = Database['public']['Tables']['prototype_messages']['Update']

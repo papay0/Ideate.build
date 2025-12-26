@@ -38,6 +38,7 @@ import { DashboardSkeleton, ProjectsGridSkeleton } from "./components/Skeleton";
 import { ImageUploadButton } from "./components/ImageUploadButton";
 import { ImageLightbox, ClickableImage } from "./components/ImageLightbox";
 import { ModelSelector, getSelectedModel, type ModelId } from "./components/ModelSelector";
+import { ModeToggle, type CreationMode } from "./components/ModeToggle";
 import type { PlanType } from "@/lib/constants/plans";
 import { useUserSync } from "@/lib/hooks/useUserSync";
 import { useSubscription } from "@/lib/hooks/useSubscription";
@@ -225,13 +226,15 @@ function PromptInput({
   userPlan,
   isBYOKActive,
   onUpgradeClick,
+  isAdmin,
 }: {
-  onSubmit: (prompt: string, platform: Platform, imageUrl: string | null, model: ModelId) => Promise<void>;
+  onSubmit: (prompt: string, platform: Platform, imageUrl: string | null, model: ModelId, mode: CreationMode) => Promise<void>;
   isLoading: boolean;
   userId: string;
   userPlan: PlanType;
   isBYOKActive: boolean;
   onUpgradeClick: () => void;
+  isAdmin: boolean;
 }) {
   const [prompt, setPrompt] = useState("");
   const [platform, setPlatform] = useState<Platform>("mobile");
@@ -239,6 +242,7 @@ function PromptInput({
   const [isPasting, setIsPasting] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [selectedModel, setSelectedModelState] = useState<ModelId>("gemini-3-flash-preview");
+  const [mode, setMode] = useState<CreationMode>("design");
   // Generate a temporary project ID for uploading before project creation
   const [tempProjectId] = useState(() => crypto.randomUUID());
 
@@ -253,7 +257,7 @@ function PromptInput({
     const submittedImageUrl = imageUrl;
     setPrompt(""); // Clear input immediately
     setImageUrl(null); // Clear image
-    await onSubmit(submittedPrompt, platform, submittedImageUrl, selectedModel);
+    await onSubmit(submittedPrompt, platform, submittedImageUrl, selectedModel, mode);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -315,11 +319,17 @@ function PromptInput({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-5">
           <div className="flex-1">
             <h2 className="font-serif text-xl sm:text-2xl text-[#1A1A1A] tracking-tight leading-tight">
-              What would you like to design?
+              What would you like to {mode === "prototype" ? "prototype" : "design"}?
             </h2>
-            <p className="text-sm text-[#9A9A9A] mt-1">Describe your vision and let AI bring it to life</p>
+            <p className="text-sm text-[#9A9A9A] mt-1">
+              {mode === "prototype"
+                ? "Create interactive screens with working navigation"
+                : "Describe your vision and let AI bring it to life"}
+            </p>
           </div>
-          <div className="self-start sm:self-center">
+          <div className="flex items-center gap-3 self-start sm:self-center">
+            {/* Admin-only mode toggle */}
+            {isAdmin && <ModeToggle mode={mode} onChange={setMode} />}
             <PlatformSelector selected={platform} onChange={setPlatform} />
           </div>
         </div>
@@ -449,7 +459,7 @@ function PromptInput({
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  <span>Design it</span>
+                  <span>{mode === "prototype" ? "Prototype it" : "Design it"}</span>
                 </>
               )}
             </button>
@@ -572,41 +582,78 @@ export default function DashboardPage() {
   }, [isLoaded, user, isAutoCreating, getPendingPrompt, clearPendingPrompt, router]);
 
   // Create new project from prompt
-  const handleCreateProject = async (prompt: string, platform: Platform, imageUrl: string | null, model: ModelId) => {
+  const handleCreateProject = async (prompt: string, platform: Platform, imageUrl: string | null, model: ModelId, mode: CreationMode) => {
     if (!user) return;
 
     setIsCreating(true);
     const supabase = createClient();
 
-    const { data, error } = await supabase
-      .from("projects")
-      .insert({
-        user_id: user.id,
-        name: "Untitled Project",
-        app_idea: prompt,
+    // Route based on mode
+    if (mode === "prototype") {
+      // Create prototype project
+      const { data, error } = await supabase
+        .from("prototype_projects")
+        .insert({
+          user_id: user.id,
+          name: "Untitled Prototype",
+          app_idea: prompt,
+          platform: platform,
+          initial_image_url: imageUrl,
+          model: model,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error creating prototype project:", error);
+        alert("Failed to create prototype. Please try again.");
+        setIsCreating(false);
+        return;
+      }
+
+      // Track prototype creation
+      trackEvent("project_created", {
+        project_id: data.id,
         platform: platform,
-        initial_image_url: imageUrl,
-        model: model,  // Store the selected model with the project
-      })
-      .select()
-      .single();
+        source: "dashboard",
+        type: "prototype",
+      });
 
-    if (error) {
-      console.error("Error creating project:", error);
-      alert("Failed to create project. Please try again.");
-      setIsCreating(false);
-      return;
+      // Navigate to the new prototype project
+      router.push(`/home/prototypes/${data.id}`);
+    } else {
+      // Create design project (existing behavior)
+      const { data, error } = await supabase
+        .from("projects")
+        .insert({
+          user_id: user.id,
+          name: "Untitled Project",
+          app_idea: prompt,
+          platform: platform,
+          initial_image_url: imageUrl,
+          model: model,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error creating project:", error);
+        alert("Failed to create project. Please try again.");
+        setIsCreating(false);
+        return;
+      }
+
+      // Track project creation from dashboard
+      trackEvent("project_created", {
+        project_id: data.id,
+        platform: platform,
+        source: "dashboard",
+        type: "design",
+      });
+
+      // Navigate to the new project
+      router.push(`/home/projects/${data.id}`);
     }
-
-    // Track project creation from dashboard
-    trackEvent("project_created", {
-      project_id: data.id,
-      platform: platform,
-      source: "dashboard",
-    });
-
-    // Navigate to the new project
-    router.push(`/home/projects/${data.id}`);
   };
 
   // Delete project
@@ -693,6 +740,7 @@ export default function DashboardPage() {
             userPlan={(dbUser?.plan as PlanType) || "free"}
             isBYOKActive={isBYOKActive}
             onUpgradeClick={() => router.push('/home/settings')}
+            isAdmin={dbUser?.role === "admin"}
           />
         </>
       )}
