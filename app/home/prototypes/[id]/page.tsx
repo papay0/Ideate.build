@@ -1080,46 +1080,10 @@ export default function PrototypePage() {
           />
         )}
 
-        {/* Prototype badge + Play button + Preview/Code Toggle + Export */}
+        {/* Preview/Code Toggle + Actions */}
         {!isMobile && (
-          <div className="flex items-center gap-3 ml-auto flex-shrink-0">
-            {/* Prototype badge */}
-            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium">
-              <Play className="w-3.5 h-3.5" />
-              Prototype
-            </div>
-            {/* Play button */}
-            <button
-              onClick={handlePlay}
-              disabled={savedScreens.length === 0 || isLoadingPlayer}
-              className="flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] hover:bg-[#2A2A2A] text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoadingPlayer ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Play className="w-4 h-4 fill-current" />
-              )}
-              Play
-            </button>
-            {/* Share button */}
-            <button
-              onClick={handleShare}
-              disabled={savedScreens.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#F5F2EF] text-[#1A1A1A] text-sm font-medium rounded-lg border border-[#E8E4E0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Copy shareable link"
-            >
-              {shareCopied ? (
-                <>
-                  <Check className="w-4 h-4 text-green-600" />
-                  <span className="text-green-600">Copied!</span>
-                </>
-              ) : (
-                <>
-                  <Share2 className="w-4 h-4" />
-                  Share
-                </>
-              )}
-            </button>
+          <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+            {/* Preview/Code toggle */}
             <div className="flex bg-[#F5F2EF] rounded-lg p-1 border border-[#E8E4E0]">
               <button
                 onClick={() => setViewMode("preview")}
@@ -1144,12 +1108,68 @@ export default function PrototypePage() {
                 Code
               </button>
             </div>
-            <ExportMenu
-              screens={displayScreens}
-              projectName={project?.name || "Untitled"}
-              projectId={projectId}
-              platform={project?.platform || "mobile"}
-            />
+
+            <div className="w-px h-7 bg-[#E8E4E0]" />
+
+            {/* Action buttons - same height */}
+            <div className="flex items-center gap-1.5">
+              {/* Play button */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={handlePlay}
+                      disabled={savedScreens.length === 0 || isLoadingPlayer}
+                      className="h-8 w-8 flex items-center justify-center bg-[#1A1A1A] hover:bg-[#2A2A2A] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isLoadingPlayer ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Play className="w-4 h-4 fill-current" />
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Play prototype</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              {/* Share button */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={handleShare}
+                      disabled={savedScreens.length === 0}
+                      className={`h-8 w-8 flex items-center justify-center rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                        shareCopied
+                          ? "bg-green-50 border-green-200 text-green-600"
+                          : "bg-white hover:bg-[#F5F2EF] border-[#E8E4E0] text-[#6B6B6B] hover:text-[#1A1A1A]"
+                      }`}
+                    >
+                      {shareCopied ? (
+                        <Check className="w-4 h-4" />
+                      ) : (
+                        <Share2 className="w-4 h-4" />
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{shareCopied ? "Link copied!" : "Copy share link"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              {/* Export button */}
+              <ExportMenu
+                screens={displayScreens}
+                projectName={project?.name || "Untitled"}
+                projectId={projectId}
+                platform={project?.platform || "mobile"}
+                iconOnly
+              />
+            </div>
           </div>
         )}
       </div>

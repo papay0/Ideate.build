@@ -10,6 +10,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Download, Loader2, Images, FileArchive, ChevronDown } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { ParsedScreen } from "./StreamingScreenPreview";
 import type { Platform } from "@/lib/constants/platforms";
 import {
@@ -26,9 +32,10 @@ interface ExportMenuProps {
   projectName: string;
   projectId: string;
   platform: Platform;
+  iconOnly?: boolean;
 }
 
-export function ExportMenu({ screens, projectName, projectId, platform }: ExportMenuProps) {
+export function ExportMenu({ screens, projectName, projectId, platform, iconOnly }: ExportMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [exporting, setExporting] = useState<"zip" | "combined" | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -151,21 +158,44 @@ export function ExportMenu({ screens, projectName, projectId, platform }: Export
 
   const isDisabled = screens.length === 0 || exporting !== null;
 
+  const buttonContent = (
+    <button
+      onClick={() => setIsOpen(!isOpen)}
+      disabled={isDisabled}
+      className={
+        iconOnly
+          ? "h-8 w-8 flex items-center justify-center text-[#6B6B6B] hover:text-[#1A1A1A] bg-white hover:bg-[#F5F2EF] rounded-lg border border-[#E8E4E0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          : "flex items-center gap-2 px-3 py-2.5 text-sm text-[#6B6B6B] hover:text-[#1A1A1A] bg-white hover:bg-[#F5F2EF] rounded-lg border border-[#E8E4E0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      }
+    >
+      {exporting ? (
+        <Loader2 className="w-4 h-4 animate-spin" />
+      ) : (
+        <Download className="w-4 h-4" />
+      )}
+      {!iconOnly && (
+        <>
+          <span>Export</span>
+          <ChevronDown className="w-3 h-3" />
+        </>
+      )}
+    </button>
+  );
+
   return (
     <div ref={menuRef} className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        disabled={isDisabled}
-        className="flex items-center gap-2 px-3 py-2.5 text-sm text-[#6B6B6B] hover:text-[#1A1A1A] bg-white hover:bg-[#F5F2EF] rounded-lg border border-[#E8E4E0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {exporting ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          <Download className="w-4 h-4" />
-        )}
-        <span>Export</span>
-        <ChevronDown className="w-3 h-3" />
-      </button>
+      {iconOnly ? (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>{buttonContent}</TooltipTrigger>
+            <TooltipContent>
+              <p>Export</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ) : (
+        buttonContent
+      )}
 
       {/* Dropdown menu */}
       {isOpen && (
