@@ -30,9 +30,15 @@ import {
   Smartphone,
   Monitor,
   Infinity,
+  Paintbrush,
+  Play,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import type { Project } from "@/lib/supabase/types";
+import type { Project, PrototypeProject } from "@/lib/supabase/types";
+
+// Unified project type that includes both designs and prototypes
+type ProjectType = "design" | "prototype";
+type UnifiedProject = (Project | PrototypeProject) & { type: ProjectType };
 import { PlatformSelector } from "./components/PlatformSelector";
 import { DashboardSkeleton, ProjectsGridSkeleton } from "./components/Skeleton";
 import { ImageUploadButton } from "./components/ImageUploadButton";
@@ -91,8 +97,8 @@ function ProjectCard({
   project,
   onDelete,
 }: {
-  project: Project;
-  onDelete: (id: string) => void;
+  project: UnifiedProject;
+  onDelete: (id: string, type: ProjectType) => void;
 }) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -102,7 +108,7 @@ function ProjectCard({
     if (!confirm("Are you sure you want to delete this project?")) return;
 
     setIsDeleting(true);
-    await onDelete(project.id);
+    await onDelete(project.id, project.type);
   };
 
   const formattedDate = new Date(project.updated_at).toLocaleDateString(
@@ -117,13 +123,22 @@ function ProjectCard({
     }
   );
 
+  // Route to correct page based on type
+  const projectUrl = project.type === "prototype"
+    ? `/home/prototypes/${project.id}`
+    : `/home/projects/${project.id}`;
+
+  // Type indicator icon and colors
+  const TypeIcon = project.type === "prototype" ? Play : Paintbrush;
+  const typeLabel = project.type === "prototype" ? "Prototype" : "Design";
+
   return (
     <>
       {/* Mobile: Compact horizontal card */}
       <motion.div
         variants={fadeInUp}
         className="sm:hidden group bg-white border border-[#E8E4E0] hover:border-[#D4CFC9] rounded-xl p-3 flex items-center gap-3 transition-all cursor-pointer active:scale-[0.98]"
-        onClick={() => router.push(`/home/projects/${project.id}`)}
+        onClick={() => router.push(projectUrl)}
       >
         {/* Emoji thumbnail */}
         <div className="w-14 h-14 rounded-xl bg-[#F5F2EF] flex items-center justify-center flex-shrink-0 relative">
@@ -140,7 +155,20 @@ function ProjectCard({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-[#1A1A1A] truncate text-[15px]">{project.name}</h3>
+          <div className="flex items-center gap-1.5">
+            <h3 className="font-medium text-[#1A1A1A] truncate text-[15px]">{project.name}</h3>
+            {/* Type badge */}
+            <span
+              className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                project.type === "prototype"
+                  ? "bg-violet-50 text-violet-600"
+                  : "bg-amber-50 text-amber-600"
+              }`}
+              title={typeLabel}
+            >
+              <TypeIcon className="w-2.5 h-2.5" />
+            </span>
+          </div>
           <p className="text-sm text-[#9A9A9A] truncate">
             {project.app_idea || "No description"}
           </p>
@@ -169,18 +197,32 @@ function ProjectCard({
       <motion.div
         variants={fadeInUp}
         className="hidden sm:block group relative bg-white border border-[#E8E4E0] hover:border-[#D4CFC9] rounded-2xl overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-sm"
-        onClick={() => router.push(`/home/projects/${project.id}`)}
+        onClick={() => router.push(projectUrl)}
       >
         {/* Preview area with emoji icon */}
         <div className="aspect-[4/3] bg-[#F5F2EF] flex items-center justify-center border-b border-[#E8E4E0] relative">
           <span className="text-6xl">{project.icon || "📱"}</span>
-          {/* Platform indicator */}
-          <div className="absolute top-2 right-2">
-            {project.platform === "desktop" ? (
-              <Monitor className="w-4 h-4 text-[#9A9A9A]" />
-            ) : (
-              <Smartphone className="w-4 h-4 text-[#9A9A9A]" />
-            )}
+          {/* Platform + Type indicators */}
+          <div className="absolute top-2 right-2 flex items-center gap-1.5">
+            {/* Type badge */}
+            <span
+              className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium ${
+                project.type === "prototype"
+                  ? "bg-violet-100 text-violet-700"
+                  : "bg-amber-100 text-amber-700"
+              }`}
+            >
+              <TypeIcon className="w-3 h-3" />
+              <span className="hidden lg:inline">{typeLabel}</span>
+            </span>
+            {/* Platform indicator */}
+            <div className="w-7 h-7 rounded-md bg-white/80 backdrop-blur-sm flex items-center justify-center">
+              {project.platform === "desktop" ? (
+                <Monitor className="w-3.5 h-3.5 text-[#6B6B6B]" />
+              ) : (
+                <Smartphone className="w-3.5 h-3.5 text-[#6B6B6B]" />
+              )}
+            </div>
           </div>
         </div>
 
@@ -487,7 +529,7 @@ export default function DashboardPage() {
   const { messagesRemaining, bonusMessagesRemaining, isLoading: isSubscriptionLoading } = useSubscription();
   const { isBYOKActive, isInitialized: isBYOKInitialized } = useBYOK();
 
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<UnifiedProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -502,7 +544,7 @@ export default function DashboardPage() {
   // User can generate if: has API key OR (subscription loaded AND has messages remaining in either pool)
   const userCanGenerate = isBYOKActive || (!isSubscriptionLoading && totalMessagesRemaining > 0);
 
-  // Fetch projects on mount
+  // Fetch both projects and prototypes on mount
   useEffect(() => {
     if (!isLoaded || !user) return;
 
@@ -512,18 +554,41 @@ export default function DashboardPage() {
     async function fetchProjects() {
       const supabase = createClient();
 
-      const { data, error } = await supabase
-        .from("projects")
-        .select("*")
-        .eq("user_id", userId)
-        .order("updated_at", { ascending: false });
+      // Fetch both designs and prototypes in parallel
+      const [designsResult, prototypesResult] = await Promise.all([
+        supabase
+          .from("projects")
+          .select("*")
+          .eq("user_id", userId),
+        supabase
+          .from("prototype_projects")
+          .select("*")
+          .eq("user_id", userId),
+      ]);
 
-      if (error) {
-        console.error("Error fetching projects:", error);
-      } else {
-        setProjects(data || []);
+      if (designsResult.error) {
+        console.error("Error fetching designs:", designsResult.error);
+      }
+      if (prototypesResult.error) {
+        console.error("Error fetching prototypes:", prototypesResult.error);
       }
 
+      // Tag each with its type and merge
+      const designs: UnifiedProject[] = (designsResult.data || []).map((p) => ({
+        ...p,
+        type: "design" as const,
+      }));
+      const prototypes: UnifiedProject[] = (prototypesResult.data || []).map((p) => ({
+        ...p,
+        type: "prototype" as const,
+      }));
+
+      // Merge and sort by updated_at (newest first)
+      const allProjects = [...designs, ...prototypes].sort(
+        (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      );
+
+      setProjects(allProjects);
       setIsLoading(false);
     }
 
@@ -657,18 +722,19 @@ export default function DashboardPage() {
     }
   };
 
-  // Delete project
-  const handleDeleteProject = async (projectId: string) => {
+  // Delete project (handles both designs and prototypes)
+  const handleDeleteProject = async (projectId: string, type: ProjectType) => {
     const supabase = createClient();
+    const tableName = type === "prototype" ? "prototype_projects" : "projects";
 
     const { error } = await supabase
-      .from("projects")
+      .from(tableName)
       .delete()
       .eq("id", projectId);
 
     if (error) {
-      console.error("Error deleting project:", error);
-      alert("Failed to delete project. Please try again.");
+      console.error(`Error deleting ${type}:`, error);
+      alert(`Failed to delete ${type}. Please try again.`);
       return;
     }
 
