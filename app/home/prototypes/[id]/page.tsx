@@ -999,11 +999,10 @@ export default function PrototypePage() {
       headers["x-provider"] = apiConfig.provider;
     }
 
-    trackEvent("design_generated", {
+    trackEvent("prototype_generated", {
       project_id: projectId,
       model: selectedModel,
       is_byok: !!apiConfig?.key,
-      type: "prototype",
     });
 
     // Use prototype API endpoint

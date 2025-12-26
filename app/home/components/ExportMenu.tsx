@@ -112,7 +112,7 @@ export function ExportMenu({ screens, projectName, projectId, platform, iconOnly
         await downloadAsZip(allFiles, `${safeName}-screens.zip`);
 
         // Track export
-        trackEvent("design_exported", {
+        trackEvent("prototype_exported", {
           project_id: projectId,
           format: "zip",
           screen_count: screens.length,
@@ -143,7 +143,7 @@ export function ExportMenu({ screens, projectName, projectId, platform, iconOnly
         downloadBlob(combinedBlob, `${safeName}-combined.png`);
 
         // Track export
-        trackEvent("design_exported", {
+        trackEvent("prototype_exported", {
           project_id: projectId,
           format: "png",
           screen_count: screens.length,

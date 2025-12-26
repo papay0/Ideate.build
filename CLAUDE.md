@@ -12,32 +12,38 @@ npm run lint     # Run ESLint
 
 ## Architecture Overview
 
-OpenDesign is an AI-powered design generation tool that creates mobile and desktop UI designs in real-time using streaming LLM responses.
+OpenDesign is an AI-powered prototyping tool that creates interactive mobile and desktop app prototypes in real-time using streaming LLM responses.
 
 ### Core Flow
 
 1. **User submits prompt** → `app/home/page.tsx` handles input
-2. **API streams response** → `app/api/ai/generate-design/route.ts` uses Vercel AI SDK with SSE
+2. **API streams response** → `app/api/ai/generate-prototype/route.ts` uses Vercel AI SDK with SSE
 3. **Parser extracts screens** → `StreamingScreenPreview.tsx` parses HTML comment delimiters
-4. **Canvas renders mockups** → `DesignCanvas.tsx` displays phone/browser frames with zoom/pan
+4. **Canvas renders mockups** → `PrototypeCanvas.tsx` displays screens in a 2D grid with flow arrows
+5. **User can play prototype** → `PrototypePlayer.tsx` enables interactive navigation testing
 
 ### Streaming Protocol
 
-The AI outputs HTML with special comment delimiters:
+The AI outputs HTML with special comment delimiters including grid positions:
 ```html
 <!-- PROJECT_NAME: App Name -->
 <!-- PROJECT_ICON: emoji -->
 <!-- MESSAGE: Chat text -->
-<!-- SCREEN_START: Screen Name -->  <!-- or SCREEN_EDIT for updates -->
-<div>...HTML+Tailwind...</div>
+<!-- SCREEN_START: Screen Name [col,row] [ROOT] -->
+<div>...HTML+Tailwind with data-flow navigation...</div>
 <!-- SCREEN_END -->
 ```
 
+- `[col,row]` - Grid position for canvas layout
+- `[ROOT]` - Marks the entry point screen
+- `data-flow="screen-target"` - Navigation links between screens
+
 ### Key Directories
 
-- `app/api/ai/generate-design/` - Streaming SSE endpoint, handles BYOK + platform key logic
-- `app/home/components/` - Main UI: DesignCanvas, StreamingScreenPreview, CodeViewer
-- `lib/prompts/system-prompts.ts` - Platform-specific (mobile/desktop) AI prompts
+- `app/api/ai/generate-prototype/` - Streaming SSE endpoint, handles BYOK + platform key logic
+- `app/home/components/prototype/` - PrototypeCanvas, PrototypePlayer, FlowConnections
+- `app/home/components/` - Shared UI: StreamingScreenPreview, CodeViewer, ExportMenu
+- `lib/prompts/prototype-prompts.ts` - Platform-specific (mobile/desktop) AI prompts with grid layout rules
 - `lib/constants/` - Platform configs (viewports), plan tiers, pricing
 - `lib/supabase/` - Client/server Supabase clients with typed Database
 - `lib/hooks/` - useSubscription, useBYOK, useUserSync, useAnalytics
@@ -45,10 +51,10 @@ The AI outputs HTML with special comment delimiters:
 ### Authentication & Data
 
 - **Auth**: Clerk (`@clerk/nextjs`) - user ID stored as `clerk_id` in Supabase
-- **Database**: Supabase with three main tables:
-  - `projects` - User projects (links to clerk_id)
-  - `project_designs` - Generated screen HTML per project
-  - `design_messages` - Chat history for context
+- **Database**: Supabase with prototype tables:
+  - `prototype_projects` - User prototype projects (links to clerk_id)
+  - `prototype_screens` - Generated screen HTML with grid positions
+  - `prototype_messages` - Chat history for context
   - `users` - User records with plan, messages_remaining
 
 ### Subscription System
@@ -107,9 +113,9 @@ trackEvent("my_new_event", {
 
 | Event | When Fired |
 |-------|------------|
-| `project_created` | New project created (landing or dashboard) |
-| `design_generated` | AI generation completes |
-| `design_exported` | PNG or ZIP export |
+| `project_created` | New prototype created (landing or dashboard) |
+| `prototype_generated` | AI generation completes |
+| `prototype_exported` | PNG or ZIP export |
 | `subscription_upgraded` | User upgrades to Pro |
 | `byok_configured` | User adds their API key |
 | `byok_removed` | User removes their API key |
@@ -126,4 +132,4 @@ trackEvent("my_new_event", {
 
 ## Database Schema
 
-Run `supabase/schema.sql` in Supabase SQL Editor to set up tables. RLS is enabled but policies allow all operations (filtering done in app code by clerk_id).
+Prototype tables are managed via Supabase migrations. RLS is enabled but policies allow all operations (filtering done in app code by clerk_id).

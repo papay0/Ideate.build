@@ -24,140 +24,13 @@ export interface Database {
   public: {
     Tables: {
       /**
-       * Projects table - stores user projects
-       * Each project contains an app idea and generated designs
-       */
-      projects: {
-        Row: {
-          id: string
-          user_id: string          // Clerk user ID
-          name: string             // Project display name
-          app_idea: string | null  // User's initial app description
-          icon: string             // Emoji icon for the project
-          platform: 'mobile' | 'desktop'  // Target platform for designs
-          initial_image_url: string | null  // Reference image attached during creation
-          model: string            // AI model to use (e.g., 'gemini-3-flash-preview')
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          name: string
-          app_idea?: string | null
-          icon?: string
-          platform: 'mobile' | 'desktop'  // Required: mobile or desktop
-          initial_image_url?: string | null  // Reference image attached during creation
-          model?: string           // AI model to use (defaults to 'gemini-3-flash-preview')
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          name?: string
-          app_idea?: string | null
-          icon?: string
-          platform?: 'mobile' | 'desktop'
-          initial_image_url?: string | null  // Reference image attached during creation
-          model?: string           // AI model to use
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-
-      /**
-       * Project designs table - stores generated screen designs
-       * Each design is an HTML string representing a UI screen (mobile or desktop)
-       */
-      project_designs: {
-        Row: {
-          id: string
-          project_id: string       // Foreign key to projects
-          screen_name: string      // Display name (e.g., "Home Screen", "Profile")
-          html_content: string     // Raw HTML with Tailwind CSS
-          sort_order: number       // Order in the screen list
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          project_id: string
-          screen_name: string
-          html_content: string
-          sort_order?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          project_id?: string
-          screen_name?: string
-          html_content?: string
-          sort_order?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "project_designs_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-
-      /**
-       * Design messages table - stores chat conversation history
-       * Used to maintain context for follow-up design iterations
-       */
-      design_messages: {
-        Row: {
-          id: string
-          project_id: string              // Foreign key to projects
-          role: 'user' | 'assistant'      // Message sender
-          content: string                 // Message text
-          image_url: string | null        // Optional reference image URL
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          project_id: string
-          role: 'user' | 'assistant'
-          content: string
-          image_url?: string | null       // Optional reference image URL
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          project_id?: string
-          role?: 'user' | 'assistant'
-          content?: string
-          image_url?: string | null       // Optional reference image URL
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "design_messages_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-
-      /**
        * Usage logs table - tracks AI generation costs
        * Stores token usage and calculated costs per generation
        */
       usage_logs: {
         Row: {
           id: string
-          project_id: string              // Foreign key to projects
+          project_id: string              // Foreign key to prototype_projects
           user_id: string                 // Foreign key to users
           input_tokens: number            // Number of input tokens
           output_tokens: number           // Number of output tokens
@@ -202,7 +75,7 @@ export interface Database {
             foreignKeyName: "usage_logs_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
-            referencedRelation: "projects"
+            referencedRelation: "prototype_projects"
             referencedColumns: ["id"]
           },
           {
@@ -407,12 +280,12 @@ export interface Database {
       }
 
       // ========================================================================
-      // PROTOTYPE TABLES (Admin Only Feature)
+      // PROTOTYPE TABLES
       // ========================================================================
 
       /**
-       * Prototype projects table - stores prototype projects (separate from design)
-       * Admin-only feature for interactive prototyping
+       * Prototype projects table - stores prototype projects
+       * Main table for user prototypes with interactive screens
        */
       prototype_projects: {
         Row: {
@@ -610,27 +483,6 @@ export interface Database {
 // Helper Types - Use these throughout the application
 // ============================================================================
 
-/** Project row type */
-export type Project = Database['public']['Tables']['projects']['Row']
-/** Project insert type (for creating new projects) */
-export type ProjectInsert = Database['public']['Tables']['projects']['Insert']
-/** Project update type (for updating existing projects) */
-export type ProjectUpdate = Database['public']['Tables']['projects']['Update']
-
-/** Design row type */
-export type ProjectDesign = Database['public']['Tables']['project_designs']['Row']
-/** Design insert type */
-export type ProjectDesignInsert = Database['public']['Tables']['project_designs']['Insert']
-/** Design update type */
-export type ProjectDesignUpdate = Database['public']['Tables']['project_designs']['Update']
-
-/** Message row type */
-export type DesignMessage = Database['public']['Tables']['design_messages']['Row']
-/** Message insert type */
-export type DesignMessageInsert = Database['public']['Tables']['design_messages']['Insert']
-/** Message update type */
-export type DesignMessageUpdate = Database['public']['Tables']['design_messages']['Update']
-
 /** User row type */
 export type User = Database['public']['Tables']['users']['Row']
 /** User insert type */
@@ -667,7 +519,7 @@ export type AuditLogInsert = Database['public']['Tables']['audit_logs']['Insert'
 export type AuditLogUpdate = Database['public']['Tables']['audit_logs']['Update']
 
 // ============================================================================
-// Prototype Helper Types (Admin Only Feature)
+// Prototype Helper Types
 // ============================================================================
 
 /** Prototype project row type */

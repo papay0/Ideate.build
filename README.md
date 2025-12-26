@@ -1,6 +1,6 @@
 # OpenDesign
 
-An open-source AI-powered design generation tool that creates beautiful mobile app UI designs in real-time. Describe your app idea, watch it come to life.
+An open-source AI-powered prototyping tool that creates interactive mobile and desktop app prototypes in real-time. Describe your app idea, watch it come to life, and test it with working navigation.
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.1-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19-blue?logo=react)
@@ -10,15 +10,18 @@ An open-source AI-powered design generation tool that creates beautiful mobile a
 
 ## Features
 
-- **Real-time Streaming** - Watch your designs generate token-by-token with live preview
+- **Interactive Prototypes** - Generate clickable prototypes with working navigation between screens
+- **Real-time Streaming** - Watch your screens generate token-by-token with live preview
+- **Play Mode** - Test your prototype with full-screen interactive navigation
 - **BYOK (Bring Your Own Key)** - Use your own API keys from OpenRouter or Google Gemini
-- **Figma-like Canvas** - Zoom, pan, and navigate your designs with intuitive controls
-- **Phone Mockups** - See your designs in realistic iPhone frames (390x844 viewport)
+- **2D Grid Canvas** - Screens laid out intelligently showing app flow and relationships
+- **Phone/Desktop Mockups** - See prototypes in realistic device frames
 - **Inline Editing** - Request changes to specific screens and watch them update in place
-- **Visual Feedback** - Blue pulsing indicator for screens being edited, green for completed
-- **Conversation History** - AI remembers context for iterative design refinement
-- **Project Management** - Organize designs with custom names and emoji icons
-- **Persistent Storage** - All projects and designs saved to Supabase
+- **Flow Connections** - Visual arrows showing navigation between screens
+- **Conversation History** - AI remembers context for iterative refinement
+- **Project Management** - Organize prototypes with custom names and emoji icons
+- **Persistent Storage** - All projects saved to Supabase
+- **Public Sharing** - Share interactive prototypes via public URLs
 
 ## Tech Stack
 
@@ -75,17 +78,10 @@ NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 
 ### 4. Set up the database
 
-Run the SQL schema in your Supabase SQL Editor:
-
-```bash
-# Copy the contents of supabase/schema.sql and run it in:
-# https://app.supabase.com/project/YOUR_PROJECT/sql/new
-```
-
-This creates three tables:
-- `projects` - User projects with app ideas
-- `project_designs` - Generated screen HTML
-- `design_messages` - Chat history for context
+Run the prototype migrations in your Supabase SQL Editor to create the required tables:
+- `prototype_projects` - User prototype projects
+- `prototype_screens` - Generated screen HTML with grid positions
+- `prototype_messages` - Chat history for context
 
 ### 5. Run the development server
 
@@ -100,16 +96,23 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 1. Sign in to OpenDesign
 2. Go to **Settings** (gear icon)
 3. Enter your OpenRouter or Gemini API key
-4. Start designing!
+4. Start prototyping!
 
 ## Usage
 
-### Creating a New Design
+### Creating a New Prototype
 
-1. Click **"New Project"** on the home page
-2. Enter your app idea (e.g., "A fitness tracking app with workout plans")
-3. Watch as the AI generates 3-5 screens in real-time
+1. Enter your app idea on the home page (e.g., "A fitness tracking app with workout plans")
+2. Watch as the AI generates 5-8 interactive screens in real-time
+3. Screens are arranged in a 2D grid showing the app flow
 4. Use the canvas controls to zoom and pan
+
+### Testing Your Prototype
+
+1. Click the **Play** button to enter interactive mode
+2. Navigate between screens by clicking buttons and links
+3. Test the user flow just like a real app
+4. Exit play mode to continue editing
 
 ### Editing Existing Screens
 
@@ -135,36 +138,43 @@ The AI will identify the relevant screen and update it inline.
 
 ```
 app/
-├── api/ai/generate-design/    # Streaming AI endpoint
+├── api/ai/generate-prototype/    # Streaming AI endpoint
 ├── home/
 │   ├── components/
-│   │   ├── DesignCanvas.tsx   # Zoomable canvas with phone mockups
+│   │   ├── prototype/
+│   │   │   ├── PrototypeCanvas.tsx   # 2D grid canvas
+│   │   │   ├── PrototypePlayer.tsx   # Interactive play mode
+│   │   │   └── FlowConnections.tsx   # Navigation arrows
 │   │   ├── StreamingScreenPreview.tsx  # SSE parser & state
-│   │   ├── EditableProjectHeader.tsx   # Project name/icon editor
-│   │   └── EmojiPicker.tsx    # Icon selector
-│   ├── projects/[id]/         # Individual project page
-│   └── settings/              # API key configuration
-├── sign-in/                   # Clerk auth
+│   │   └── ExportMenu.tsx            # PNG/ZIP export
+│   ├── prototypes/[id]/              # Prototype editor page
+│   └── settings/                     # API key configuration
+├── p/[id]/                           # Public prototype viewer
+├── sign-in/                          # Clerk auth
 └── sign-up/
 ```
 
 ### Streaming Protocol
 
-The AI uses HTML comment delimiters for structured output:
+The AI uses HTML comment delimiters with grid positions:
 
 ```html
 <!-- PROJECT_NAME: My App -->
-<!-- PROJECT_ICON: 🚀 -->
-<!-- MESSAGE: Here's your app design! -->
-<!-- SCREEN_START: Home -->
+<!-- PROJECT_ICON: rocket -->
+<!-- MESSAGE: Here's your interactive prototype! -->
+<!-- SCREEN_START: Home [0,0] [ROOT] -->
 <div class="min-h-screen bg-gradient-to-b...">
-  ...
+  <a href="#screen-profile" data-flow="screen-profile">Profile</a>
 </div>
 <!-- SCREEN_END -->
-<!-- SCREEN_EDIT: Home -->  <!-- For editing existing screens -->
+<!-- SCREEN_START: Profile [1,0] -->
 ...
 <!-- SCREEN_END -->
 ```
+
+- `[col,row]` - Grid position for canvas layout
+- `[ROOT]` - Marks the entry point screen
+- `data-flow="screen-target"` - Navigation links between screens
 
 ## API Key Providers
 

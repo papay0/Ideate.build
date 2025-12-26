@@ -1,8 +1,8 @@
 /**
  * System Prompts for AI Prototype Generation
  *
- * These prompts are specifically designed for the Prototype mode (admin only).
- * Key differences from Design mode:
+ * These prompts are specifically designed for Prototype mode.
+ * Key features:
  * - Screens have grid positions [col,row] for canvas layout
  * - Navigation uses anchor links with data-flow attributes
  * - Screens are interactive (forms, inputs work)
@@ -10,7 +10,37 @@
  * - Scrolling is allowed within screens
  */
 
-import { IMAGE_RULES } from "./system-prompts";
+// ============================================================================
+// IMAGE RULES (shared constant for consistent image handling)
+// ============================================================================
+
+export const IMAGE_RULES = `IMAGES - USE REAL WORKING URLs:
+
+**For Pokemon** - Use PokeAPI sprites (ALWAYS use these):
+   - https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{number}.png
+   - Examples: 1=Bulbasaur, 4=Charmander, 7=Squirtle, 25=Pikachu, 6=Charizard, 9=Blastoise, 150=Mewtwo
+
+**For NBA/Sports** - Use official NBA CDN URLs you know:
+   - NBA headshots: https://cdn.nba.com/headshots/nba/latest/1040x760/{player_id}.png
+   - Example player IDs: 2544=LeBron James, 201566=Stephen Curry, 203507=Giannis
+   - Team logos: https://cdn.nba.com/logos/nba/{team_id}/global/L/logo.svg
+
+**For Profile Avatars** - Use UI Avatars:
+   - https://ui-avatars.com/api/?name=John+Doe&size=48&background=random
+
+**For ALL General Photos** - Use Picsum with descriptive seeds (ALWAYS WORKS):
+   - https://picsum.photos/seed/{descriptive-word}/{width}/{height}
+   - Examples: https://picsum.photos/seed/city/400/300, https://picsum.photos/seed/food/200/200
+   - Any word works as a seed: cooking, fitness, nature, office, travel, neighborhood, street, building
+
+**For Colored Placeholders** - Use Placehold.co:
+   - https://placehold.co/400x300/{hex-color}/white?text={Label}
+
+CRITICAL RULES:
+- NEVER use images.unsplash.com - these URLs will 404
+- NEVER use source.unsplash.com - this service is deprecated
+- ALWAYS use picsum.photos/seed/{word}/{width}/{height} for photos
+- If unsure, use UI Avatars or Picsum - they NEVER fail`;
 
 // ============================================================================
 // PROTOTYPE-SPECIFIC COMMUNICATION RULES
@@ -316,8 +346,6 @@ const HTML_CSS_RULES = `HTML/CSS RULES:
 - Include realistic placeholder content (names, dates, numbers, descriptions)
 - All navigation must use anchor links with data-flow attributes
 - You CAN and SHOULD use vanilla JavaScript for interactivity (see INTERACTIVITY section)`;
-
-// IMAGE_RULES is imported from system-prompts.ts to ensure consistency
 
 const ICON_RULES = `ICONS - Use inline SVG:
 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="..."></path></svg>
