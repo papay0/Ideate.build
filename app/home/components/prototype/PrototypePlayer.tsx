@@ -130,38 +130,45 @@ export function PrototypePlayer({
           </div>
 
           {/* Device Frame + Iframe */}
-          <div className="flex-1 flex items-center justify-center p-8 overflow-auto">
-            {platform === "mobile" ? (
-              <MobileFrame>
-                <iframe
-                  srcDoc={prototypeHtml}
-                  className="w-full h-full"
-                  style={{
-                    width: viewport.width,
-                    height: viewport.height,
-                    border: "none",
-                    backgroundColor: "white",
-                  }}
-                  title={`${projectName} Prototype`}
-                  sandbox="allow-scripts allow-same-origin"
-                />
-              </MobileFrame>
-            ) : (
-              <BrowserFrame>
-                <iframe
-                  srcDoc={prototypeHtml}
-                  className="w-full h-full"
-                  style={{
-                    width: viewport.width,
-                    height: viewport.height,
-                    border: "none",
-                    backgroundColor: "white",
-                  }}
-                  title={`${projectName} Prototype`}
-                  sandbox="allow-scripts allow-same-origin"
-                />
-              </BrowserFrame>
-            )}
+          <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+            <div
+              className="flex items-center justify-center"
+              style={{
+                // Scale down to fit available space
+                transform: platform === "mobile" ? "scale(0.85)" : "scale(0.7)",
+                transformOrigin: "center center",
+              }}
+            >
+              {platform === "mobile" ? (
+                <MobileFrame>
+                  <iframe
+                    srcDoc={prototypeHtml}
+                    style={{
+                      width: viewport.width,
+                      height: viewport.height,
+                      border: "none",
+                      backgroundColor: "white",
+                    }}
+                    title={`${projectName} Prototype`}
+                    sandbox="allow-scripts allow-same-origin"
+                  />
+                </MobileFrame>
+              ) : (
+                <BrowserFrame>
+                  <iframe
+                    srcDoc={prototypeHtml}
+                    style={{
+                      width: viewport.width,
+                      height: viewport.height,
+                      border: "none",
+                      backgroundColor: "white",
+                    }}
+                    title={`${projectName} Prototype`}
+                    sandbox="allow-scripts allow-same-origin"
+                  />
+                </BrowserFrame>
+              )}
+            </div>
           </div>
 
           {/* Footer hint */}

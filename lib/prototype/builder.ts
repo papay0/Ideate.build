@@ -61,6 +61,7 @@ ${indentHtml(screen.html, 4)}
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=${viewport.width}, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <base target="_self">
   <title>${escapeHtml(projectName)} - Prototype</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -94,6 +95,19 @@ ${indentHtml(screen.html, 4)}
     input, textarea, select {
       pointer-events: auto;
       -webkit-appearance: none;
+    }
+
+    /* Highlight clickable navigation elements */
+    [data-flow] {
+      cursor: pointer;
+      transition: box-shadow 0.2s ease, transform 0.15s ease;
+    }
+    [data-flow]:hover {
+      box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.5), 0 0 12px rgba(147, 51, 234, 0.3);
+      transform: scale(1.01);
+    }
+    [data-flow]:active {
+      transform: scale(0.99);
     }
 
     /* Scrollable content support */
