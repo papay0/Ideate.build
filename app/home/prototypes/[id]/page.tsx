@@ -1080,6 +1080,41 @@ export default function PrototypePage() {
           />
         )}
 
+        {/* Mobile action buttons */}
+        {isMobile && (
+          <div className="flex items-center gap-1.5 ml-auto">
+            {/* Play button */}
+            <button
+              onClick={handlePlay}
+              disabled={savedScreens.length === 0 || isLoadingPlayer}
+              className="h-8 w-8 flex items-center justify-center bg-[#1A1A1A] hover:bg-[#2A2A2A] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoadingPlayer ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Play className="w-4 h-4 fill-current" />
+              )}
+            </button>
+
+            {/* Share button */}
+            <button
+              onClick={handleShare}
+              disabled={savedScreens.length === 0}
+              className={`h-8 w-8 flex items-center justify-center rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                shareCopied
+                  ? "bg-green-50 border-green-200 text-green-600"
+                  : "bg-white hover:bg-[#F5F2EF] border-[#E8E4E0] text-[#6B6B6B] hover:text-[#1A1A1A]"
+              }`}
+            >
+              {shareCopied ? (
+                <Check className="w-4 h-4" />
+              ) : (
+                <Share2 className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+        )}
+
         {/* Preview/Code Toggle + Actions */}
         {!isMobile && (
           <div className="flex items-center gap-2 ml-auto flex-shrink-0">

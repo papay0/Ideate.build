@@ -122,13 +122,10 @@ export function PrototypePlayer({
                 <Monitor className="w-5 h-5 text-white/70" />
               )}
               <span className="text-white font-medium">{projectName}</span>
-              <span className="px-2 py-0.5 bg-purple-500/20 text-purple-300 text-xs rounded-full">
-                Prototype
-              </span>
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Hotspots toggle */}
+              {/* Click/Tap areas toggle */}
               <button
                 onClick={() => setShowHotspots(!showHotspots)}
                 className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors ${
@@ -139,7 +136,8 @@ export function PrototypePlayer({
                 title="Toggle clickable area highlights"
               >
                 <MousePointer2 className="w-4 h-4" />
-                Hotspots
+                <span className="hidden sm:inline">Click areas</span>
+                <span className="sm:hidden">Tap areas</span>
               </button>
 
               {prototypeUrl && (

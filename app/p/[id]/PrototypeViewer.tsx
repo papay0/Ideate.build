@@ -106,8 +106,8 @@ export function PrototypeViewer({
           }`}
         >
           <MousePointer2 className="w-4 h-4" />
-          <span className="hidden sm:inline">Show clickable areas</span>
-          <span className="sm:hidden">Hotspots</span>
+          <span className="hidden sm:inline">Click areas</span>
+          <span className="sm:hidden">Tap areas</span>
         </button>
       </header>
 
