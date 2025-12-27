@@ -634,18 +634,19 @@ function HeroSection() {
 // ============================================================================
 
 // Placeholder images - replace with real screenshots
+// Using picsum.photos for development placeholders
 const COMPARISON_IMAGES = {
   mobile: {
-    opendesign: "/images/comparison/mobile-opendesign.png",
-    v0: "/images/comparison/mobile-v0.png",
-    lovable: "/images/comparison/mobile-lovable.png",
-    replit: "/images/comparison/mobile-replit.png",
+    opendesign: "https://picsum.photos/390/844?random=1",
+    v0: "https://picsum.photos/390/844?random=2",
+    lovable: "https://picsum.photos/390/844?random=3",
+    replit: "https://picsum.photos/390/844?random=4",
     prompt: "Music streaming app",
   },
   desktop: {
-    opendesign: "/images/comparison/desktop-opendesign.png",
-    v0: "/images/comparison/desktop-v0.png",
-    lovable: "/images/comparison/desktop-lovable.png",
+    opendesign: "https://picsum.photos/1440/900?random=5",
+    v0: "https://picsum.photos/1440/900?random=6",
+    lovable: "https://picsum.photos/1440/900?random=7",
     prompt: "Project management dashboard",
   },
 };
@@ -694,7 +695,7 @@ function PhoneMockup({
 function BrowserMockup({
   image,
   label,
-  isHero = false
+  isHero = false,
 }: {
   image: string;
   label: string;
@@ -703,7 +704,7 @@ function BrowserMockup({
   return (
     <div className={`relative ${isHero ? "" : "opacity-75 hover:opacity-100 transition-opacity"}`}>
       {/* Label */}
-      <div className={`absolute -top-2 left-6 z-10 text-xs font-medium px-3 py-0.5 rounded-full ${
+      <div className={`absolute -top-2.5 left-6 z-10 text-xs font-medium px-3 py-1 rounded-full ${
         isHero
           ? "bg-[#B8956F] text-white"
           : "bg-[#F5F2EF] text-[#6B6B6B] border border-[#E8E4E0]"
@@ -712,16 +713,16 @@ function BrowserMockup({
       </div>
 
       {/* Browser Frame */}
-      <div className={`bg-white rounded-lg overflow-hidden border ${isHero ? "border-[#B8956F] border-2 shadow-xl" : "border-[#E8E4E0] shadow-md"}`}>
+      <div className={`bg-white rounded-xl overflow-hidden border ${isHero ? "border-[#B8956F] border-2 shadow-xl" : "border-[#E8E4E0] shadow-md"}`}>
         {/* Browser Chrome */}
-        <div className="bg-[#F5F2EF] px-3 py-2 flex items-center gap-2 border-b border-[#E8E4E0]">
+        <div className="bg-[#F5F2EF] px-4 py-2.5 flex items-center gap-2 border-b border-[#E8E4E0]">
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]" />
-            <div className="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]" />
-            <div className="w-2.5 h-2.5 rounded-full bg-[#28C840]" />
+            <div className="w-3 h-3 rounded-full bg-[#FF5F57]" />
+            <div className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
+            <div className="w-3 h-3 rounded-full bg-[#28C840]" />
           </div>
-          <div className="flex-1 ml-2">
-            <div className="bg-white rounded px-3 py-1 text-[10px] text-[#9A9A9A] max-w-[200px]">
+          <div className="flex-1 ml-3">
+            <div className="bg-white rounded-md px-3 py-1.5 text-xs text-[#9A9A9A] max-w-[180px] border border-[#E8E4E0]">
               localhost:3000
             </div>
           </div>
@@ -733,10 +734,6 @@ function BrowserMockup({
             src={image}
             alt={`${label} desktop output`}
             className={`w-full h-full object-cover object-top ${isHero ? "" : "grayscale-[30%]"}`}
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-              e.currentTarget.parentElement!.innerHTML = `<div class="w-full h-full flex items-center justify-center text-[#9A9A9A] text-sm"><span>${label}</span></div>`;
-            }}
           />
         </div>
       </div>
@@ -832,7 +829,7 @@ function ComparisonSection() {
           </div>
 
           {/* Desktop - OpenDesign (left, larger) + Competitors (right, stacked) */}
-          <div className="grid md:grid-cols-[1.4fr_1fr] gap-4 items-start">
+          <div className="grid md:grid-cols-[1.4fr_1fr] gap-6 items-center">
             {/* OpenDesign - Hero */}
             <BrowserMockup
               image={COMPARISON_IMAGES.desktop.opendesign}
@@ -840,7 +837,7 @@ function ComparisonSection() {
               isHero
             />
 
-            {/* Competitors - Stacked */}
+            {/* Competitors - Stacked vertically */}
             <div className="flex flex-col gap-4">
               <BrowserMockup
                 image={COMPARISON_IMAGES.desktop.v0}
