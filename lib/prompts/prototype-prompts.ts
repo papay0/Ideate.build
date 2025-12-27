@@ -3,11 +3,12 @@
  *
  * These prompts are specifically designed for Prototype mode.
  * Key features:
- * - Screens have grid positions [col,row] for canvas layout
+ * - GRID section defines all screen positions upfront: ScreenName: [col,row,isRoot]
  * - Navigation uses anchor links with data-flow attributes
  * - Screens are interactive (forms, inputs work)
- * - One screen is marked as [ROOT] entry point
+ * - One screen has isRoot=1 in GRID (entry point)
  * - Scrolling is allowed within screens
+ * - Delete screens by omitting from GRID
  */
 
 // ============================================================================
@@ -57,16 +58,36 @@ This is NON-NEGOTIABLE. The first characters of your response must be "<!-- PROJ
 const PROTOTYPE_COMMUNICATION_RULES = `COMMUNICATION - Use these comment delimiters IN THIS EXACT ORDER:
 1. <!-- PROJECT_NAME: Name --> **MUST BE YOUR ABSOLUTE FIRST OUTPUT** (only on first generation)
 2. <!-- PROJECT_ICON: emoji --> **MUST BE YOUR SECOND OUTPUT** (only on first generation)
-3. <!-- MESSAGE: text --> to communicate with the user (between screens, at end)
-4. <!-- SCREEN_START: Screen Name [col,row] --> for NEW screens with grid position
-   - Add [ROOT] after position for the entry point: <!-- SCREEN_START: Home [1,1] [ROOT] -->
-5. <!-- SCREEN_EDIT: Exact Screen Name --> for EDITING existing screens (no position needed)
-6. <!-- SCREEN_END --> to mark the end of each screen
+3. <!-- GRID: ... --> **DEFINES ALL SCREEN POSITIONS** (must come before any screen content)
+4. <!-- MESSAGE: text --> to communicate with the user (between screens, at end)
+5. <!-- SCREEN_START: Screen Name --> for NEW screens
+6. <!-- SCREEN_EDIT: Exact Screen Name --> for EDITING existing screens
+7. <!-- SCREEN_END --> to mark the end of each screen
+
+**THE GRID SECTION - SOURCE OF TRUTH FOR POSITIONS:**
+The GRID section defines ALL screen positions upfront. Format:
+<!-- GRID:
+Home: [0,0,1]
+Settings: [1,0,0]
+Profile: [0,1,0]
+-->
+
+Each line: \`ScreenName: [col,row,isRoot]\`
+- col: grid column (0-indexed, can be negative like -1)
+- row: grid row (0-indexed, can be negative)
+- isRoot: 1 = entry point (exactly ONE screen), 0 = not root
+
+GRID RULES:
+- GRID must appear BEFORE any SCREEN_START or SCREEN_EDIT
+- EVERY screen you output MUST be listed in GRID
+- Positions come ONLY from GRID, not from SCREEN_START/SCREEN_EDIT
+- For edits: include ALL screens (existing + new) with their positions
+- To DELETE a screen: simply omit it from GRID (screen not in GRID = deleted)
 
 **CRITICAL - DELIMITER SYNTAX:**
 - ALL delimiters MUST have BOTH opening "<!--" AND closing "-->"
-- WRONG: <!-- SCREEN_START: Home [1,1]    (missing -->)
-- CORRECT: <!-- SCREEN_START: Home [1,1] -->
+- WRONG: <!-- SCREEN_START: Home    (missing -->)
+- CORRECT: <!-- SCREEN_START: Home -->
 - If you forget the closing "-->" the screen will NOT be parsed and will be LOST
 - Double-check EVERY delimiter has proper opening AND closing tags
 
@@ -80,9 +101,11 @@ COORDINATES:
 
 PRINCIPLES:
 
-1. **CONNECTED = ADJACENT**
-   If two screens link to each other, place them 1 cell apart.
-   Never put connected screens 3+ cells away - arrows become spaghetti.
+1. **CONNECTED = EXACTLY 1 CELL APART**
+   If two screens link to each other, they MUST be exactly 1 cell apart (horizontally OR vertically, NOT diagonally).
+   - From [0,0]: valid adjacent positions are [1,0], [0,1], [-1,0], [0,-1]
+   - INVALID: [1,1], [2,0], [2,1] — these are diagonal or too far
+   - This is NON-NEGOTIABLE. Every arrow should be short and direct.
 
 2. **POPULAR SCREENS GO CENTER**
    Count each screen's connections. The one with the MOST goes in the middle.
@@ -115,31 +138,67 @@ BEFORE YOU START:
 2. Identify which are "always there" vs "visit me"
 3. Count connections - find your hub(s)
 4. Sketch the layout mentally: hub centered, equals in rows, sub-flows perpendicular
-5. Verify no arrows would cross`;
+5. Verify no arrows would cross
 
-const PROTOTYPE_EDIT_RULES = `IMPORTANT FOR EDITS:
-- When user asks to modify an existing screen, use <!-- SCREEN_EDIT: Exact Screen Name --> with the EXACT same name
-- Do NOT include grid position when editing - position is preserved from original
-- When creating new screens, use <!-- SCREEN_START: Screen Name [col,row] -->
-- Always include the FULL updated HTML when editing a screen
+**MANDATORY REVIEW BEFORE OUTPUT (EVERY TIME):**
+Before outputting screens — whether initial generation, adding screens, or editing — STOP and review:
+1. List every screen and its [col,row] position
+2. For EACH navigation link, verify: "Is the target screen exactly 1 cell away?"
+3. If ANY connected pair is more than 1 cell apart or diagonal → FIX IT before proceeding
+4. Mentally trace all arrows — do any cross? If yes, rearrange until none cross
+5. This review is MANDATORY. Do not skip it. A bad layout ruins the user experience.`;
 
-**ADDING NEW SCREENS TO EXISTING PROTOTYPES:**
-When adding a NEW screen to an existing prototype:
-1. Identify which existing screen the new screen connects FROM (the parent)
-2. Place the new screen DIRECTLY ADJACENT to that parent (exactly 1 cell away)
-3. If parent is at [0,0], valid positions are: [1,0] (right), [0,1] (below), or [-1,0]/[0,-1] if needed
-4. NEVER place a new screen diagonally or multiple cells away from its parent
-5. Choose direction based on the relationship:
+const PROTOTYPE_EDIT_RULES = `IMPORTANT FOR EDITS AND MODIFICATIONS:
+
+**GRID IS ALWAYS REQUIRED:**
+Whether you're editing, adding, or deleting screens, you MUST output a GRID section FIRST.
+The GRID must list ALL screens that should exist after your changes.
+
+**EDITING EXISTING SCREENS:**
+1. Output GRID with ALL screens (including ones you're not editing) and their positions
+2. Use <!-- SCREEN_EDIT: Exact Screen Name --> with the EXACT same name
+3. Include the FULL updated HTML for the edited screen
+4. You only need to output SCREEN_EDIT for screens you're changing
+
+**ADDING NEW SCREENS:**
+1. Output GRID with ALL screens: existing ones + new ones
+2. Place new screens DIRECTLY ADJACENT to related screens — exactly 1 cell away, not diagonal
+3. Use <!-- SCREEN_START: New Screen Name --> for new screens
+4. Choose position based on relationship:
    - Detail/drill-down screens: place BELOW or to the RIGHT of parent
-   - Sibling screens (same nav level): place in a ROW with parent
+   - Sibling screens (same nav level): place in a ROW with siblings
 
-**GRID POSITION REVIEW (MANDATORY BEFORE OUTPUT):**
-Before outputting ANY screens, mentally review your grid positions:
-1. List all screens and their positions
-2. For each connection, verify: "Are these screens exactly 1 cell apart?"
-3. If ANY connected screens are more than 1 cell apart, STOP and adjust positions
-4. Check: "Would any arrows cross?" If yes, rearrange
-5. Only proceed once all positions pass this review`;
+**DELETING SCREENS:**
+To delete a screen, simply OMIT it from the GRID section.
+- List only the screens that should remain
+- Do NOT output any SCREEN_START or SCREEN_EDIT for deleted screens
+- The system will automatically delete screens not present in GRID
+
+**EXAMPLE - Adding a screen to existing prototype:**
+User has: Home [0,0,1], Settings [1,0,0]
+User asks: "Add a Profile screen"
+
+Your output:
+<!-- GRID:
+Home: [0,0,1]
+Settings: [1,0,0]
+Profile: [0,1,0]
+-->
+<!-- MESSAGE: Adding Profile screen below Home... -->
+<!-- SCREEN_START: Profile -->
+<div>...</div>
+<!-- SCREEN_END -->
+
+**EXAMPLE - Deleting a screen:**
+User has: Home [0,0,1], Settings [1,0,0], Profile [0,1,0]
+User asks: "Remove the Profile screen"
+
+Your output:
+<!-- GRID:
+Home: [0,0,1]
+Settings: [1,0,0]
+-->
+<!-- MESSAGE: I've removed the Profile screen from your prototype. -->`;
 
 // ============================================================================
 // NAVIGATION & INTERACTIVITY RULES
@@ -423,8 +482,15 @@ MOBILE-SPECIFIC GUIDELINES:
 const MOBILE_PROTOTYPE_EXAMPLE = `EXAMPLE OUTPUT:
 <!-- PROJECT_NAME: Flavour -->
 <!-- PROJECT_ICON: 🍳 -->
+<!-- GRID:
+Home: [1,1,1]
+Recipe Detail: [1,0,0]
+Search: [0,1,0]
+Saved: [2,1,0]
+Profile: [3,1,0]
+-->
 <!-- MESSAGE: Planning layout: 5 screens total. Bottom nav has 4 tabs (Home, Search, Saved, Profile) = "always there" → row 1. Home has most connections → centered at [1,1]. Recipe Detail is "visit me" (accessed from card tap) → perpendicular at [1,0]. -->
-<!-- SCREEN_START: Home [1,1] [ROOT] -->
+<!-- SCREEN_START: Home -->
 <div class="h-screen flex flex-col bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
   <header class="shrink-0 pt-14 px-6 pb-2">
     <div class="flex justify-between items-center">
@@ -494,7 +560,7 @@ const MOBILE_PROTOTYPE_EXAMPLE = `EXAMPLE OUTPUT:
 </div>
 <!-- SCREEN_END -->
 <!-- MESSAGE: Recipe Detail at [1,0] - "visit me" screen, perpendicular to Home. -->
-<!-- SCREEN_START: Recipe Detail [1,0] -->
+<!-- SCREEN_START: Recipe Detail -->
 <div class="h-screen flex flex-col bg-white">
   <div class="relative h-72 shrink-0">
     <img src="https://picsum.photos/seed/risotto-hero/400/350" class="w-full h-full object-cover" />
@@ -560,7 +626,7 @@ const MOBILE_PROTOTYPE_EXAMPLE = `EXAMPLE OUTPUT:
 </div>
 <!-- SCREEN_END -->
 <!-- MESSAGE: Search at [0,1] - "always there" tab, same row as Home. -->
-<!-- SCREEN_START: Search [0,1] -->
+<!-- SCREEN_START: Search -->
 <div class="h-screen flex flex-col bg-gray-50">
   <header class="shrink-0 pt-14 px-6 pb-4 bg-white">
     <div class="flex items-center gap-3 bg-gray-100 rounded-2xl px-4 py-3">
@@ -596,7 +662,7 @@ const MOBILE_PROTOTYPE_EXAMPLE = `EXAMPLE OUTPUT:
 </div>
 <!-- SCREEN_END -->
 <!-- MESSAGE: Saved at [2,1] - continuing the tab row. -->
-<!-- SCREEN_START: Saved [2,1] -->
+<!-- SCREEN_START: Saved -->
 <div class="h-screen flex flex-col bg-white">
   <header class="shrink-0 pt-14 px-6 pb-4">
     <h1 class="text-2xl font-black text-gray-900">Saved Recipes</h1>
@@ -635,7 +701,7 @@ const MOBILE_PROTOTYPE_EXAMPLE = `EXAMPLE OUTPUT:
 </div>
 <!-- SCREEN_END -->
 <!-- MESSAGE: Profile at [3,1] - end of tab row. All tabs in row 1, detail screen perpendicular above. -->
-<!-- SCREEN_START: Profile [3,1] -->
+<!-- SCREEN_START: Profile -->
 <div class="h-screen flex flex-col bg-gradient-to-b from-orange-50 to-white">
   <header class="shrink-0 pt-14 px-6 pb-8 text-center">
     <div class="relative inline-block">
@@ -728,8 +794,14 @@ DESKTOP-SPECIFIC GUIDELINES:
 const DESKTOP_PROTOTYPE_EXAMPLE = `EXAMPLE OUTPUT:
 <!-- PROJECT_NAME: Lumina -->
 <!-- PROJECT_ICON: ✨ -->
+<!-- GRID:
+Home: [0,0,1]
+Features: [1,0,0]
+Pricing: [0,1,0]
+Signup: [1,1,0]
+-->
 <!-- MESSAGE: I'm creating a stunning SaaS analytics platform with 4 screens: Home (hero with animated gradient), Features (bento grid showcase), Pricing (glassmorphic cards), and Signup (split-screen form). Let's build something beautiful! -->
-<!-- SCREEN_START: Home [0,0] [ROOT] -->
+<!-- SCREEN_START: Home -->
 <div class="h-screen flex flex-col bg-[#0a0a0f]">
   <header class="shrink-0 h-20 px-12 flex items-center justify-between border-b border-white/5">
     <div class="flex items-center gap-12">
@@ -777,7 +849,7 @@ const DESKTOP_PROTOTYPE_EXAMPLE = `EXAMPLE OUTPUT:
 </div>
 <!-- SCREEN_END -->
 <!-- MESSAGE: Now building the features page with an impressive bento grid layout showcasing key capabilities... -->
-<!-- SCREEN_START: Features [1,0] -->
+<!-- SCREEN_START: Features -->
 <div class="h-screen flex flex-col bg-[#0a0a0f]">
   <header class="shrink-0 h-20 px-12 flex items-center justify-between border-b border-white/5">
     <div class="flex items-center gap-12">
@@ -823,7 +895,7 @@ const DESKTOP_PROTOTYPE_EXAMPLE = `EXAMPLE OUTPUT:
 </div>
 <!-- SCREEN_END -->
 <!-- MESSAGE: Creating the pricing page with stunning glassmorphic cards and clear value tiers... -->
-<!-- SCREEN_START: Pricing [0,1] -->
+<!-- SCREEN_START: Pricing -->
 <div class="h-screen flex flex-col bg-[#0a0a0f]">
   <header class="shrink-0 h-20 px-12 flex items-center justify-between border-b border-white/5">
     <div class="flex items-center gap-12">
@@ -882,7 +954,7 @@ const DESKTOP_PROTOTYPE_EXAMPLE = `EXAMPLE OUTPUT:
 </div>
 <!-- SCREEN_END -->
 <!-- MESSAGE: Finally, building a beautiful split-screen signup with social login options... -->
-<!-- SCREEN_START: Signup [1,1] -->
+<!-- SCREEN_START: Signup -->
 <div class="h-screen flex bg-[#0a0a0f]">
   <div class="w-1/2 flex flex-col justify-center px-20">
     <a href="#screen-home" data-flow="screen-home" class="flex items-center gap-2 mb-12">
@@ -923,11 +995,12 @@ const DESKTOP_PROTOTYPE_EXAMPLE = `EXAMPLE OUTPUT:
 
 const OUTPUT_RULES = `CRITICAL OUTPUT RULES:
 1. **FIRST GENERATION: Start with PROJECT_NAME then PROJECT_ICON - NO EXCEPTIONS**
-2. Output ONLY raw HTML and comment delimiters - NO markdown, NO backticks, NO code blocks
-3. **RESPECT USER SCREEN COUNT**: If the user specifies a number of screens (e.g., "create 1 screen", "make 3 screens"), generate EXACTLY that number. Otherwise, default to 5-8 screens. Maximum 10 screens per generation.
-4. Mark exactly ONE screen as [ROOT] - this is the entry point
-5. Place screens logically on the grid - related screens should be adjacent
-6. **ANNOUNCE YOUR PLAN**: After PROJECT_ICON, output a MESSAGE listing all screens you will generate:
+2. **GRID SECTION COMES NEXT**: After PROJECT_NAME/ICON, output GRID with ALL screens and positions
+3. Output ONLY raw HTML and comment delimiters - NO markdown, NO backticks, NO code blocks
+4. **RESPECT USER SCREEN COUNT**: If the user specifies a number of screens (e.g., "create 1 screen", "make 3 screens"), generate EXACTLY that number. Otherwise, default to 5-8 screens. Maximum 10 screens per generation.
+5. Mark exactly ONE screen with isRoot=1 in GRID - this is the entry point
+6. Place screens logically on the grid - related screens should be adjacent
+7. **ANNOUNCE YOUR PLAN**: After GRID, output a MESSAGE listing all screens you will generate:
    <!-- MESSAGE: I'm creating a [app type] with [X] screens: [Screen 1], [Screen 2], [Screen 3]... -->
    This helps users understand what they're getting before generation starts.`;
 

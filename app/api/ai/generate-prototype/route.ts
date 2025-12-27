@@ -4,9 +4,10 @@
  * This endpoint generates interactive prototypes using AI with real-time streaming.
  * It's similar to the design generation but uses prototype-specific prompts that:
  * - Include navigation rules (data-flow attributes)
- * - Include grid position metadata [col,row]
- * - Mark one screen as [ROOT] entry point
+ * - Use GRID section for position metadata: ScreenName: [col,row,isRoot]
+ * - Mark one screen with isRoot=1 as entry point
  * - Allow scrollable content
+ * - Support screen deletion by omitting from GRID
  *
  * Streaming Format (SSE):
  * - Each chunk: data: {"chunk": "html content"}\n\n
@@ -194,34 +195,42 @@ export async function POST(request: Request): Promise<Response> {
     // Build the user prompt with context
     let userPrompt = prompt;
     if (existingScreens && existingScreens.length > 0) {
-      const screensSummary = existingScreens
+      // Build GRID representation of current screens
+      const currentGrid = existingScreens
         .map((s: { name: string; gridCol?: number; gridRow?: number; isRoot?: boolean }) =>
-          `${s.name}${s.isRoot ? " [ROOT]" : ""} at [${s.gridCol || 0},${s.gridRow || 0}]`
+          `${s.name}: [${s.gridCol || 0},${s.gridRow || 0},${s.isRoot ? 1 : 0}]`
         )
-        .join(", ");
+        .join("\n");
 
       const screensCode = existingScreens
         .map((s: { name: string; html: string; gridCol?: number; gridRow?: number; isRoot?: boolean }) =>
-          `\n=== ${s.name} [${s.gridCol || 0},${s.gridRow || 0}]${s.isRoot ? " [ROOT]" : ""} ===\n${s.html}`
+          `\n=== ${s.name} ===\n${s.html}`
         )
         .join("\n");
 
       const platformLabel = platform === "mobile" ? "mobile app" : "website";
       userPrompt = `You are updating an existing ${platformLabel} prototype.
 
-Current screens: ${screensSummary}
+Current GRID (ScreenName: [col,row,isRoot]):
+${currentGrid}
 
 Here is the complete current HTML code for each screen:
 ${screensCode}
 
 User's request: "${prompt}"
 
-IMPORTANT:
-- Use <!-- SCREEN_EDIT: Exact Screen Name --> when modifying an existing screen
-- Use <!-- SCREEN_START: New Screen Name [col,row] --> when creating a NEW screen
-- Preserve grid positions when editing (don't include position in SCREEN_EDIT)
-- Do NOT include PROJECT_NAME or PROJECT_ICON for follow-up requests
-- Ensure all navigation uses data-flow attributes`;
+IMPORTANT - OUTPUT FORMAT:
+1. Start with a <!-- GRID: ... --> section listing ALL screens that should exist after your changes
+   - Include existing screens you're keeping (with their original positions)
+   - Include new screens you're adding (with appropriate adjacent positions)
+   - OMIT any screens the user wants deleted (they will be removed automatically)
+
+2. Use <!-- SCREEN_EDIT: Exact Screen Name --> when modifying an existing screen
+3. Use <!-- SCREEN_START: New Screen Name --> when creating a NEW screen
+4. Positions come from GRID, not from SCREEN_START/SCREEN_EDIT
+
+5. Do NOT include PROJECT_NAME or PROJECT_ICON for follow-up requests
+6. Ensure all navigation uses data-flow attributes`;
     }
 
     // Model selection

@@ -10,7 +10,9 @@
  * - <!-- MESSAGE: ... --> - Chat messages from the LLM
  * - <!-- PROJECT_NAME: ... --> - Suggested project name
  * - <!-- PROJECT_ICON: ... --> - Suggested project emoji icon
+ * - <!-- GRID: ... --> - Grid positions for all screens (format: ScreenName: [col,row,isRoot])
  * - <!-- SCREEN_START: Name --> - Start of a screen
+ * - <!-- SCREEN_EDIT: Name --> - Start of an edit to an existing screen
  * - <!-- SCREEN_END --> - End of a screen
  */
 
@@ -21,8 +23,46 @@ const PHONE_WIDTH = 390;
 const PHONE_HEIGHT = 844;
 
 /**
+ * Grid position data for a screen
+ */
+export interface GridPosition {
+  col: number;
+  row: number;
+  isRoot: boolean;
+}
+
+/**
+ * Parse the GRID section to extract all screen positions.
+ * Format: <!-- GRID:\nScreenName: [col,row,isRoot]\n... -->
+ * Returns a Map of screen name to position data.
+ */
+function parseGridSection(content: string): Map<string, GridPosition> {
+  const gridMap = new Map<string, GridPosition>();
+
+  // Match the entire GRID section (flexible whitespace)
+  const gridMatch = content.match(/<!-- GRID:\s*([\s\S]*?)\s*-->/);
+  if (!gridMatch) return gridMap;
+
+  const gridContent = gridMatch[1];
+  // Parse each line: ScreenName: [col,row,isRoot] (allow leading/trailing whitespace)
+  const lineRegex = /^\s*(.+?):\s*\[(-?\d+),(-?\d+),([01])\]\s*$/gm;
+  let match;
+
+  while ((match = lineRegex.exec(gridContent)) !== null) {
+    const screenName = match[1].trim();
+    const col = parseInt(match[2], 10);
+    const row = parseInt(match[3], 10);
+    const isRoot = match[4] === "1";
+    gridMap.set(screenName, { col, row, isRoot });
+  }
+
+  return gridMap;
+}
+
+/**
  * Parse prototype screen name to extract grid position and root marker.
  * Format: "Screen Name [col,row]" or "Screen Name [col,row] [ROOT]"
+ * @deprecated Use GRID section instead. Kept for backward compatibility.
  */
 function parsePrototypeScreenName(rawName: string): {
   name: string;
@@ -35,14 +75,14 @@ function parsePrototypeScreenName(rawName: string): {
   let gridRow: number | undefined;
   let isRoot = false;
 
-  // Check for [ROOT] marker
+  // Check for [ROOT] marker (legacy format)
   if (name.includes("[ROOT]")) {
     isRoot = true;
     name = name.replace("[ROOT]", "").trim();
   }
 
-  // Check for [col,row] grid position
-  const gridMatch = name.match(/\[(\d+),(\d+)\]/);
+  // Check for [col,row] grid position (legacy format)
+  const gridMatch = name.match(/\[(-?\d+),(-?\d+)\]/);
   if (gridMatch) {
     gridCol = parseInt(gridMatch[1], 10);
     gridRow = parseInt(gridMatch[2], 10);
@@ -82,6 +122,7 @@ export interface StreamingCallbacks {
   onMessage?: (message: string) => void;
   onProjectName?: (name: string) => void;
   onProjectIcon?: (icon: string) => void;
+  onGrid?: (gridMap: Map<string, GridPosition>) => void; // Called when GRID section is parsed
   onScreenStart?: (screenName: string) => void;
   onScreenEditStart?: (screenName: string) => void;
   onScreenComplete?: (screen: ParsedScreen) => void;
@@ -212,6 +253,8 @@ export function useDesignStreaming(callbacks: StreamingCallbacks) {
   const [currentStreamingHtml, setCurrentStreamingHtml] = useState("");
   const [currentScreenName, setCurrentScreenName] = useState<string | null>(null);
   const [isEditingExistingScreen, setIsEditingExistingScreen] = useState(false);
+  const [currentStreamingGridCol, setCurrentStreamingGridCol] = useState<number | undefined>(undefined);
+  const [currentStreamingGridRow, setCurrentStreamingGridRow] = useState<number | undefined>(undefined);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const startStreaming = useCallback(
@@ -231,6 +274,8 @@ export function useDesignStreaming(callbacks: StreamingCallbacks) {
       setCurrentStreamingHtml("");
       setCurrentScreenName(null);
       setIsEditingExistingScreen(false);
+      setCurrentStreamingGridCol(undefined);
+      setCurrentStreamingGridRow(undefined);
 
       let buffer = "";
       let rawContent = "";
@@ -243,6 +288,8 @@ export function useDesignStreaming(callbacks: StreamingCallbacks) {
       let screenGridRow: number | undefined;
       let screenIsRoot = false;
       const screens: ParsedScreen[] = [];
+      let gridMap: Map<string, GridPosition> = new Map(); // Store grid positions from GRID section
+      let gridParsed = false; // Track if GRID section has been parsed
 
       try {
         const response = await fetch(apiUrl, {
@@ -340,23 +387,47 @@ export function useDesignStreaming(callbacks: StreamingCallbacks) {
                     rawContent = rawContent.replace(iconMatch[0], "");
                   }
 
+                  // Parse GRID section (must come before screens)
+                  if (!gridParsed) {
+                    const gridSectionMatch = rawContent.match(/<!-- GRID:\s*([\s\S]*?)\s*-->/);
+                    if (gridSectionMatch) {
+                      gridMap = parseGridSection(rawContent);
+                      console.log(`[Stream] GRID section parsed with ${gridMap.size} screens:`, Array.from(gridMap.entries()));
+                      callbacks.onGrid?.(gridMap);
+                      gridParsed = true;
+                      rawContent = rawContent.replace(gridSectionMatch[0], "");
+                    }
+                  }
+
                   // Parse SCREEN_START delimiter (new screen)
-                  // Supports both basic "Name" and prototype format "Name [col,row] [ROOT]"
                   // Relaxed regex: also matches if AI forgets the closing -->
                   const startMatch = rawContent.match(/<!-- SCREEN_START:\s*([^\n<>]+?)(?:\s*-->|(?=\s*\n)|(?=<))/);
                   if (startMatch && !inScreen) {
                     inScreen = true;
                     isEditingScreen = false;
                     const rawScreenName = startMatch[1].trim();
+                    // Parse inline position (legacy format) and extract clean name
                     const parsed = parsePrototypeScreenName(rawScreenName);
                     screenName = parsed.name;
-                    screenGridCol = parsed.gridCol;
-                    screenGridRow = parsed.gridRow;
-                    screenIsRoot = parsed.isRoot || false;
+
+                    // Try to get position from GRID section first (new format)
+                    const gridPosition = gridMap.get(screenName);
+                    if (gridPosition) {
+                      screenGridCol = gridPosition.col;
+                      screenGridRow = gridPosition.row;
+                      screenIsRoot = gridPosition.isRoot;
+                    } else {
+                      // Fall back to inline position (legacy format)
+                      screenGridCol = parsed.gridCol;
+                      screenGridRow = parsed.gridRow;
+                      screenIsRoot = parsed.isRoot || false;
+                    }
                     screenHtml = "";
-                    console.log(`[Stream] SCREEN_START (new): "${screenName}"${screenGridCol !== undefined ? ` at [${screenGridCol},${screenGridRow}]` : ""}${screenIsRoot ? " [ROOT]" : ""}`);
+                    console.log(`[Stream] SCREEN_START (new): "${screenName}"${screenGridCol !== undefined ? ` at [${screenGridCol},${screenGridRow}]` : ""}${screenIsRoot ? " [ROOT]" : ""}${gridPosition ? " (from GRID)" : ""}`);
                     setCurrentScreenName(screenName);
                     setIsEditingExistingScreen(false);
+                    setCurrentStreamingGridCol(screenGridCol);
+                    setCurrentStreamingGridRow(screenGridRow);
                     callbacks.onScreenStart?.(screenName);
                     rawContent = rawContent.replace(startMatch[0], "");
                   }
@@ -369,9 +440,25 @@ export function useDesignStreaming(callbacks: StreamingCallbacks) {
                     isEditingScreen = true;
                     screenName = editMatch[1].trim();
                     screenHtml = "";
-                    console.log(`[Stream] SCREEN_EDIT (updating): "${screenName}"`);
+
+                    // Get position from GRID section (required in new format)
+                    const gridPosition = gridMap.get(screenName);
+                    if (gridPosition) {
+                      screenGridCol = gridPosition.col;
+                      screenGridRow = gridPosition.row;
+                      screenIsRoot = gridPosition.isRoot;
+                    } else {
+                      // No position in GRID - will use existing position from DB
+                      screenGridCol = undefined;
+                      screenGridRow = undefined;
+                      screenIsRoot = false;
+                    }
+
+                    console.log(`[Stream] SCREEN_EDIT (updating): "${screenName}"${screenGridCol !== undefined ? ` at [${screenGridCol},${screenGridRow}]` : " (no GRID position)"}${screenIsRoot ? " [ROOT]" : ""}`);
                     setCurrentScreenName(screenName);
                     setIsEditingExistingScreen(true);
+                    setCurrentStreamingGridCol(screenGridCol);
+                    setCurrentStreamingGridRow(screenGridRow);
                     callbacks.onScreenEditStart?.(screenName);
                     rawContent = rawContent.replace(editMatch[0], "");
                   }
@@ -414,6 +501,8 @@ export function useDesignStreaming(callbacks: StreamingCallbacks) {
                         setCurrentScreenName(null);
                         setCurrentStreamingHtml("");
                         setIsEditingExistingScreen(false);
+                        setCurrentStreamingGridCol(undefined);
+                        setCurrentStreamingGridRow(undefined);
 
                         // Continue processing to check for another screen in remaining content
                         processingScreens = rawContent.trim().length > 0;
@@ -444,13 +533,25 @@ export function useDesignStreaming(callbacks: StreamingCallbacks) {
                         const rawScreenName = newStartMatch[1].trim();
                         const parsed = parsePrototypeScreenName(rawScreenName);
                         screenName = parsed.name;
-                        screenGridCol = parsed.gridCol;
-                        screenGridRow = parsed.gridRow;
-                        screenIsRoot = parsed.isRoot || false;
+
+                        // Try to get position from GRID section first (new format)
+                        const gridPosition = gridMap.get(screenName);
+                        if (gridPosition) {
+                          screenGridCol = gridPosition.col;
+                          screenGridRow = gridPosition.row;
+                          screenIsRoot = gridPosition.isRoot;
+                        } else {
+                          // Fall back to inline position (legacy format)
+                          screenGridCol = parsed.gridCol;
+                          screenGridRow = parsed.gridRow;
+                          screenIsRoot = parsed.isRoot || false;
+                        }
                         screenHtml = "";
-                        console.log(`[Stream] SCREEN_START (in loop): "${screenName}"${screenGridCol !== undefined ? ` at [${screenGridCol},${screenGridRow}]` : ""}${screenIsRoot ? " [ROOT]" : ""}`);
+                        console.log(`[Stream] SCREEN_START (in loop): "${screenName}"${screenGridCol !== undefined ? ` at [${screenGridCol},${screenGridRow}]` : ""}${screenIsRoot ? " [ROOT]" : ""}${gridPosition ? " (from GRID)" : ""}`);
                         setCurrentScreenName(screenName);
                         setIsEditingExistingScreen(false);
+                        setCurrentStreamingGridCol(screenGridCol);
+                        setCurrentStreamingGridRow(screenGridRow);
                         callbacks.onScreenStart?.(screenName);
                         rawContent = rawContent.replace(newStartMatch[0], "");
                         processingScreens = true; // Continue to process this screen's content
@@ -463,9 +564,25 @@ export function useDesignStreaming(callbacks: StreamingCallbacks) {
                         isEditingScreen = true;
                         screenName = newEditMatch[1].trim();
                         screenHtml = "";
-                        console.log(`[Stream] SCREEN_EDIT (in loop): "${screenName}"`);
+
+                        // Get position from GRID section (required in new format)
+                        const gridPosition = gridMap.get(screenName);
+                        if (gridPosition) {
+                          screenGridCol = gridPosition.col;
+                          screenGridRow = gridPosition.row;
+                          screenIsRoot = gridPosition.isRoot;
+                        } else {
+                          // No position in GRID - will use existing position from DB
+                          screenGridCol = undefined;
+                          screenGridRow = undefined;
+                          screenIsRoot = false;
+                        }
+
+                        console.log(`[Stream] SCREEN_EDIT (in loop): "${screenName}"${screenGridCol !== undefined ? ` at [${screenGridCol},${screenGridRow}]` : " (no GRID position)"}${screenIsRoot ? " [ROOT]" : ""}`);
                         setCurrentScreenName(screenName);
                         setIsEditingExistingScreen(true);
+                        setCurrentStreamingGridCol(screenGridCol);
+                        setCurrentStreamingGridRow(screenGridRow);
                         callbacks.onScreenEditStart?.(screenName);
                         rawContent = rawContent.replace(newEditMatch[0], "");
                         processingScreens = true;
@@ -576,6 +693,8 @@ export function useDesignStreaming(callbacks: StreamingCallbacks) {
     currentStreamingHtml,
     currentScreenName,
     isEditingExistingScreen,
+    currentStreamingGridCol,
+    currentStreamingGridRow,
     startStreaming,
     stopStreaming,
   };

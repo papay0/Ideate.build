@@ -87,6 +87,9 @@ interface PrototypeCanvasProps {
   isMobileView?: boolean;
   prototypeId?: string;
   isAdmin?: boolean;
+  // Grid position for currently streaming screen (from GRID section)
+  currentStreamingGridCol?: number;
+  currentStreamingGridRow?: number;
 }
 
 /**
@@ -897,6 +900,8 @@ export function PrototypeCanvas({
   isMobileView = false,
   prototypeId,
   isAdmin = false,
+  currentStreamingGridCol,
+  currentStreamingGridRow,
 }: PrototypeCanvasProps) {
   const hasScreens =
     completedScreens.length > 0 ||
@@ -1108,7 +1113,11 @@ export function PrototypeCanvas({
 
   // Calculate streaming screen position
   const getStreamingScreenPosition = () => {
-    // Find max column and put new screen to the right
+    // Use GRID position if available (from parsed GRID section)
+    if (currentStreamingGridCol !== undefined && currentStreamingGridRow !== undefined) {
+      return { gridCol: currentStreamingGridCol, gridRow: currentStreamingGridRow };
+    }
+    // Fallback: Find max column and put new screen to the right
     let maxCol = -1;
     for (const screen of completedScreens) {
       maxCol = Math.max(maxCol, screen.gridCol ?? 0);
