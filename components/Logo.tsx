@@ -1,5 +1,5 @@
 /**
- * OpenDesign Logo Component
+ * Ideate Logo Component
  *
  * Reusable logo with consistent branding across the site.
  * Uses the terracotta Layers icon as the primary visual.
@@ -34,7 +34,7 @@ export function Logo({
       <Layers className={`${icon} text-[#B8956F]`} />
       {showText && (
         <span className={`font-medium text-[#1A1A1A] tracking-tight ${text}`}>
-          OpenDesign
+          Ideate
         </span>
       )}
     </span>

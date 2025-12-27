@@ -1,5 +1,5 @@
 /**
- * OpenDesign Global Styles
+ * Ideate Global Styles
  *
  * Design System: Editorial/Magazine Aesthetic
  *
@@ -48,7 +48,7 @@
   --font-serif: var(--font-playfair), Georgia, "Times New Roman", serif;
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
-  /* Sidebar - matches OpenDesign warm theme */
+  /* Sidebar - matches Ideate warm theme */
   --sidebar: #FAF8F5;
   --sidebar-foreground: #3D3A35;
   --sidebar-primary: #B8956F;

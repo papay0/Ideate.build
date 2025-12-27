@@ -2,7 +2,7 @@ import { MetadataRoute } from "next";
 import { getAllPosts } from "@/lib/blog";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://opendesign.build";
+  const baseUrl = "https://ideate.build";
 
   // Get all blog posts
   const posts = getAllPosts();

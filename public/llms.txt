@@ -1,9 +1,9 @@
-# OpenDesign - AI App Designer
-# https://opendesign.build
+# Ideate - AI App Designer
+# https://ideate.build
 
-## What is OpenDesign?
+## What is Ideate?
 
-OpenDesign is a free, open-source AI-powered app design tool that generates beautiful mobile and desktop UI mockups from text descriptions. Unlike other AI design tools, OpenDesign uses a BYOK (Bring Your Own Key) model, meaning users provide their own API keys from OpenRouter or Google Gemini — making it completely free to use with no subscription fees.
+Ideate is a free, open-source AI-powered app design tool that generates beautiful mobile and desktop UI mockups from text descriptions. Unlike other AI design tools, Ideate uses a BYOK (Bring Your Own Key) model, meaning users provide their own API keys from OpenRouter or Google Gemini — making it completely free to use with no subscription fees.
 
 ## Key Features
 
@@ -18,9 +18,9 @@ OpenDesign is a free, open-source AI-powered app design tool that generates beau
 - **Project Management**: Organize designs with custom names and emoji icons
 - **Image Reference Support**: Paste or upload style reference images for AI to match aesthetic
 
-## How to Use OpenDesign
+## How to Use Ideate
 
-1. Visit https://opendesign.build and sign up for free
+1. Visit https://ideate.build and sign up for free
 2. Configure your API key (OpenRouter or Google Gemini) in Settings
 3. Create a new project by describing your app idea in plain English
 4. Choose your platform (mobile or desktop)
@@ -41,15 +41,15 @@ OpenDesign is a free, open-source AI-powered app design tool that generates beau
 
 ## Pricing
 
-OpenDesign is **completely free**. Users bring their own API keys from:
+Ideate is **completely free**. Users bring their own API keys from:
 - OpenRouter (access to Claude, GPT-4, Gemini, and more)
 - Google Gemini (direct access to Gemini models)
 
-There are no subscription fees, no usage limits from OpenDesign — you only pay for the AI tokens you use through your own API provider.
+There are no subscription fees, no usage limits from Ideate — you only pay for the AI tokens you use through your own API provider.
 
 ## Comparison with Competitors
 
-| Feature | OpenDesign | Sleek.design | v0.dev |
+| Feature | Ideate | Sleek.design | v0.dev |
 |---------|-----------|--------------|--------|
 | Mobile Support | ✓ | ✓ | ✓ |
 | Desktop Support | ✓ | ✗ | ✓ |
@@ -60,7 +60,7 @@ There are no subscription fees, no usage limits from OpenDesign — you only pay
 
 ## Links
 
-- Website: https://opendesign.build
+- Website: https://ideate.build
 - GitHub: https://github.com/papay0/opendesign
 - Documentation: https://github.com/papay0/opendesign#readme
 

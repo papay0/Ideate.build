@@ -60,7 +60,7 @@ export function AppSidebar() {
         >
           <Layers className="w-6 h-6 text-[#B8956F] shrink-0" />
           <span className="font-medium text-[#1A1A1A] tracking-tight group-data-[collapsible=icon]:hidden">
-            OpenDesign
+            Ideate
           </span>
         </Link>
       </SidebarHeader>

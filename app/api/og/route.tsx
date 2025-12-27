@@ -31,19 +31,63 @@ export async function GET() {
             padding: "60px",
           }}
         >
-          {/* Logo */}
+          {/* Tagline */}
           <div
             style={{
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
-              justifyContent: "center",
-              marginBottom: "40px",
+              textAlign: "center",
             }}
           >
-            {/* Layers icon */}
+            <div
+              style={{
+                display: "flex",
+                fontSize: "128px",
+                fontFamily: "Playfair Display",
+                fontWeight: 500,
+                color: "#1A1A1A",
+                letterSpacing: "-0.02em",
+                lineHeight: 1.1,
+                marginBottom: "32px",
+              }}
+            >
+              <span>Ideate.</span>
+              <span
+                style={{
+                  color: "#B8956F",
+                  fontStyle: "italic",
+                  marginLeft: "24px",
+                }}
+              >
+                Build.
+              </span>
+            </div>
+            <span
+              style={{
+                fontSize: "48px",
+                fontFamily: "Inter",
+                color: "#6B6B6B",
+              }}
+            >
+              Turn ideas into interactive prototypes
+            </span>
+          </div>
+
+          {/* Logo watermark at bottom */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: "48px",
+              left: "60px",
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
+            }}
+          >
             <svg
-              width="56"
-              height="56"
+              width="40"
+              height="40"
               viewBox="0 0 24 24"
               fill="none"
               stroke="#B8956F"
@@ -57,89 +101,17 @@ export async function GET() {
             </svg>
             <span
               style={{
-                marginLeft: "20px",
-                fontSize: "56px",
+                fontSize: "36px",
                 fontFamily: "Inter",
                 fontWeight: 500,
-                color: "#1A1A1A",
-                letterSpacing: "-0.02em",
-              }}
-            >
-              OpenDesign
-            </span>
-          </div>
-
-          {/* Tagline */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              textAlign: "center",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                fontSize: "78px",
-                fontFamily: "Playfair Display",
-                fontWeight: 500,
-                color: "#1A1A1A",
-                letterSpacing: "-0.02em",
-                lineHeight: 1.1,
-                marginBottom: "20px",
-              }}
-            >
-              <span>Design anything</span>
-              <span
-                style={{
-                  color: "#B8956F",
-                  fontStyle: "italic",
-                  marginLeft: "18px",
-                }}
-              >
-                in minutes
-              </span>
-            </div>
-            <span
-              style={{
-                fontSize: "32px",
-                fontFamily: "Inter",
-                color: "#6B6B6B",
-              }}
-            >
-              AI-powered app mockups through conversation
-            </span>
-          </div>
-
-          {/* Bottom tagline */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: "48px",
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-            }}
-          >
-            <div
-              style={{
-                width: "8px",
-                height: "8px",
-                borderRadius: "50%",
-                backgroundColor: "#B8956F",
-              }}
-            />
-            <span
-              style={{
-                fontSize: "20px",
-                fontFamily: "Inter",
                 color: "#9A9A9A",
+                letterSpacing: "-0.02em",
               }}
             >
-              Open Source · AI-Powered Design
+              Ideate
             </span>
           </div>
+
         </div>
       ),
       {
@@ -181,7 +153,7 @@ export async function GET() {
             color: "#1A1A1A",
           }}
         >
-          OpenDesign - AI App Designer
+          Ideate - AI App Designer
         </div>
       ),
       {

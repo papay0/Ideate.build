@@ -1,5 +1,5 @@
-# OpenDesign - AI App Designer
-# https://opendesign.build
+# Ideate - AI App Designer
+# https://ideate.build
 
 User-agent: *
 Allow: /
@@ -27,4 +27,4 @@ User-agent: Bytespider
 Allow: /
 
 # Sitemap
-Sitemap: https://opendesign.build/sitemap.xml
+Sitemap: https://ideate.build/sitemap.xml

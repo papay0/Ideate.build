@@ -1,7 +1,7 @@
 /**
  * Supabase Database Types
  *
- * This file defines TypeScript types for all database tables used in OpenDesign.
+ * This file defines TypeScript types for all database tables used in Ideate.
  * These types are used throughout the application for type-safe database operations.
  *
  * To regenerate these types from your Supabase schema, you can use:

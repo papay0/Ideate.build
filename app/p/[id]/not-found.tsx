@@ -14,7 +14,7 @@ export default function PrototypeNotFound() {
           This prototype may have been deleted or the link is incorrect.
         </p>
         <Link
-          href="https://opendesign.build"
+          href="https://ideate.build"
           className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#B8956F] to-[#A6845F] text-white font-medium rounded-xl hover:from-[#A6845F] hover:to-[#957555] transition-all shadow-lg"
         >
           Create Your Own Prototype

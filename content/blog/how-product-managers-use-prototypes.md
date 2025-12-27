@@ -2,7 +2,7 @@
 title: "How Product Managers Use Prototypes to Validate Ideas Faster"
 description: "Learn how product managers leverage prototyping to test assumptions, get stakeholder buy-in, and ship better products. Practical strategies from real PM workflows."
 date: "2025-01-10"
-author: "OpenDesign Team"
+author: "Ideate Team"
 tags: ["Product Management", "Prototyping", "Validation", "Stakeholder Management"]
 ---
 
@@ -68,7 +68,7 @@ You don't need a working product to learn from users. With an interactive protot
 - Test copy and messaging
 - Identify confusion points
 
-Tools like OpenDesign generate clickable prototypes with working navigation, so users can tap through the experience as if it were real.
+Tools like Ideate generate clickable prototypes with working navigation, so users can tap through the experience as if it were real.
 
 ### 5. Creating Investor and Sales Demos
 
@@ -148,12 +148,12 @@ The best prototyping tool is the one you'll actually use:
 
 | Tool | Best For | Learning Curve |
 |------|----------|----------------|
-| OpenDesign | Rapid idea validation | None - describe in plain language |
+| Ideate | Rapid idea validation | None - describe in plain language |
 | Figma | Detailed design work | Medium - requires design skills |
 | Whimsical | Flowcharts and wireframes | Low |
 | Paper sketches | Early brainstorming | None |
 
-AI-powered tools like OpenDesign are particularly valuable for PMs because they require no design skills. Describe your app idea, and get an interactive prototype in seconds.
+AI-powered tools like Ideate are particularly valuable for PMs because they require no design skills. Describe your app idea, and get an interactive prototype in seconds.
 
 ## The ROI of PM Prototyping
 
@@ -179,7 +179,7 @@ Prototyping isn't just faster—it's dramatically cheaper.
 If you're a PM who hasn't integrated prototyping into your workflow:
 
 1. **Start small:** Pick one upcoming feature to prototype
-2. **Use AI tools:** Skip the learning curve with tools like OpenDesign
+2. **Use AI tools:** Skip the learning curve with tools like Ideate
 3. **Test immediately:** Get user feedback within 48 hours
 4. **Share results:** Let your team see the power of early validation
 
@@ -187,4 +187,4 @@ The best PMs don't just manage products—they de-risk them. Prototyping is your
 
 ---
 
-Ready to validate your next product idea? [Try OpenDesign free](/) and create your first interactive prototype in under 60 seconds.
+Ready to validate your next product idea? [Try Ideate free](/) and create your first interactive prototype in under 60 seconds.

@@ -6,7 +6,7 @@
  *
  * Features:
  * - Public access (no auth required)
- * - Slim header with OpenDesign branding + hotspot toggle
+ * - Slim header with Ideate branding + hotspot toggle
  * - Desktop: edge-to-edge, no device frame
  * - Mobile: phone frame for realistic preview
  * - Dark background
@@ -43,16 +43,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!project) {
     return {
-      title: "Prototype Not Found - OpenDesign",
+      title: "Prototype Not Found - Ideate",
     };
   }
 
   return {
-    title: `${project.icon || "🎨"} ${project.name} - OpenDesign Prototype`,
-    description: `Interactive prototype created with OpenDesign`,
+    title: `${project.icon || "🎨"} ${project.name} - Ideate Prototype`,
+    description: `Interactive prototype created with Ideate`,
     openGraph: {
-      title: `${project.name} - OpenDesign Prototype`,
-      description: "Interactive prototype created with OpenDesign",
+      title: `${project.name} - Ideate Prototype`,
+      description: "Interactive prototype created with Ideate",
       type: "website",
     },
   };

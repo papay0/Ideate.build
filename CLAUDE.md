@@ -12,7 +12,7 @@ npm run lint     # Run ESLint
 
 ## Architecture Overview
 
-OpenDesign is an AI-powered prototyping tool that creates interactive mobile and desktop app prototypes in real-time using streaming LLM responses.
+Ideate is an AI-powered prototyping tool that creates interactive mobile and desktop app prototypes in real-time using streaming LLM responses.
 
 ### Core Flow
 

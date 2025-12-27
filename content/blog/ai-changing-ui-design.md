@@ -2,7 +2,7 @@
 title: "From Prompt to Prototype: How AI Is Changing UI Design"
 description: "Explore how AI-powered design tools are transforming the UI/UX industry. Learn about prompt-driven design, the new creative workflow, and what it means for designers and product teams."
 date: "2025-01-08"
-author: "OpenDesign Team"
+author: "Ideate Team"
 tags: ["AI", "UI Design", "Design Tools", "Future of Design", "Generative AI"]
 ---
 
@@ -29,7 +29,7 @@ This isn't a marginal improvement—it's a 10x acceleration of the creative proc
 
 ## What AI Design Tools Actually Do
 
-Modern AI design tools like OpenDesign, v0, and others fall into several categories:
+Modern AI design tools like Ideate, v0, and others fall into several categories:
 
 ### Text-to-Interface Generation
 Describe an app in natural language, get a working visual. "A fitness tracking app with dark mode and workout history" becomes a complete, styled interface.
@@ -108,7 +108,7 @@ The first prompt will generate something useful. The second will generate someth
 
 ### Startup Validation
 
-A founder with no design experience used OpenDesign to create a prototype for their fintech idea. They showed it to 50 potential users in one weekend. The feedback revealed a fundamental flaw in their concept—before writing any code.
+A founder with no design experience used Ideate to create a prototype for their fintech idea. They showed it to 50 potential users in one weekend. The feedback revealed a fundamental flaw in their concept—before writing any code.
 
 Time saved: 3 months of development
 Money saved: $80,000 in engineering costs
@@ -173,4 +173,4 @@ The learning curve is measured in hours, not months. The productivity gains are 
 
 ---
 
-Ready to experience AI-powered design? [Try OpenDesign free](/) and generate your first interactive prototype in seconds—no design skills required.
+Ready to experience AI-powered design? [Try Ideate free](/) and generate your first interactive prototype in seconds—no design skills required.

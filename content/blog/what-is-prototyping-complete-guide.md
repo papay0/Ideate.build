@@ -2,7 +2,7 @@
 title: "What Is Prototyping? A Complete Guide for Product Teams in 2025"
 description: "Learn what prototyping is, why it matters for product development, and how designers and product managers use prototypes to build better products faster."
 date: "2025-01-15"
-author: "OpenDesign Team"
+author: "Ideate Team"
 tags: ["Prototyping", "Product Design", "UX Design", "Product Management"]
 ---
 
@@ -86,13 +86,13 @@ Use your validated prototype as the source of truth for development.
 
 ## Modern Prototyping Tools
 
-The prototyping landscape has evolved dramatically. Traditional tools like Sketch and Figma require design skills. Newer AI-powered tools like OpenDesign let anyone create professional prototypes just by describing what they want.
+The prototyping landscape has evolved dramatically. Traditional tools like Sketch and Figma require design skills. Newer AI-powered tools like Ideate let anyone create professional prototypes just by describing what they want.
 
 | Tool Type | Examples | Best For |
 |-----------|----------|----------|
 | Traditional | Figma, Sketch | Professional designers |
 | No-code | Framer, Webflow | Design-savvy builders |
-| AI-powered | OpenDesign | Anyone with an idea |
+| AI-powered | Ideate | Anyone with an idea |
 
 ## Getting Started with Prototyping
 
@@ -107,8 +107,8 @@ The prototyping landscape has evolved dramatically. Traditional tools like Sketc
 
 AI is transforming how we create prototypes. Instead of spending hours in design tools, teams can now describe their ideas in plain language and get working prototypes in seconds. This democratizes design and accelerates innovation.
 
-Tools like OpenDesign generate complete, interactive prototypes from text descriptions. You can iterate through conversation, making changes as naturally as talking to a colleague.
+Tools like Ideate generate complete, interactive prototypes from text descriptions. You can iterate through conversation, making changes as naturally as talking to a colleague.
 
 ---
 
-Ready to try AI-powered prototyping? [Create your first prototype with OpenDesign](/) - it takes less than 60 seconds.
+Ready to try AI-powered prototyping? [Create your first prototype with Ideate](/) - it takes less than 60 seconds.

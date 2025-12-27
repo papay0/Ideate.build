@@ -2,7 +2,7 @@
 title: "7 Prototyping Best Practices Every Designer Should Know"
 description: "Master the art of prototyping with these proven best practices. Learn when to prototype, what fidelity to use, how to test effectively, and common mistakes to avoid."
 date: "2025-01-05"
-author: "OpenDesign Team"
+author: "Ideate Team"
 tags: ["Prototyping", "Best Practices", "UX Design", "Design Process"]
 ---
 
@@ -58,7 +58,7 @@ Interactive prototypes, even rough ones, provide:
 - **Flow validation:** See how screens connect
 - **Emotional response:** Feel whether the product is intuitive
 
-Modern tools like OpenDesign generate interactive prototypes automatically—navigation works, buttons are clickable, users can flow through the experience.
+Modern tools like Ideate generate interactive prototypes automatically—navigation works, buttons are clickable, users can flow through the experience.
 
 **The threshold:** If you're testing with users, make it interactive. The insight difference is massive.
 
@@ -196,4 +196,4 @@ This speed advantage means you can follow best practices more easily:
 
 ---
 
-Ready to put these practices into action? [Try OpenDesign free](/) and create your first interactive prototype in seconds. No design skills required—just describe what you want to build.
+Ready to put these practices into action? [Try Ideate free](/) and create your first interactive prototype in seconds. No design skills required—just describe what you want to build.

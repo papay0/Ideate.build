@@ -17,7 +17,7 @@ import "./globals.css";
 /**
  * Typography Configuration
  *
- * OpenDesign uses a refined editorial typography system:
+ * Ideate uses a refined editorial typography system:
  * - Playfair Display: Elegant serif for headlines and display text
  * - Geist: Modern sans-serif for body text and UI elements
  * - Geist Mono: Monospace for code and technical content
@@ -40,10 +40,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://opendesign.build"),
+  metadataBase: new URL("https://ideate.build"),
   title: {
-    default: "OpenDesign - AI App Designer | Create Mobile & Desktop Mockups",
-    template: "%s | OpenDesign",
+    default: "Ideate - AI App Designer | Create Mobile & Desktop Mockups",
+    template: "%s | Ideate",
   },
   description:
     "Turn your ideas into beautiful mobile and desktop app mockups instantly with AI. Open source, free to use. Bring your own API key. No design skills required.",
@@ -59,9 +59,9 @@ export const metadata: Metadata = {
     "UI mockup generator",
     "app prototype",
   ],
-  authors: [{ name: "OpenDesign" }],
-  creator: "OpenDesign",
-  publisher: "OpenDesign",
+  authors: [{ name: "Ideate" }],
+  creator: "Ideate",
+  publisher: "Ideate",
   robots: {
     index: true,
     follow: true,
@@ -76,9 +76,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://opendesign.build",
-    siteName: "OpenDesign",
-    title: "OpenDesign - AI App Designer | Mobile & Desktop Mockups in Minutes",
+    url: "https://ideate.build",
+    siteName: "Ideate",
+    title: "Ideate - AI App Designer | Mobile & Desktop Mockups in Minutes",
     description:
       "Turn your ideas into beautiful app mockups instantly with AI. Open source, free to use, bring your own API key.",
     images: [
@@ -86,14 +86,14 @@ export const metadata: Metadata = {
         url: "/api/og",
         width: 1200,
         height: 630,
-        alt: "OpenDesign - AI App Designer",
+        alt: "Ideate - AI App Designer",
         type: "image/png",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "OpenDesign - AI App Designer",
+    title: "Ideate - AI App Designer",
     description:
       "Turn ideas into beautiful mobile & desktop app mockups with AI. Open source & free.",
     images: ["/api/og"],
@@ -101,7 +101,7 @@ export const metadata: Metadata = {
     site: "@opendesignai",
   },
   alternates: {
-    canonical: "https://opendesign.build",
+    canonical: "https://ideate.build",
   },
   icons: {
     icon: "/icon.svg",
@@ -120,10 +120,10 @@ export const viewport: Viewport = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: "OpenDesign",
+  name: "Ideate",
   description:
     "AI-powered app design mockup generator for mobile and desktop. Create beautiful UI mockups from text descriptions.",
-  url: "https://opendesign.build",
+  url: "https://ideate.build",
   applicationCategory: "DesignApplication",
   operatingSystem: "Web",
   offers: {
@@ -144,9 +144,9 @@ const jsonLd = {
 const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "OpenDesign",
-  url: "https://opendesign.build",
-  logo: "https://opendesign.build/logo.svg",
+  name: "Ideate",
+  url: "https://ideate.build",
+  logo: "https://ideate.build/logo.svg",
   sameAs: ["https://github.com/papay0/opendesign"],
 };
 

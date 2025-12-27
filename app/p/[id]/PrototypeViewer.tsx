@@ -4,7 +4,7 @@
  * PrototypeViewer - Client component for public prototype viewing
  *
  * Displays the prototype with:
- * - Slim header: OpenDesign branding + hotspot toggle
+ * - Slim header: Ideate branding + hotspot toggle
  * - Desktop: edge-to-edge, scaled to fit viewport
  * - Mobile: phone frame, scaled to fit
  * - Dark background
@@ -81,18 +81,18 @@ export function PrototypeViewer({
       <header className="flex items-center justify-between px-4 py-3 bg-[#111] border-b border-white/10 flex-shrink-0">
         {/* Left: Branding */}
         <a
-          href="https://opendesign.build"
+          href="https://ideate.build"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 text-white/70 hover:text-white transition-colors"
         >
           <img
             src="/logo.svg"
-            alt="OpenDesign"
+            alt="Ideate"
             className="w-6 h-6 rounded-md"
           />
           <span className="text-sm font-medium">
-            Made with <span className="text-white">OpenDesign</span>
+            Made with <span className="text-white">Ideate</span>
           </span>
         </a>
 

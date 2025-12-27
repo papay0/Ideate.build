@@ -5,11 +5,11 @@ import { ArrowRight, Calendar, Clock } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
 export const metadata: Metadata = {
-  title: "Blog - The Prototyping Guide | OpenDesign",
+  title: "Blog - The Prototyping Guide | Ideate",
   description:
     "Learn how product teams use prototyping to validate ideas faster. Practical guides for PMs, designers, and founders building digital products.",
   openGraph: {
-    title: "OpenDesign Blog - The Prototyping Guide",
+    title: "Ideate Blog - The Prototyping Guide",
     description:
       "Learn how product teams use prototyping to validate ideas faster. Practical guides for PMs, designers, and founders.",
   },
@@ -40,7 +40,7 @@ export default function BlogPage() {
         <div className="max-w-4xl mx-auto">
           <span className="inline-flex items-center gap-2 text-sm text-[#6B6B6B] mb-4">
             <span className="w-2 h-2 rounded-full bg-[#B8956F]" />
-            OpenDesign Blog
+            Ideate Blog
           </span>
           <h1 className="font-serif text-4xl md:text-5xl text-[#1A1A1A] tracking-tight mb-4">
             The Prototyping Guide

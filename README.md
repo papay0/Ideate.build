@@ -1,4 +1,4 @@
-# OpenDesign
+# Ideate
 
 An open-source AI-powered prototyping tool that creates interactive mobile and desktop app prototypes in real-time. Describe your app idea, watch it come to life, and test it with working navigation.
 
@@ -93,7 +93,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 6. Configure your API key
 
-1. Sign in to OpenDesign
+1. Sign in to Ideate
 2. Go to **Settings** (gear icon)
 3. Enter your OpenRouter or Gemini API key
 4. Start prototyping!
@@ -205,7 +205,7 @@ The AI uses HTML comment delimiters with grid positions:
 
 ### Other Platforms
 
-OpenDesign is a standard Next.js app and can be deployed to any platform that supports Node.js:
+Ideate is a standard Next.js app and can be deployed to any platform that supports Node.js:
 
 - [Railway](https://railway.app)
 - [Render](https://render.com)

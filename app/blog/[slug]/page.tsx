@@ -65,8 +65,8 @@ export default async function BlogPostPage({ params }: Props) {
     },
     publisher: {
       "@type": "Organization",
-      name: "OpenDesign",
-      url: "https://opendesign.build",
+      name: "Ideate",
+      url: "https://ideate.build",
     },
   };
 
@@ -163,7 +163,7 @@ export default async function BlogPostPage({ params }: Props) {
               href="/"
               className="inline-flex items-center gap-2 bg-[#B8956F] text-white font-medium px-6 py-3 rounded-xl hover:bg-[#A6845F] transition-colors"
             >
-              Try OpenDesign
+              Try Ideate
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
