@@ -1,48 +1,49 @@
 "use client";
 
 /**
- * OpenDesign Landing Page
+ * Ideate.build Landing Page
  *
- * Design: Editorial/Magazine Aesthetic
+ * Design: Manifesto-Forward Editorial Aesthetic
  *
- * A refined, publication-quality landing page inspired by design magazines
- * like Bloomberg Businessweek and Stripe Press. Features elegant serif
+ * A refined, statement-driven landing page built around the philosophy
+ * "Ideate. Build." — two words that say everything. Features elegant
  * typography, generous whitespace, and a warm, sophisticated color palette.
  *
  * Key design principles:
- * - Typography as the hero element
+ * - Manifesto over features
+ * - Typography as the hero
+ * - Every word earns its place
  * - Warm white background with terracotta accent
- * - Asymmetric layouts for visual interest
- * - Subtle, refined animations
- * - No gradients, glows, or decorative effects
+ * - Generous whitespace
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Sparkles,
-  Pencil,
-  Code2,
   ArrowRight,
   Github,
   Menu,
   X,
-  Layers,
   Check,
   Crown,
   Zap,
   MessageSquare,
+  Sparkles,
+  Play,
+  MousePointerClick,
+  Lightbulb,
+  Wand2,
+  Smartphone,
+  Monitor,
   Dumbbell,
   ChefHat,
   Plane,
   Music,
-  Play,
-  MousePointerClick,
   LucideIcon,
 } from "lucide-react";
-import { PLANS, MESSAGE_PACK } from "@/lib/constants/plans";
+import { PLANS } from "@/lib/constants/plans";
 import { usePendingPrompt } from "@/lib/hooks/usePendingPrompt";
 import {
   SignInButton,
@@ -57,23 +58,22 @@ import { type Platform } from "@/lib/constants/platforms";
 
 // ============================================================================
 // Animation Variants
-// Subtle, refined animations that don't distract
 // ============================================================================
 
 const fadeIn = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { duration: 0.6, ease: "easeOut" as const },
+    transition: { duration: 0.8, ease: "easeOut" as const },
   },
 };
 
 const slideUp = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
+    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as const },
   },
 };
 
@@ -81,7 +81,16 @@ const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.15, delayChildren: 0.1 },
+  },
+};
+
+const letterReveal = {
+  hidden: { opacity: 0, y: 50 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
   },
 };
 
@@ -89,34 +98,39 @@ const staggerContainer = {
 // Data
 // ============================================================================
 
-// Supabase public assets URL
 const SUPABASE_ASSETS = "https://xqpuvtopszitdtittjao.supabase.co/storage/v1/object/public/public-assets/images";
 
-const features = [
-  {
-    icon: MousePointerClick,
-    title: "Real Navigation, Not Mockups",
-    description:
-      "Click buttons. Tap links. Navigate between screens. Your prototype works like the real thing.",
+const HERO_PHONES = {
+  phone1: `${SUPABASE_ASSETS}/hero-phone-1`,
+  phone2: `${SUPABASE_ASSETS}/hero-phone-2`,
+  phone3: `${SUPABASE_ASSETS}/hero-phone-3`,
+};
+
+const COMPARISON_IMAGES = {
+  mobile: {
+    opendesign: `${SUPABASE_ASSETS}/comparison-mobile-opendesign`,
+    v0: `${SUPABASE_ASSETS}/comparison-mobile-v0`,
+    lovable: `${SUPABASE_ASSETS}/comparison-mobile-lovable`,
+    prompt: "Music streaming app",
   },
-  {
-    icon: Play,
-    title: "Test It in Play Mode",
-    description:
-      "Enter full-screen Play mode and experience your app. Find UX issues before you write any code.",
+  desktop: {
+    opendesign: `${SUPABASE_ASSETS}/comparison-desktop-opendesign`,
+    v0: `${SUPABASE_ASSETS}/comparison-desktop-v0`,
+    lovable: `${SUPABASE_ASSETS}/comparison-desktop-lovable`,
+    prompt: "Recipe collection website",
   },
-  {
-    icon: Sparkles,
-    title: "Watch It Generate Live",
-    description:
-      "See your screens appear in real-time as the AI builds them. No waiting, no refreshing.",
-  },
+};
+
+const personas = [
+  { label: "Founders", description: "Show investors a working prototype, not slides" },
+  { label: "Developers", description: "Skip the design phase, start building faster" },
+  { label: "Product Managers", description: "Get stakeholder buy-in with real prototypes" },
+  { label: "Designers", description: "Explore ideas at the speed of thought" },
+  { label: "Hackathon Teams", description: "Ship a polished demo on day one" },
+  { label: "Dreamers", description: "Turn any idea into something you can touch" },
 ];
 
-// ============================================================================
-// Example Prompts with Rich Data - Separate Mobile and Desktop versions
-// ============================================================================
-
+// Example Prompts with Rich Data
 interface ExamplePrompt {
   label: string;
   styleTag: string;
@@ -218,37 +232,8 @@ Dark mode with neon accents. Deep charcoal (#1A1A2E) background with electric pu
   },
 ];
 
-const useCases = [
-  {
-    title: "Startup Founders",
-    description:
-      "Show investors a working prototype, not slides. Let them click through your app idea in real-time.",
-  },
-  {
-    title: "Indie Developers",
-    description:
-      "Skip the design phase. Generate a clickable prototype in minutes and start building what matters.",
-  },
-  {
-    title: "Product Managers",
-    description:
-      "Get stakeholder buy-in with prototypes they can actually test. No more explaining wireframes.",
-  },
-  {
-    title: "Hackathon Teams",
-    description:
-      "Ship a polished demo on day one. Focus on your backend while AI handles the frontend.",
-  },
-  {
-    title: "Freelancers & Agencies",
-    description:
-      "Win more clients with interactive prototypes. Show three concepts in the time it takes to make one.",
-  },
-];
-
 // ============================================================================
-// Component: Header
-// Clean, minimal navigation
+// Header
 // ============================================================================
 
 function Header() {
@@ -264,11 +249,11 @@ function Header() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex items-center justify-between h-16 border-b border-[#E8E4E0]">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5">
-            <Layers className="w-6 h-6 text-[#B8956F]" />
-            <span className="font-medium text-[#1A1A1A] tracking-tight">
-              OpenDesign
+          <Link href="/" className="flex items-center gap-1">
+            <span className="font-serif text-xl text-[#1A1A1A] tracking-tight">
+              Ideate
             </span>
+            <span className="text-[#B8956F] text-xl">.</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -285,12 +270,6 @@ function Header() {
             >
               Pricing
             </a>
-            <span className="text-sm text-[#9A9A9A] flex items-center gap-1.5 cursor-not-allowed">
-              Explore
-              <span className="text-[10px] bg-[#F5F2EF] text-[#6B6B6B] px-1.5 py-0.5 rounded">
-                Soon
-              </span>
-            </span>
             <a
               href="https://github.com/papay0/opendesign"
               target="_blank"
@@ -311,7 +290,7 @@ function Header() {
               </SignInButton>
               <SignUpButton mode="modal">
                 <button className="text-sm bg-[#1A1A1A] text-white px-4 py-2 rounded-lg hover:bg-[#333] transition-colors">
-                  Get Started
+                  Start Building
                 </button>
               </SignUpButton>
             </SignedOut>
@@ -331,193 +310,64 @@ function Header() {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden text-[#6B6B6B] hover:text-[#1A1A1A]"
           >
-            {mobileMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
 
         {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden py-4 border-b border-[#E8E4E0]"
-          >
-            <div className="flex flex-col gap-4">
-              <Link href="/blog" className="text-sm text-[#6B6B6B] hover:text-[#1A1A1A]">
-                Blog
-              </Link>
-              <a href="#pricing" className="text-sm text-[#6B6B6B] hover:text-[#1A1A1A]">
-                Pricing
-              </a>
-              <span className="text-sm text-[#9A9A9A]">Explore (Coming Soon)</span>
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <button className="text-sm text-[#6B6B6B] text-left">Sign In</button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <button className="text-sm bg-[#1A1A1A] text-white px-4 py-2 rounded-lg w-fit">
-                    Get Started
-                  </button>
-                </SignUpButton>
-              </SignedOut>
-              <SignedIn>
-                <Link
-                  href="/home"
-                  className="text-sm bg-[#1A1A1A] text-white px-4 py-2 rounded-lg w-fit"
-                >
-                  My Projects
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden py-4 border-b border-[#E8E4E0]"
+            >
+              <div className="flex flex-col gap-4">
+                <Link href="/blog" className="text-sm text-[#6B6B6B] hover:text-[#1A1A1A]">
+                  Blog
                 </Link>
-              </SignedIn>
-            </div>
-          </motion.div>
-        )}
+                <a href="#pricing" className="text-sm text-[#6B6B6B] hover:text-[#1A1A1A]">
+                  Pricing
+                </a>
+                <a
+                  href="https://github.com/papay0/opendesign"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-[#6B6B6B] hover:text-[#1A1A1A]"
+                >
+                  GitHub
+                </a>
+                <SignedOut>
+                  <SignInButton mode="modal">
+                    <button className="text-sm text-[#6B6B6B] text-left">Sign In</button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <button className="text-sm bg-[#1A1A1A] text-white px-4 py-2 rounded-lg w-fit">
+                      Start Building
+                    </button>
+                  </SignUpButton>
+                </SignedOut>
+                <SignedIn>
+                  <Link
+                    href="/home"
+                    className="text-sm bg-[#1A1A1A] text-white px-4 py-2 rounded-lg w-fit"
+                  >
+                    My Projects
+                  </Link>
+                </SignedIn>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.header>
   );
 }
 
 // ============================================================================
-// Component: Hero Section
-// Bold typography-driven hero with asymmetric layout
+// Hero Section - The Manifesto
 // ============================================================================
-
-// ============================================================================
-// Component: Hero Phone Mockups
-// Showcase beautiful generated prototypes with staggered reveal animation
-// ============================================================================
-
-// Hero showcase images - beautiful generated prototypes
-const HERO_PHONES = {
-  // Music app - dark mode, vibrant
-  phone1: `${SUPABASE_ASSETS}/hero-phone-1`,
-  // Fitness app - warm gradients
-  phone2: `${SUPABASE_ASSETS}/hero-phone-2`,
-  // Recipe app - clean, editorial
-  phone3: `${SUPABASE_ASSETS}/hero-phone-3`,
-};
-
-function HeroPhoneMockup({
-  image,
-  delay,
-  className,
-  rotation = 0,
-  onClick,
-}: {
-  image: string;
-  delay: number;
-  className?: string;
-  rotation?: number;
-  onClick?: () => void;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 60, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{
-        duration: 0.8,
-        delay,
-        ease: [0.22, 1, 0.36, 1],
-      }}
-      whileHover={{ scale: 1.02 }}
-      className={`relative ${className}`}
-      style={{ transform: `rotate(${rotation}deg)` }}
-      onClick={onClick}
-    >
-      {/* Phone Frame */}
-      <div className="relative bg-[#1A1A1A] rounded-[2.5rem] p-2 shadow-2xl">
-        {/* Screen */}
-        <div className="relative bg-[#FAF8F5] rounded-[2rem] overflow-hidden aspect-[390/844]">
-          <img
-            src={image}
-            alt="Generated prototype"
-            className="w-full h-full object-cover object-top"
-          />
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-function HeroPhoneMockups() {
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-
-  const heroImages = [
-    { src: HERO_PHONES.phone1, label: "Fitness App" },
-    { src: HERO_PHONES.phone2, label: "Travel App" },
-    { src: HERO_PHONES.phone3, label: "Finance App" },
-  ];
-
-  return (
-    <div className="relative w-full">
-      {/* Lightbox */}
-      {lightboxIndex !== null && (
-        <ComparisonLightbox
-          images={heroImages}
-          initialIndex={lightboxIndex}
-          onClose={() => setLightboxIndex(null)}
-        />
-      )}
-
-      {/* Ambient glow - centered behind phones */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] blur-3xl opacity-15 bg-gradient-to-br from-[#B8956F] via-[#D4B896] to-[#E8D4C4] rounded-full pointer-events-none" />
-
-      {/* Phone arrangement - stepped cascade, fully visible */}
-      {/* Mobile: single centered phone | Tablet: 2 phones | Desktop: 3 phones */}
-      <div className="flex items-end justify-center gap-4 md:gap-6 lg:gap-8 px-4">
-
-        {/* Left phone - hidden on mobile, visible on tablet+ */}
-        <div className="hidden md:block">
-          <HeroPhoneMockup
-            image={HERO_PHONES.phone1}
-            delay={0.5}
-            rotation={-3}
-            className="w-36 lg:w-44 mb-8 cursor-pointer"
-            onClick={() => setLightboxIndex(0)}
-          />
-        </div>
-
-        {/* Center phone - hero, always visible, largest */}
-        <div className="flex flex-col items-center">
-          <HeroPhoneMockup
-            image={HERO_PHONES.phone2}
-            delay={0.3}
-            rotation={0}
-            className="w-52 md:w-56 lg:w-64 cursor-pointer"
-            onClick={() => setLightboxIndex(1)}
-          />
-          {/* Badge directly under center phone */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2, duration: 0.5 }}
-            className="mt-6 bg-white/90 backdrop-blur-sm border border-[#E8E4E0] rounded-full px-5 py-2 shadow-lg"
-          >
-            <span className="text-sm font-medium text-[#6B6B6B] flex items-center gap-2">
-              <span className="w-2 h-2 bg-[#28C840] rounded-full animate-pulse" />
-              Generated in seconds
-            </span>
-          </motion.div>
-        </div>
-
-        {/* Right phone - hidden on mobile, visible on tablet+ */}
-        <div className="hidden md:block">
-          <HeroPhoneMockup
-            image={HERO_PHONES.phone3}
-            delay={0.7}
-            rotation={3}
-            className="w-36 lg:w-44 mb-16 cursor-pointer"
-            onClick={() => setLightboxIndex(2)}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function HeroSection() {
   const [prompt, setPrompt] = useState("");
@@ -529,14 +379,14 @@ function HeroSection() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const streamingRef = useRef<{ cancelled: boolean }>({ cancelled: false });
 
-  // Stream text character by character - fast, ~1 second total
+  // Stream text character by character
   const streamText = useCallback(async (text: string) => {
     streamingRef.current.cancelled = false;
     setIsStreaming(true);
     setPrompt("");
 
     const startTime = Date.now();
-    const targetDuration = 1500; // 1.5 seconds total
+    const targetDuration = 1500;
 
     for (let i = 0; i < text.length; i++) {
       if (streamingRef.current.cancelled) {
@@ -545,7 +395,6 @@ function HeroSection() {
 
       setPrompt(text.slice(0, i + 1));
 
-      // Calculate how long we should have taken vs how long we actually took
       const expectedTime = ((i + 1) / text.length) * targetDuration;
       const elapsed = Date.now() - startTime;
       const delay = Math.max(0, expectedTime - elapsed);
@@ -558,13 +407,10 @@ function HeroSection() {
     setIsStreaming(false);
   }, []);
 
-  // Handle clicking an example card - uses platform-specific prompt
+  // Handle clicking an example card
   const handleExampleClick = useCallback(
     (example: ExamplePrompt) => {
-      // Cancel any ongoing streaming
       streamingRef.current.cancelled = true;
-
-      // Focus textarea and start streaming with platform-specific prompt
       textareaRef.current?.focus();
       streamText(example.fullPrompt[platform]);
     },
@@ -575,7 +421,6 @@ function HeroSection() {
   const handlePromptChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       if (isStreaming) {
-        // User started typing, cancel streaming
         streamingRef.current.cancelled = true;
         setIsStreaming(false);
       }
@@ -588,128 +433,124 @@ function HeroSection() {
     e.preventDefault();
     if (!prompt.trim()) return;
 
-    // Cancel any streaming
     streamingRef.current.cancelled = true;
     setIsStreaming(false);
 
-    // Save prompt to localStorage for use after auth
     savePendingPrompt(prompt.trim(), platform);
 
     if (isSignedIn) {
-      // Already logged in - go directly to home
-      // Home page will detect pending prompt and create project
       router.push("/home");
     } else {
-      // Not logged in - redirect to sign-in
-      // After sign-in, Clerk redirects to /home (per env config)
       router.push("/sign-in");
     }
   };
 
   return (
-    <section className="pt-32 pb-24 px-6 overflow-hidden" aria-label="AI App Prototyper Hero">
-      <div className="max-w-7xl mx-auto">
-        {/* Two-column layout: Content left, Video right (video is larger) */}
-        <div className="grid lg:grid-cols-[1fr_1.3fr] gap-12 lg:gap-10 items-center">
-          {/* Left Column - Content */}
-          <div>
-            {/* Badges */}
-            <motion.div
-              variants={fadeIn}
-              initial="hidden"
-              animate="visible"
-              className="mb-8 flex flex-wrap items-center gap-3"
-            >
-              <a
-                href="https://github.com/papay0/opendesign"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#E8E4E0] bg-white/50 text-sm text-[#1A1A1A] hover:bg-white hover:border-[#1A1A1A] hover:shadow-sm transition-all"
+    <section className="min-h-screen flex flex-col items-center justify-center px-6 pt-16 pb-8">
+      <div className="max-w-5xl mx-auto text-center">
+        {/* Open Source Badge */}
+        <motion.a
+          href="https://github.com/papay0/opendesign"
+          target="_blank"
+          rel="noopener noreferrer"
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#E8E4E0] bg-white/50 text-sm text-[#6B6B6B] hover:text-[#1A1A1A] hover:border-[#1A1A1A] transition-all mb-10"
+        >
+          <Github className="w-4 h-4" />
+          Open Source
+          <ArrowRight className="w-3 h-3" />
+        </motion.a>
+
+        {/* The Manifesto */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={staggerContainer}
+          className="mb-6"
+        >
+          <motion.h1 variants={letterReveal} className="mb-1">
+            <span className="block font-serif text-6xl md:text-7xl lg:text-8xl text-[#1A1A1A] tracking-tight">
+              Ideate.
+            </span>
+          </motion.h1>
+          <motion.h1 variants={letterReveal}>
+            <span className="block font-sans text-6xl md:text-7xl lg:text-8xl text-[#B8956F] font-bold tracking-tight">
+              Build.
+            </span>
+          </motion.h1>
+        </motion.div>
+
+        {/* Subtext */}
+        <motion.p
+          variants={slideUp}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.4 }}
+          className="text-lg md:text-xl text-[#6B6B6B] mb-10 max-w-lg mx-auto leading-relaxed"
+        >
+          Describe your app in words.
+          <br />
+          Watch it become real.
+        </motion.p>
+
+        {/* Input Form */}
+        <motion.form
+          variants={slideUp}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.6 }}
+          onSubmit={handleSubmit}
+          className="w-full max-w-2xl mx-auto mb-6"
+        >
+          <div className="bg-white border border-[#E8E4E0] rounded-2xl p-2 shadow-lg shadow-[#E8E4E0]/50">
+            <textarea
+              ref={textareaRef}
+              value={prompt}
+              onChange={handlePromptChange}
+              placeholder="What will you build?"
+              rows={3}
+              className="w-full bg-transparent text-[#1A1A1A] placeholder-[#9A9A9A] text-lg px-4 py-3 resize-none focus:outline-none"
+            />
+            <div className="flex items-center justify-between px-2 pb-1">
+              <PlatformSelector selected={platform} onChange={setPlatform} />
+              <button
+                type="submit"
+                disabled={isStreaming}
+                className="flex items-center gap-2 bg-[#B8956F] text-white font-medium px-5 py-2.5 rounded-xl hover:bg-[#A6845F] transition-colors disabled:opacity-50"
               >
-                <Github className="w-4 h-4" />
-                Open Source
-                <ArrowRight className="w-3 h-3 text-[#6B6B6B]" />
-              </a>
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#E8E4E0] bg-white/50 text-sm text-[#6B6B6B]">
-                <Sparkles className="w-4 h-4 text-[#B8956F]" />
-                1,000+ prototypes created
-              </span>
-            </motion.div>
-
-            {/* Main headline - Large serif typography with SEO keywords */}
-            <motion.h1
-              variants={slideUp}
-              initial="hidden"
-              animate="visible"
-              className="font-serif text-5xl md:text-6xl lg:text-7xl text-[#1A1A1A] tracking-tight leading-[1.05] mb-6"
-            >
-              From Idea to Working Demo.{" "}
-              <span className="text-[#B8956F] italic">In 60 Seconds.</span>
-            </motion.h1>
-
-            {/* Subheadline */}
-            <motion.p
-              variants={slideUp}
-              initial="hidden"
-              animate="visible"
-              transition={{ delay: 0.1 }}
-              className="text-xl text-[#6B6B6B] mb-10 leading-relaxed"
-            >
-              Describe your app. AI builds a clickable prototype with real navigation.
-              Test the user flow before writing a single line of code.
-            </motion.p>
-
-            {/* Main Input Form */}
-            <motion.form
-              variants={slideUp}
-              initial="hidden"
-              animate="visible"
-              transition={{ delay: 0.2 }}
-              onSubmit={handleSubmit}
-              className="mb-8"
-            >
-              <div className="bg-white border border-[#E8E4E0] rounded-2xl p-2 shadow-sm">
-                <textarea
-                  ref={textareaRef}
-                  value={prompt}
-                  onChange={handlePromptChange}
-                  placeholder="A fitness app with workout tracking, a recipe collection with cooking mode..."
-                  rows={3}
-                  className="w-full bg-transparent text-[#1A1A1A] placeholder-[#9A9A9A] text-lg px-4 py-3 resize-none focus:outline-none"
-                />
-                <div className="flex items-center justify-between px-2 pb-1">
-                  <PlatformSelector selected={platform} onChange={setPlatform} />
-                  <button
-                    type="submit"
-                    disabled={isStreaming}
-                    className="flex items-center gap-2 bg-[#B8956F] text-white font-medium px-5 py-2.5 rounded-xl hover:bg-[#A6845F] transition-colors disabled:opacity-50"
-                  >
-                    Generate it
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </motion.form>
+                Build it
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
+        </motion.form>
 
-          {/* Right Column - Beautiful Phone Mockups showcasing the output */}
-          <div className="flex justify-center lg:justify-end">
-            <HeroPhoneMockups />
-          </div>
-        </div>
+        {/* Speed Badge */}
+        <motion.div
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.7 }}
+          className="mb-10 inline-flex items-center gap-2 text-sm text-[#6B6B6B]"
+        >
+          <span className="w-2 h-2 bg-[#28C840] rounded-full animate-pulse" />
+          First result in 5 seconds
+        </motion.div>
 
-        {/* Inspiration Cards - Full width below the hero */}
+        {/* Inspiration Cards */}
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
-          className="mt-16"
+          className="mt-4"
         >
-          <p className="text-sm text-[#9A9A9A] mb-4 flex items-center gap-2">
+          <p className="text-sm text-[#9A9A9A] mb-4 flex items-center justify-center gap-2">
             <Sparkles className="w-4 h-4 text-[#B8956F]" />
             Need inspiration?
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {examplePrompts.map((example) => {
               const IconComponent = example.icon;
               return (
@@ -719,10 +560,9 @@ function HeroSection() {
                   onClick={() => handleExampleClick(example)}
                   className="text-left bg-white border border-[#E8E4E0] rounded-xl p-4 hover:border-[#B8956F] hover:shadow-md transition-all group"
                 >
-                  {/* Icon and Title Row */}
                   <div className="flex items-start gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-lg bg-[#FAF8F5] border border-[#E8E4E0] flex items-center justify-center flex-shrink-0 group-hover:bg-[#FFF8F0] group-hover:border-[#F5E6D3] transition-colors">
-                      <IconComponent className="w-5 h-5 text-[#B8956F]" />
+                    <div className="w-9 h-9 rounded-lg bg-[#FAF8F5] border border-[#E8E4E0] flex items-center justify-center flex-shrink-0 group-hover:bg-[#FFF8F0] group-hover:border-[#F5E6D3] transition-colors">
+                      <IconComponent className="w-4 h-4 text-[#B8956F]" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-[#1A1A1A] text-sm">
@@ -733,7 +573,6 @@ function HeroSection() {
                       </span>
                     </div>
                   </div>
-                  {/* Description - platform-specific */}
                   <p className="text-xs text-[#6B6B6B] line-clamp-2">
                     {example.description[platform]}
                   </p>
@@ -748,26 +587,155 @@ function HeroSection() {
 }
 
 // ============================================================================
-// Component: Comparison Section
-// Show OpenDesign vs competitors - Mobile and Desktop
+// Transformation Section - From Words to Reality
 // ============================================================================
 
-const COMPARISON_IMAGES = {
-  mobile: {
-    opendesign: `${SUPABASE_ASSETS}/comparison-mobile-opendesign`,
-    v0: `${SUPABASE_ASSETS}/comparison-mobile-v0`,
-    lovable: `${SUPABASE_ASSETS}/comparison-mobile-lovable`,
-    prompt: "Music streaming app",
-  },
-  desktop: {
-    opendesign: `${SUPABASE_ASSETS}/comparison-desktop-opendesign`,
-    v0: `${SUPABASE_ASSETS}/comparison-desktop-v0`,
-    lovable: `${SUPABASE_ASSETS}/comparison-desktop-lovable`,
-    prompt: "Recipe collection website",
-  },
-};
+function TransformationSection() {
+  return (
+    <section className="py-32 px-6 bg-[#FAF8F5]">
+      <div className="max-w-6xl mx-auto">
+        <motion.div
+          variants={slideUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="text-center mb-16"
+        >
+          <h2 className="font-serif text-4xl md:text-5xl text-[#1A1A1A] tracking-tight mb-4">
+            From words to reality
+          </h2>
+          <p className="text-lg text-[#6B6B6B] max-w-xl mx-auto">
+            Type a description. Get an interactive prototype you can click through.
+          </p>
+        </motion.div>
 
-// Phone mockup frame component
+        {/* Transformation Visual */}
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="grid lg:grid-cols-[1fr_auto_1fr] gap-8 items-center"
+        >
+          {/* Left - The Prompt */}
+          <motion.div
+            variants={slideUp}
+            className="bg-white border border-[#E8E4E0] rounded-2xl p-8 shadow-sm"
+          >
+            <div className="flex items-center gap-2 mb-4 text-sm text-[#9A9A9A]">
+              <Lightbulb className="w-4 h-4" />
+              Your idea
+            </div>
+            <p className="font-serif text-2xl md:text-3xl text-[#1A1A1A] leading-relaxed italic">
+              &ldquo;A fitness app with workout tracking, progress charts, and achievement badges&rdquo;
+            </p>
+          </motion.div>
+
+          {/* Arrow */}
+          <motion.div
+            variants={fadeIn}
+            className="hidden lg:flex flex-col items-center gap-2"
+          >
+            <Wand2 className="w-6 h-6 text-[#B8956F]" />
+            <div className="w-px h-12 bg-gradient-to-b from-[#B8956F] to-transparent" />
+            <ArrowRight className="w-6 h-6 text-[#B8956F]" />
+          </motion.div>
+
+          {/* Right - The Result */}
+          <motion.div variants={slideUp} className="relative">
+            {/* Phone Mockup */}
+            <div className="relative bg-[#1A1A1A] rounded-[2.5rem] p-2 shadow-2xl max-w-[280px] mx-auto">
+              <div className="relative bg-[#FAF8F5] rounded-[2rem] overflow-hidden aspect-[390/844]">
+                <img
+                  src={HERO_PHONES.phone1}
+                  alt="Generated fitness app prototype"
+                  className="w-full h-full object-cover object-top"
+                />
+              </div>
+            </div>
+            {/* Badge */}
+            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-[#B8956F] text-white text-sm font-medium px-4 py-2 rounded-full shadow-lg">
+              Generated in 5 seconds
+            </div>
+          </motion.div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ============================================================================
+// Process Section - Three Steps
+// ============================================================================
+
+function ProcessSection() {
+  const steps = [
+    {
+      number: "1",
+      title: "Describe",
+      description: "Type your app idea in plain English",
+      icon: Lightbulb,
+    },
+    {
+      number: "2",
+      title: "Generate",
+      description: "AI builds interactive screens in seconds",
+      icon: Wand2,
+    },
+    {
+      number: "3",
+      title: "Test",
+      description: "Click through your prototype like a real app",
+      icon: MousePointerClick,
+    },
+  ];
+
+  return (
+    <section className="py-24 px-6 bg-[#F5F2EF]">
+      <div className="max-w-4xl mx-auto">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="grid md:grid-cols-3 gap-8"
+        >
+          {steps.map((step, index) => (
+            <motion.div
+              key={step.title}
+              variants={slideUp}
+              className="text-center"
+            >
+              {/* Icon */}
+              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-white border border-[#E8E4E0] flex items-center justify-center shadow-sm">
+                <step.icon className="w-7 h-7 text-[#B8956F]" />
+              </div>
+
+              {/* Number + Title */}
+              <div className="mb-3">
+                <span className="text-sm text-[#B8956F] font-medium">{step.number}</span>
+                <h3 className="font-serif text-2xl text-[#1A1A1A]">{step.title}</h3>
+              </div>
+
+              {/* Description */}
+              <p className="text-[#6B6B6B]">{step.description}</p>
+
+              {/* Connector line (not on last item) */}
+              {index < steps.length - 1 && (
+                <div className="hidden md:block absolute top-8 left-full w-full h-px bg-[#E8E4E0]" />
+              )}
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ============================================================================
+// Comparison Section
+// ============================================================================
+
 function PhoneMockup({
   image,
   label,
@@ -784,7 +752,6 @@ function PhoneMockup({
       className={`relative cursor-pointer transition-transform hover:scale-[1.02] ${isHero ? "" : "opacity-80 hover:opacity-100"}`}
       onClick={onClick}
     >
-      {/* Label */}
       <div className={`absolute -top-3 left-1/2 -translate-x-1/2 z-10 text-sm font-medium px-4 py-1 rounded-full ${
         isHero
           ? "bg-[#B8956F] text-white"
@@ -792,10 +759,7 @@ function PhoneMockup({
       }`}>
         {label}
       </div>
-
-      {/* Phone Frame */}
       <div className={`relative bg-[#1A1A1A] rounded-[2.5rem] p-2 ${isHero ? "shadow-2xl" : "shadow-lg"}`}>
-        {/* Screen */}
         <div className="relative bg-[#FAF8F5] rounded-[2rem] overflow-hidden aspect-[390/844]">
           <img
             src={image}
@@ -808,7 +772,6 @@ function PhoneMockup({
   );
 }
 
-// Browser mockup frame component
 function BrowserMockup({
   image,
   label,
@@ -827,7 +790,6 @@ function BrowserMockup({
       className={`relative cursor-pointer transition-transform hover:scale-[1.01] ${isHero ? "" : "opacity-80 hover:opacity-100"}`}
       onClick={onClick}
     >
-      {/* Label */}
       <div className={`absolute -top-2.5 left-6 z-10 text-xs font-medium px-3 py-1 rounded-full ${
         isHero
           ? "bg-[#B8956F] text-white"
@@ -835,10 +797,7 @@ function BrowserMockup({
       }`}>
         {label}
       </div>
-
-      {/* Browser Frame */}
       <div className={`bg-white rounded-xl overflow-hidden border ${isHero ? "border-[#B8956F] border-2 shadow-xl" : "border-[#E8E4E0] shadow-md"}`}>
-        {/* Browser Chrome */}
         <div className={`bg-[#F5F2EF] flex items-center gap-2 border-b border-[#E8E4E0] ${compact ? "px-3 py-1.5" : "px-4 py-2.5"}`}>
           <div className="flex items-center gap-1.5">
             <div className={`rounded-full bg-[#FF5F57] ${compact ? "w-2 h-2" : "w-3 h-3"}`} />
@@ -851,8 +810,6 @@ function BrowserMockup({
             </div>
           </div>
         </div>
-
-        {/* Screen with proper aspect ratio */}
         <div className={`bg-[#FAF8F5] overflow-hidden ${compact ? "aspect-[16/9]" : "aspect-[16/10]"}`}>
           <img
             src={image}
@@ -865,7 +822,6 @@ function BrowserMockup({
   );
 }
 
-// Lightbox carousel for comparing screenshots
 function ComparisonLightbox({
   images,
   initialIndex,
@@ -880,7 +836,6 @@ function ComparisonLightbox({
   const goNext = () => setCurrentIndex((i) => (i + 1) % images.length);
   const goPrev = () => setCurrentIndex((i) => (i - 1 + images.length) % images.length);
 
-  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -899,7 +854,6 @@ function ComparisonLightbox({
       className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
       onClick={onClose}
     >
-      {/* Close button */}
       <button
         onClick={onClose}
         className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors z-10"
@@ -907,7 +861,6 @@ function ComparisonLightbox({
         <X className="w-8 h-8" />
       </button>
 
-      {/* Navigation arrows */}
       <button
         onClick={(e) => { e.stopPropagation(); goPrev(); }}
         className="absolute left-4 md:left-8 text-white/70 hover:text-white transition-colors p-2"
@@ -921,21 +874,13 @@ function ComparisonLightbox({
         <ArrowRight className="w-8 h-8" />
       </button>
 
-      {/* Image container - fullscreen image */}
-      <div
-        className="relative flex flex-col items-center px-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Label */}
+      <div className="relative flex flex-col items-center px-4" onClick={(e) => e.stopPropagation()}>
         <div className={`mb-4 text-lg font-medium px-6 py-2 rounded-full ${
-          currentIndex === 0
-            ? "bg-[#B8956F] text-white"
-            : "bg-white/10 text-white/90"
+          currentIndex === 0 ? "bg-[#B8956F] text-white" : "bg-white/10 text-white/90"
         }`}>
           {images[currentIndex].label}
         </div>
 
-        {/* Full screenshot - no phone frame */}
         <motion.img
           key={currentIndex}
           initial={{ opacity: 0 }}
@@ -946,105 +891,6 @@ function ComparisonLightbox({
           className="max-h-[80vh] max-w-[90vw] object-contain rounded-2xl shadow-2xl"
         />
 
-        {/* Dots indicator */}
-        <div className="flex gap-2 mt-6">
-          {images.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentIndex(i)}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                i === currentIndex ? "bg-white" : "bg-white/30"
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-// Desktop lightbox carousel for comparing screenshots
-function DesktopComparisonLightbox({
-  images,
-  initialIndex,
-  onClose,
-}: {
-  images: { src: string; label: string }[];
-  initialIndex: number;
-  onClose: () => void;
-}) {
-  const [currentIndex, setCurrentIndex] = useState(initialIndex);
-
-  const goNext = () => setCurrentIndex((i) => (i + 1) % images.length);
-  const goPrev = () => setCurrentIndex((i) => (i - 1 + images.length) % images.length);
-
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-      if (e.key === "ArrowRight") goNext();
-      if (e.key === "ArrowLeft") goPrev();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
-      onClick={onClose}
-    >
-      {/* Close button */}
-      <button
-        onClick={onClose}
-        className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors z-10"
-      >
-        <X className="w-8 h-8" />
-      </button>
-
-      {/* Navigation arrows */}
-      <button
-        onClick={(e) => { e.stopPropagation(); goPrev(); }}
-        className="absolute left-4 md:left-8 text-white/70 hover:text-white transition-colors p-2"
-      >
-        <ArrowRight className="w-8 h-8 rotate-180" />
-      </button>
-      <button
-        onClick={(e) => { e.stopPropagation(); goNext(); }}
-        className="absolute right-4 md:right-8 text-white/70 hover:text-white transition-colors p-2"
-      >
-        <ArrowRight className="w-8 h-8" />
-      </button>
-
-      {/* Image container - fullscreen image */}
-      <div
-        className="relative flex flex-col items-center px-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Label */}
-        <div className={`mb-4 text-lg font-medium px-6 py-2 rounded-full ${
-          currentIndex === 0
-            ? "bg-[#B8956F] text-white"
-            : "bg-white/10 text-white/90"
-        }`}>
-          {images[currentIndex].label}
-        </div>
-
-        {/* Full screenshot - no browser frame */}
-        <motion.img
-          key={currentIndex}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.2 }}
-          src={images[currentIndex].src}
-          alt={images[currentIndex].label}
-          className="max-h-[80vh] max-w-[90vw] object-contain rounded-xl shadow-2xl"
-        />
-
-        {/* Dots indicator */}
         <div className="flex gap-2 mt-6">
           {images.map((_, i) => (
             <button
@@ -1065,20 +911,19 @@ function ComparisonSection() {
   const [lightbox, setLightbox] = useState<{ type: "mobile" | "desktop"; index: number } | null>(null);
 
   const mobileImages = [
-    { src: COMPARISON_IMAGES.mobile.opendesign, label: "OpenDesign" },
+    { src: COMPARISON_IMAGES.mobile.opendesign, label: "Ideate" },
     { src: COMPARISON_IMAGES.mobile.v0, label: "v0" },
     { src: COMPARISON_IMAGES.mobile.lovable, label: "Lovable" },
   ];
 
   const desktopImages = [
-    { src: COMPARISON_IMAGES.desktop.opendesign, label: "OpenDesign" },
+    { src: COMPARISON_IMAGES.desktop.opendesign, label: "Ideate" },
     { src: COMPARISON_IMAGES.desktop.v0, label: "v0" },
     { src: COMPARISON_IMAGES.desktop.lovable, label: "Lovable" },
   ];
 
   return (
-    <section className="py-24 px-6 bg-[#F5F2EF]" aria-label="OpenDesign vs Other AI Tools">
-      {/* Mobile Lightbox */}
+    <section className="py-24 px-6 bg-[#FAF8F5]">
       {lightbox?.type === "mobile" && (
         <ComparisonLightbox
           images={mobileImages}
@@ -1086,10 +931,8 @@ function ComparisonSection() {
           onClose={() => setLightbox(null)}
         />
       )}
-
-      {/* Desktop Lightbox */}
       {lightbox?.type === "desktop" && (
-        <DesktopComparisonLightbox
+        <ComparisonLightbox
           images={desktopImages}
           initialIndex={lightbox.index}
           onClose={() => setLightbox(null)}
@@ -1097,125 +940,95 @@ function ComparisonSection() {
       )}
 
       <div className="max-w-6xl mx-auto">
-        {/* Section Header */}
+        {/* Header */}
         <motion.div
           variants={slideUp}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="text-center mb-12"
+          className="text-center mb-16"
         >
-          {/* Competition badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1A1A1A] text-white text-sm font-medium mb-6">
-            <span>OpenDesign</span>
-            <span className="text-white/50">vs</span>
-            <span className="text-white/70">v0</span>
-            <span className="text-white/50">vs</span>
-            <span className="text-white/70">Lovable</span>
-          </div>
           <h2 className="font-serif text-4xl md:text-5xl text-[#1A1A1A] tracking-tight mb-4">
-            Same Prompt. Different Tools.
+            Ideas deserve better than waiting
           </h2>
-          <p className="text-lg text-[#6B6B6B] max-w-2xl mx-auto">
-            We gave the exact same prompt to 3 AI prototyping tools. Here&apos;s what each one generated.
+          <p className="text-lg text-[#6B6B6B] max-w-xl mx-auto">
+            Same prompt, different tools. See the difference.
           </p>
         </motion.div>
 
-        {/* Generation Time Comparison - Visual Bar Chart */}
+        {/* Speed Comparison */}
         <motion.div
           variants={slideUp}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="mb-16 max-w-3xl mx-auto"
+          className="mb-20 max-w-3xl mx-auto"
         >
           <p className="text-center text-sm font-medium text-[#6B6B6B] mb-6 uppercase tracking-wide">
             Time to First Result
           </p>
 
           <div className="space-y-3">
-            {/* OpenDesign - 5 seconds = tiny bar */}
             <div className="flex items-center gap-4">
               <div className="w-24 text-right">
-                <span className="font-medium text-[#1A1A1A]">OpenDesign</span>
+                <span className="font-medium text-[#1A1A1A]">Ideate</span>
               </div>
               <div className="flex-1 h-10 bg-[#E8E4E0] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[#B8956F] rounded-full flex items-center justify-end pr-3"
-                  style={{ width: '3%' }}
-                >
-                </div>
+                <div className="h-full bg-[#B8956F] rounded-full" style={{ width: '3%' }} />
               </div>
               <div className="w-28 text-left">
                 <span className="text-lg font-bold text-[#B8956F]">5 sec</span>
               </div>
             </div>
 
-            {/* v0 - 2 minutes = 120 seconds = 67% bar */}
             <div className="flex items-center gap-4">
               <div className="w-24 text-right">
                 <span className="text-[#6B6B6B]">v0</span>
               </div>
               <div className="flex-1 h-10 bg-[#E8E4E0] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[#9A9A9A] rounded-full"
-                  style={{ width: '67%' }}
-                >
-                </div>
+                <div className="h-full bg-[#9A9A9A] rounded-full" style={{ width: '67%' }} />
               </div>
               <div className="w-28 text-left">
                 <span className="text-lg font-bold text-[#6B6B6B]">2 min</span>
               </div>
             </div>
 
-            {/* Lovable - 3 minutes = 180 seconds = 100% bar */}
             <div className="flex items-center gap-4">
               <div className="w-24 text-right">
                 <span className="text-[#6B6B6B]">Lovable</span>
               </div>
               <div className="flex-1 h-10 bg-[#E8E4E0] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[#9A9A9A] rounded-full"
-                  style={{ width: '100%' }}
-                >
-                </div>
+                <div className="h-full bg-[#9A9A9A] rounded-full" style={{ width: '100%' }} />
               </div>
               <div className="w-28 text-left">
                 <span className="text-lg font-bold text-[#6B6B6B]">3 min</span>
               </div>
             </div>
           </div>
-
-          <p className="text-center text-sm text-[#9A9A9A] mt-6">
-            Results stream in real-time — start iterating while others are still building.
-          </p>
         </motion.div>
 
-        {/* ============ MOBILE COMPARISON ============ */}
+        {/* Mobile Comparison */}
         <motion.div
           variants={slideUp}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="mb-24"
+          className="mb-20"
         >
-          {/* Mobile Header */}
           <div className="flex items-center justify-center gap-3 mb-10">
             <div className="h-px flex-1 bg-[#E8E4E0]" />
             <div className="flex items-center gap-3 bg-white border border-[#E8E4E0] rounded-full px-5 py-2">
+              <Smartphone className="w-4 h-4 text-[#6B6B6B]" />
               <span className="text-sm font-medium text-[#1A1A1A]">Mobile App</span>
-              <span className="text-[#9A9A9A]">•</span>
-              <code className="text-sm font-mono text-[#6B6B6B]">&quot;{COMPARISON_IMAGES.mobile.prompt}&quot;</code>
             </div>
             <div className="h-px flex-1 bg-[#E8E4E0]" />
           </div>
 
-          {/* Mobile Phones Grid - BIGGER */}
           <div className="flex flex-wrap justify-center items-end gap-6 md:gap-10">
             <div className="w-48 md:w-56 lg:w-64">
               <PhoneMockup
                 image={COMPARISON_IMAGES.mobile.opendesign}
-                label="OpenDesign"
+                label="Ideate"
                 isHero
                 onClick={() => setLightbox({ type: "mobile", index: 0 })}
               />
@@ -1235,42 +1048,31 @@ function ComparisonSection() {
               />
             </div>
           </div>
-
-          {/* Click hint */}
-          <p className="text-center text-sm text-[#9A9A9A] mt-6">
-            Click any phone to compare full-screen
-          </p>
         </motion.div>
 
-        {/* ============ DESKTOP COMPARISON ============ */}
+        {/* Desktop Comparison */}
         <motion.div
           variants={slideUp}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
         >
-          {/* Desktop Header */}
           <div className="flex items-center justify-center gap-3 mb-10">
             <div className="h-px flex-1 bg-[#E8E4E0]" />
             <div className="flex items-center gap-3 bg-white border border-[#E8E4E0] rounded-full px-5 py-2">
+              <Monitor className="w-4 h-4 text-[#6B6B6B]" />
               <span className="text-sm font-medium text-[#1A1A1A]">Desktop Website</span>
-              <span className="text-[#9A9A9A]">•</span>
-              <code className="text-sm font-mono text-[#6B6B6B]">&quot;{COMPARISON_IMAGES.desktop.prompt}&quot;</code>
             </div>
             <div className="h-px flex-1 bg-[#E8E4E0]" />
           </div>
 
-          {/* Desktop Layout: OpenDesign (60%) | v0 + Lovable stacked (40%) */}
           <div className="grid md:grid-cols-[3fr_2fr] gap-6 items-center max-w-5xl mx-auto">
-            {/* OpenDesign - Hero (left side) */}
             <BrowserMockup
               image={COMPARISON_IMAGES.desktop.opendesign}
-              label="OpenDesign"
+              label="Ideate"
               isHero
               onClick={() => setLightbox({ type: "desktop", index: 0 })}
             />
-
-            {/* Competitors - Stacked vertically (right side) */}
             <div className="flex flex-col gap-4">
               <BrowserMockup
                 image={COMPARISON_IMAGES.desktop.v0}
@@ -1286,22 +1088,16 @@ function ComparisonSection() {
               />
             </div>
           </div>
-
-          {/* Click hint */}
-          <p className="text-center text-sm text-[#9A9A9A] mt-6">
-            Click any browser to compare full-screen
-          </p>
         </motion.div>
 
-        {/* Caption */}
         <motion.p
           variants={fadeIn}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="text-center text-sm text-[#6B6B6B] mt-12"
+          className="text-center text-sm text-[#9A9A9A] mt-8"
         >
-          All outputs generated with default settings. No manual editing.
+          Click any mockup to compare full-screen
         </motion.p>
       </div>
     </section>
@@ -1309,50 +1105,60 @@ function ComparisonSection() {
 }
 
 // ============================================================================
-// Component: Use Cases Section
-// Who benefits from OpenDesign
+// Builders Section - Who It's For
 // ============================================================================
 
-function UseCasesSection() {
+function BuildersSection() {
+  const [activePersona, setActivePersona] = useState<number | null>(null);
+
   return (
-    <section className="py-24 px-6 bg-[#FAF8F5]" aria-label="Who Uses OpenDesign">
-      <div className="max-w-6xl mx-auto">
-        {/* Section Header */}
+    <section className="py-24 px-6 bg-[#F5F2EF]">
+      <div className="max-w-4xl mx-auto text-center">
         <motion.div
           variants={slideUp}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="mb-16"
+          className="mb-12"
         >
           <h2 className="font-serif text-4xl md:text-5xl text-[#1A1A1A] tracking-tight mb-4">
-            Built for Builders
+            Built for people with ideas
           </h2>
-          <p className="text-lg text-[#6B6B6B] max-w-xl">
-            From pitch decks to hackathon demos, get a working prototype before lunch.
-          </p>
         </motion.div>
 
-        {/* Use Case Cards - 2 column grid */}
+        {/* Persona Grid */}
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="grid md:grid-cols-2 gap-6"
+          className="grid grid-cols-2 md:grid-cols-3 gap-4"
         >
-          {useCases.map((useCase, index) => (
+          {personas.map((persona, index) => (
             <motion.div
-              key={index}
+              key={persona.label}
               variants={slideUp}
-              className="bg-white border border-[#E8E4E0] border-l-4 border-l-[#B8956F] rounded-xl p-6 hover:shadow-md transition-all"
+              onMouseEnter={() => setActivePersona(index)}
+              onMouseLeave={() => setActivePersona(null)}
+              className={`relative bg-white border rounded-xl p-6 cursor-pointer transition-all ${
+                activePersona === index
+                  ? "border-[#B8956F] shadow-lg"
+                  : "border-[#E8E4E0] hover:border-[#D4CFC9]"
+              }`}
             >
-              <h3 className="font-serif text-xl text-[#1A1A1A] mb-2">
-                {useCase.title}
-              </h3>
-              <p className="text-[#6B6B6B] leading-relaxed">
-                {useCase.description}
-              </p>
+              <h3 className="font-serif text-xl text-[#1A1A1A] mb-2">{persona.label}</h3>
+              <AnimatePresence>
+                {activePersona === index && (
+                  <motion.p
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="text-sm text-[#6B6B6B]"
+                  >
+                    {persona.description}
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </motion.div>
           ))}
         </motion.div>
@@ -1362,21 +1168,81 @@ function UseCasesSection() {
 }
 
 // ============================================================================
-// Component: Pricing Section
-// Clean, transparent pricing with the editorial aesthetic
+// Features Section - Key Capabilities
+// ============================================================================
+
+function FeaturesSection() {
+  const features = [
+    {
+      icon: MousePointerClick,
+      title: "Real Navigation",
+      description: "Click buttons, tap links, navigate between screens. Your prototype works like the real thing.",
+    },
+    {
+      icon: Play,
+      title: "Play Mode",
+      description: "Enter full-screen mode and experience your app. Find UX issues before writing code.",
+    },
+    {
+      icon: Sparkles,
+      title: "Live Generation",
+      description: "Watch screens appear in real-time as AI builds them. No waiting, no refreshing.",
+    },
+  ];
+
+  return (
+    <section className="py-24 px-6 bg-[#FAF8F5]">
+      <div className="max-w-5xl mx-auto">
+        <motion.div
+          variants={slideUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="text-center mb-16"
+        >
+          <h2 className="font-serif text-4xl md:text-5xl text-[#1A1A1A] tracking-tight mb-4">
+            Prototypes that feel real
+          </h2>
+        </motion.div>
+
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="grid md:grid-cols-3 gap-8"
+        >
+          {features.map((feature) => (
+            <motion.div
+              key={feature.title}
+              variants={slideUp}
+              className="bg-white border border-[#E8E4E0] rounded-2xl p-8 hover:shadow-md transition-all"
+            >
+              <div className="w-12 h-12 rounded-xl bg-[#FFF8F0] border border-[#F5E6D3] flex items-center justify-center mb-6">
+                <feature.icon className="w-6 h-6 text-[#B8956F]" />
+              </div>
+              <h3 className="font-serif text-xl text-[#1A1A1A] mb-3">{feature.title}</h3>
+              <p className="text-[#6B6B6B] leading-relaxed">{feature.description}</p>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ============================================================================
+// Pricing Section
 // ============================================================================
 
 function PricingSection() {
   const [isAnnual, setIsAnnual] = useState(true);
-
-  // For annual, give 2 months free ($150/year = $12.50/month)
-  const annualTotal = PLANS.pro.price * 10; // $150/year
-  const annualPrice = annualTotal / 12; // $12.50/month
+  const annualTotal = PLANS.pro.price * 10;
+  const annualPrice = annualTotal / 12;
 
   return (
-    <section id="pricing" className="py-24 px-6 bg-[#F5F2EF]" aria-label="Pricing Plans">
+    <section id="pricing" className="py-24 px-6 bg-[#F5F2EF]">
       <div className="max-w-6xl mx-auto">
-        {/* Section Header */}
         <motion.div
           variants={slideUp}
           initial="hidden"
@@ -1385,10 +1251,10 @@ function PricingSection() {
           className="text-center mb-12"
         >
           <h2 className="font-serif text-4xl md:text-5xl text-[#1A1A1A] tracking-tight mb-4">
-            Simple, transparent pricing
+            Simple pricing
           </h2>
-          <p className="text-lg text-[#6B6B6B] max-w-xl mx-auto">
-            Start for free, upgrade when you need more. No hidden fees.
+          <p className="text-lg text-[#6B6B6B]">
+            Start free. Upgrade when you need more.
           </p>
         </motion.div>
 
@@ -1400,18 +1266,12 @@ function PricingSection() {
           viewport={{ once: true }}
           className="flex items-center justify-center gap-4 mb-12"
         >
-          <span
-            className={`text-sm font-medium transition-colors ${
-              !isAnnual ? "text-[#1A1A1A]" : "text-[#6B6B6B]"
-            }`}
-          >
+          <span className={`text-sm font-medium transition-colors ${!isAnnual ? "text-[#1A1A1A]" : "text-[#6B6B6B]"}`}>
             Monthly
           </span>
           <button
             onClick={() => setIsAnnual(!isAnnual)}
-            className={`relative w-12 h-6 rounded-full transition-colors ${
-              isAnnual ? "bg-[#B8956F]" : "bg-[#D4CFC9]"
-            }`}
+            className={`relative w-12 h-6 rounded-full transition-colors ${isAnnual ? "bg-[#B8956F]" : "bg-[#D4CFC9]"}`}
           >
             <motion.div
               animate={{ x: isAnnual ? 24 : 2 }}
@@ -1419,11 +1279,7 @@ function PricingSection() {
               className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
             />
           </button>
-          <span
-            className={`text-sm font-medium transition-colors ${
-              isAnnual ? "text-[#1A1A1A]" : "text-[#6B6B6B]"
-            }`}
-          >
+          <span className={`text-sm font-medium transition-colors ${isAnnual ? "text-[#1A1A1A]" : "text-[#6B6B6B]"}`}>
             Annual
             <span className="ml-1.5 text-xs bg-[#E8F5E9] text-[#2E7D32] px-2 py-0.5 rounded-full">
               2 months free
@@ -1440,15 +1296,15 @@ function PricingSection() {
           className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto"
         >
           {/* Free Plan */}
-          <motion.div
-            variants={slideUp}
-            className="bg-white border border-[#E8E4E0] rounded-2xl p-8 hover:shadow-md transition-all"
-          >
+          <motion.div variants={slideUp} className="bg-white border border-[#E8E4E0] rounded-2xl p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] border border-[#E8E4E0] flex items-center justify-center">
                 <Zap className="w-5 h-5 text-[#6B6B6B]" />
               </div>
-              <h3 className="font-serif text-2xl text-[#1A1A1A]">Free</h3>
+              <div>
+                <h3 className="font-serif text-2xl text-[#1A1A1A]">Free</h3>
+                <p className="text-sm text-[#6B6B6B]">Start with an idea</p>
+              </div>
             </div>
 
             <div className="mb-6">
@@ -1459,16 +1315,13 @@ function PricingSection() {
             <div className="flex items-center gap-2 mb-6 p-3 bg-[#FAF8F5] rounded-xl border border-[#E8E4E0]">
               <MessageSquare className="w-4 h-4 text-[#6B6B6B]" />
               <span className="text-sm text-[#1A1A1A]">
-                <strong>{PLANS.free.messagesPerMonth}</strong> AI generations/month
+                <strong>{PLANS.free.messagesPerMonth}</strong> generations/month
               </span>
             </div>
 
             <ul className="space-y-3 mb-8">
               {PLANS.free.features.map((feature) => (
-                <li
-                  key={feature}
-                  className="flex items-center gap-3 text-sm text-[#6B6B6B]"
-                >
+                <li key={feature} className="flex items-center gap-3 text-sm text-[#6B6B6B]">
                   <Check className="w-4 h-4 text-[#2E7D32] flex-shrink-0" />
                   {feature}
                 </li>
@@ -1477,7 +1330,7 @@ function PricingSection() {
 
             <SignedOut>
               <SignUpButton mode="modal">
-                <button className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-[#E8E4E0] text-[#1A1A1A] rounded-xl font-medium hover:bg-[#FAF8F5] hover:border-[#D4CFC9] transition-all">
+                <button className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-[#E8E4E0] text-[#1A1A1A] rounded-xl font-medium hover:bg-[#FAF8F5] transition-all">
                   Get Started
                   <ArrowRight className="w-4 h-4" />
                 </button>
@@ -1486,7 +1339,7 @@ function PricingSection() {
             <SignedIn>
               <Link
                 href="/home"
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-[#E8E4E0] text-[#1A1A1A] rounded-xl font-medium hover:bg-[#FAF8F5] hover:border-[#D4CFC9] transition-all"
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-[#E8E4E0] text-[#1A1A1A] rounded-xl font-medium hover:bg-[#FAF8F5] transition-all"
               >
                 Go to Dashboard
                 <ArrowRight className="w-4 h-4" />
@@ -1495,10 +1348,7 @@ function PricingSection() {
           </motion.div>
 
           {/* Pro Plan */}
-          <motion.div
-            variants={slideUp}
-            className="bg-white border-2 border-[#B8956F] rounded-2xl p-8 relative hover:shadow-lg transition-all"
-          >
+          <motion.div variants={slideUp} className="bg-white border-2 border-[#B8956F] rounded-2xl p-8 relative">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#B8956F] text-white text-xs font-medium px-4 py-1 rounded-full">
               Most Popular
             </div>
@@ -1507,7 +1357,10 @@ function PricingSection() {
               <div className="w-10 h-10 rounded-xl bg-[#B8956F] flex items-center justify-center">
                 <Crown className="w-5 h-5 text-white" />
               </div>
-              <h3 className="font-serif text-2xl text-[#1A1A1A]">Pro</h3>
+              <div>
+                <h3 className="font-serif text-2xl text-[#1A1A1A]">Pro</h3>
+                <p className="text-sm text-[#6B6B6B]">Build without limits</p>
+              </div>
             </div>
 
             <div className="mb-6">
@@ -1516,25 +1369,20 @@ function PricingSection() {
               </span>
               <span className="text-[#6B6B6B] ml-1">/month</span>
               {isAnnual && (
-                <span className="ml-2 text-sm text-[#2E7D32]">
-                  (${annualTotal}/year)
-                </span>
+                <span className="ml-2 text-sm text-[#2E7D32]">(${annualTotal}/year)</span>
               )}
             </div>
 
             <div className="flex items-center gap-2 mb-6 p-3 bg-[#FFF8F0] rounded-xl border border-[#F5E6D3]">
               <MessageSquare className="w-4 h-4 text-[#B8956F]" />
               <span className="text-sm text-[#1A1A1A]">
-                <strong>{PLANS.pro.messagesPerMonth}</strong> AI generations/month
+                <strong>{PLANS.pro.messagesPerMonth}</strong> generations/month
               </span>
             </div>
 
             <ul className="space-y-3 mb-8">
               {PLANS.pro.features.map((feature) => (
-                <li
-                  key={feature}
-                  className="flex items-center gap-3 text-sm text-[#1A1A1A]"
-                >
+                <li key={feature} className="flex items-center gap-3 text-sm text-[#1A1A1A]">
                   <Check className="w-4 h-4 text-[#B8956F] flex-shrink-0" />
                   {feature}
                 </li>
@@ -1561,28 +1409,22 @@ function PricingSection() {
           </motion.div>
         </motion.div>
 
-        {/* BYOK and Message Pack Add-ons */}
+        {/* BYOK Option */}
         <motion.div
-          variants={staggerContainer}
+          variants={slideUp}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="max-w-3xl mx-auto mt-8 space-y-4"
+          className="max-w-3xl mx-auto mt-8"
         >
-          {/* BYOK Option */}
-          <motion.div
-            variants={slideUp}
-            className="bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4"
-          >
+          <div className="bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-[#B8956F]" />
               </div>
               <div>
                 <p className="font-medium text-white">Bring Your Own Key</p>
-                <p className="text-sm text-zinc-400">
-                  Use your own API key for unlimited generations
-                </p>
+                <p className="text-sm text-zinc-400">Use your own API key for unlimited generations</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -1591,113 +1433,6 @@ function PricingSection() {
               </span>
               <span className="text-xl font-bold text-white">Free</span>
             </div>
-          </motion.div>
-
-          {/* Message Pack Add-on */}
-          <motion.div
-            variants={slideUp}
-            className="bg-white rounded-xl border border-[#E8E4E0] p-5 flex flex-col sm:flex-row items-center justify-between gap-4"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] border border-[#E8E4E0] flex items-center justify-center">
-                <Zap className="w-5 h-5 text-[#B8956F]" />
-              </div>
-              <div>
-                <p className="font-medium text-[#1A1A1A]">Need more messages?</p>
-                <p className="text-sm text-[#6B6B6B]">
-                  Pro users can purchase extra message packs anytime
-                </p>
-              </div>
-            </div>
-            <div className="text-center sm:text-right">
-              <p className="text-xl font-bold text-[#1A1A1A]">
-                ${MESSAGE_PACK.priceUsd}
-              </p>
-              <p className="text-sm text-[#6B6B6B]">
-                for {MESSAGE_PACK.messages} messages
-              </p>
-            </div>
-          </motion.div>
-        </motion.div>
-
-        {/* FAQ Section */}
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="max-w-2xl mx-auto mt-16"
-        >
-          <h3 className="font-serif text-2xl text-[#1A1A1A] text-center mb-8">
-            Frequently Asked Questions
-          </h3>
-
-          <div className="space-y-4">
-            <motion.details
-              variants={fadeIn}
-              className="bg-white rounded-xl border border-[#E8E4E0] p-5 group"
-            >
-              <summary className="font-medium text-[#1A1A1A] cursor-pointer list-none flex items-center justify-between">
-                What counts as a &quot;message&quot;?
-                <span className="text-[#6B6B6B] group-open:rotate-180 transition-transform">
-                  ▼
-                </span>
-              </summary>
-              <p className="mt-4 text-sm text-[#6B6B6B] leading-relaxed">
-                Each AI generation request counts as one message. This includes
-                creating new screens and editing existing ones. Viewing, exporting,
-                or navigating your prototypes does not count.
-              </p>
-            </motion.details>
-
-            <motion.details
-              variants={fadeIn}
-              className="bg-white rounded-xl border border-[#E8E4E0] p-5 group"
-            >
-              <summary className="font-medium text-[#1A1A1A] cursor-pointer list-none flex items-center justify-between">
-                What&apos;s the difference between Flash and Pro models?
-                <span className="text-[#6B6B6B] group-open:rotate-180 transition-transform">
-                  ▼
-                </span>
-              </summary>
-              <p className="mt-4 text-sm text-[#6B6B6B] leading-relaxed">
-                Flash is faster and great for quick iterations. Pro produces higher
-                quality prototypes with more attention to detail. Free users have access
-                to Flash only, while Pro subscribers can use both.
-              </p>
-            </motion.details>
-
-            <motion.details
-              variants={fadeIn}
-              className="bg-white rounded-xl border border-[#E8E4E0] p-5 group"
-            >
-              <summary className="font-medium text-[#1A1A1A] cursor-pointer list-none flex items-center justify-between">
-                Do unused messages roll over?
-                <span className="text-[#6B6B6B] group-open:rotate-180 transition-transform">
-                  ▼
-                </span>
-              </summary>
-              <p className="mt-4 text-sm text-[#6B6B6B] leading-relaxed">
-                Monthly message allowances reset at the start of each billing cycle.
-                However, any extra message packs you purchase never expire.
-              </p>
-            </motion.details>
-
-            <motion.details
-              variants={fadeIn}
-              className="bg-white rounded-xl border border-[#E8E4E0] p-5 group"
-            >
-              <summary className="font-medium text-[#1A1A1A] cursor-pointer list-none flex items-center justify-between">
-                Can I cancel anytime?
-                <span className="text-[#6B6B6B] group-open:rotate-180 transition-transform">
-                  ▼
-                </span>
-              </summary>
-              <p className="mt-4 text-sm text-[#6B6B6B] leading-relaxed">
-                Yes! You can cancel your subscription at any time. You&apos;ll continue
-                to have Pro access until the end of your current billing period.
-              </p>
-            </motion.details>
           </div>
         </motion.div>
       </div>
@@ -1706,79 +1441,102 @@ function PricingSection() {
 }
 
 // ============================================================================
-// Component: CTA Section
-// Clean, confident call-to-action
+// Final CTA Section
 // ============================================================================
 
 function CTASection() {
+  const [prompt, setPrompt] = useState("");
+  const [platform, setPlatform] = useState<Platform>("mobile");
+  const router = useRouter();
+  const { isSignedIn } = useUser();
+  const { savePendingPrompt } = usePendingPrompt();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!prompt.trim()) return;
+
+    savePendingPrompt(prompt.trim(), platform);
+
+    if (isSignedIn) {
+      router.push("/home");
+    } else {
+      router.push("/sign-in");
+    }
+  };
+
   return (
-    <section className="py-24 px-6 bg-[#1A1A1A]" aria-label="Get Started with OpenDesign">
+    <section className="py-32 px-6 bg-[#1A1A1A]">
       <motion.div
         variants={slideUp}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
-        className="max-w-4xl mx-auto text-center"
+        className="max-w-2xl mx-auto text-center"
       >
-        <h2 className="font-serif text-4xl md:text-5xl text-white tracking-tight mb-6">
-          Your Next Prototype is 60 Seconds Away
+        {/* The Question */}
+        <h2 className="font-serif text-4xl md:text-5xl text-white tracking-tight mb-12">
+          What will you build?
         </h2>
-        <p className="text-lg text-zinc-400 mb-10 max-w-xl mx-auto">
-          Describe it. Generate it. Click through it.
-          Open source, no account required with BYOK.
-        </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <SignedOut>
-            <SignUpButton mode="modal">
-              <button className="flex items-center gap-2 bg-[#B8956F] text-white font-medium px-8 py-3.5 rounded-xl hover:bg-[#A6845F] transition-colors text-lg">
-                Start Building
-                <ArrowRight className="w-5 h-5" />
+        {/* Input Form - Full Circle */}
+        <form onSubmit={handleSubmit} className="mb-8">
+          <div className="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-2">
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Describe your app..."
+              rows={2}
+              className="w-full bg-transparent text-white placeholder-white/40 text-lg px-4 py-3 resize-none focus:outline-none text-center"
+            />
+            <div className="flex items-center justify-between px-2 pb-1">
+              <PlatformSelector selected={platform} onChange={setPlatform} variant="dark" />
+              <button
+                type="submit"
+                className="flex items-center gap-2 bg-[#B8956F] text-white font-medium px-6 py-2.5 rounded-xl hover:bg-[#A6845F] transition-colors"
+              >
+                Build it
+                <ArrowRight className="w-4 h-4" />
               </button>
-            </SignUpButton>
-          </SignedOut>
-          <SignedIn>
-            <Link
-              href="/home"
-              className="flex items-center gap-2 bg-[#B8956F] text-white font-medium px-8 py-3.5 rounded-xl hover:bg-[#A6845F] transition-colors text-lg"
-            >
-              My Projects
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-          </SignedIn>
-          <a
-            href="https://github.com/papay0/opendesign"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-zinc-400 hover:text-white border border-zinc-700 hover:border-zinc-500 px-6 py-3.5 rounded-xl transition-colors"
-          >
-            <Github className="w-5 h-5" />
-            View on GitHub
-          </a>
-        </div>
+            </div>
+          </div>
+        </form>
+
+        {/* Secondary CTA */}
+        <a
+          href="https://github.com/papay0/opendesign"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors"
+        >
+          <Github className="w-5 h-5" />
+          Open source on GitHub
+        </a>
       </motion.div>
     </section>
   );
 }
 
 // ============================================================================
-// Component: Footer
-// Minimal, elegant footer
+// Footer
 // ============================================================================
 
 function Footer() {
   return (
-    <footer className="py-8 px-6 border-t border-[#E8E4E0]">
+    <footer className="py-8 px-6 bg-[#FAF8F5] border-t border-[#E8E4E0]">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <Layers className="w-5 h-5 text-[#B8956F]" />
-            <span className="text-sm font-medium text-[#1A1A1A]">OpenDesign</span>
+          <div className="flex items-center gap-1">
+            <span className="font-serif text-lg text-[#1A1A1A]">Ideate</span>
+            <span className="text-[#B8956F] text-lg">.</span>
+            <span className="font-sans text-lg text-[#B8956F] font-bold">build</span>
           </div>
 
           {/* Links */}
           <div className="flex items-center gap-6 text-sm text-[#6B6B6B]">
+            <Link href="/blog" className="hover:text-[#1A1A1A] transition-colors">
+              Blog
+            </Link>
             <a
               href="https://github.com/papay0/opendesign"
               target="_blank"
@@ -1809,21 +1567,19 @@ function Footer() {
 }
 
 // ============================================================================
-// Main Page Component
+// Main Page
 // ============================================================================
 
 export default function LandingPage() {
   const { isSignedIn, isLoaded } = useUser();
   const router = useRouter();
 
-  // Auto-redirect signed-in users to /home
   useEffect(() => {
     if (isLoaded && isSignedIn) {
       router.push("/home");
     }
   }, [isLoaded, isSignedIn, router]);
 
-  // Show nothing while checking auth to avoid flash
   if (!isLoaded) {
     return (
       <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center">
@@ -1832,7 +1588,6 @@ export default function LandingPage() {
     );
   }
 
-  // If signed in, show loading while redirecting
   if (isSignedIn) {
     return (
       <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center">
@@ -1846,7 +1601,11 @@ export default function LandingPage() {
       <Header />
       <main>
         <HeroSection />
+        <TransformationSection />
+        <ProcessSection />
         <ComparisonSection />
+        <BuildersSection />
+        <FeaturesSection />
         <PricingSection />
         <CTASection />
       </main>
