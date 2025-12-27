@@ -121,7 +121,25 @@ const PROTOTYPE_EDIT_RULES = `IMPORTANT FOR EDITS:
 - When user asks to modify an existing screen, use <!-- SCREEN_EDIT: Exact Screen Name --> with the EXACT same name
 - Do NOT include grid position when editing - position is preserved from original
 - When creating new screens, use <!-- SCREEN_START: Screen Name [col,row] -->
-- Always include the FULL updated HTML when editing a screen`;
+- Always include the FULL updated HTML when editing a screen
+
+**ADDING NEW SCREENS TO EXISTING PROTOTYPES:**
+When adding a NEW screen to an existing prototype:
+1. Identify which existing screen the new screen connects FROM (the parent)
+2. Place the new screen DIRECTLY ADJACENT to that parent (exactly 1 cell away)
+3. If parent is at [0,0], valid positions are: [1,0] (right), [0,1] (below), or [-1,0]/[0,-1] if needed
+4. NEVER place a new screen diagonally or multiple cells away from its parent
+5. Choose direction based on the relationship:
+   - Detail/drill-down screens: place BELOW or to the RIGHT of parent
+   - Sibling screens (same nav level): place in a ROW with parent
+
+**GRID POSITION REVIEW (MANDATORY BEFORE OUTPUT):**
+Before outputting ANY screens, mentally review your grid positions:
+1. List all screens and their positions
+2. For each connection, verify: "Are these screens exactly 1 cell apart?"
+3. If ANY connected screens are more than 1 cell apart, STOP and adjust positions
+4. Check: "Would any arrows cross?" If yes, rearrange
+5. Only proceed once all positions pass this review`;
 
 // ============================================================================
 // NAVIGATION & INTERACTIVITY RULES
