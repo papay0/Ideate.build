@@ -8,8 +8,6 @@
  * - Mark one screen as [ROOT] entry point
  * - Allow scrollable content
  *
- * Admin-only endpoint.
- *
  * Streaming Format (SSE):
  * - Each chunk: data: {"chunk": "html content"}\n\n
  * - Completion: data: {"done": true}\n\n
@@ -66,14 +64,6 @@ export async function POST(request: Request): Promise<Response> {
       return new Response(
         JSON.stringify({ error: "User not found. Please try signing out and back in." }),
         { status: 404, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    // Admin-only check
-    if (dbUser.role !== "admin") {
-      return new Response(
-        JSON.stringify({ error: "Prototype mode is only available for admin users." }),
-        { status: 403, headers: { "Content-Type": "application/json" } }
       );
     }
 

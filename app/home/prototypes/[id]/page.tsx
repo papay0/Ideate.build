@@ -438,13 +438,6 @@ export default function PrototypePage() {
   const { dbUser } = useUserSync();
   const isAdmin = dbUser?.role === "admin";
 
-  // Redirect non-admins
-  useEffect(() => {
-    if (dbUser && dbUser.role !== "admin") {
-      router.push("/home");
-    }
-  }, [dbUser, router]);
-
   const { messagesRemaining, bonusMessagesRemaining, isLoading: isSubscriptionLoading, refresh: refreshSubscription } = useSubscription();
   const { isBYOKActive, isInitialized: isBYOKInitialized } = useBYOK();
   const [localQuotaExceeded, setLocalQuotaExceeded] = useState(false);
@@ -1070,10 +1063,6 @@ export default function PrototypePage() {
     return <ProjectSkeleton />;
   }
 
-  // Non-admin redirect (already handled in useEffect, but add fallback)
-  if (!isAdmin) {
-    return null;
-  }
 
   return (
     <div className="flex flex-col h-dvh">
