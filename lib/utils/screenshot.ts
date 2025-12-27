@@ -15,6 +15,9 @@ export async function captureElement(
 ): Promise<Blob> {
   const { scale = 2, backgroundColor } = options;
 
+  // Small delay to ensure styles (especially Tailwind CDN) are fully rendered
+  await new Promise(resolve => setTimeout(resolve, 100));
+
   const dataUrl = await toPng(element, {
     pixelRatio: scale,
     backgroundColor,

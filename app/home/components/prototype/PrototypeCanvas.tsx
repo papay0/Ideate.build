@@ -143,7 +143,9 @@ const PhoneMockupContent = memo(function PhoneMockupContent({
   <meta name="viewport" content="width=${PHONE_WIDTH}, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"><\/script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -ms-overflow-style: none; scrollbar-width: none; }
+    *::-webkit-scrollbar { display: none; }
+    html, body { overflow: hidden; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: transparent;
@@ -175,7 +177,9 @@ const PhoneMockupContent = memo(function PhoneMockupContent({
   <meta name="viewport" content="width=${PHONE_WIDTH}, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"><\/script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -ms-overflow-style: none; scrollbar-width: none; }
+    *::-webkit-scrollbar { display: none; }
+    html, body { overflow: hidden; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: transparent;
@@ -340,7 +344,9 @@ const BrowserMockupContent = memo(function BrowserMockupContent({
   <meta name="viewport" content="width=${DESKTOP_WIDTH}, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"><\/script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -ms-overflow-style: none; scrollbar-width: none; }
+    *::-webkit-scrollbar { display: none; }
+    html, body { overflow: hidden; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: transparent;
@@ -372,7 +378,9 @@ const BrowserMockupContent = memo(function BrowserMockupContent({
   <meta name="viewport" content="width=${DESKTOP_WIDTH}, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"><\/script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -ms-overflow-style: none; scrollbar-width: none; }
+    *::-webkit-scrollbar { display: none; }
+    html, body { overflow: hidden; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: transparent;
@@ -547,7 +555,9 @@ const StreamingPositionedPhoneMockup = memo(function StreamingPositionedPhoneMoc
   <meta name="viewport" content="width=${PHONE_WIDTH}, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"><\/script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -ms-overflow-style: none; scrollbar-width: none; }
+    *::-webkit-scrollbar { display: none; }
+    html, body { overflow: hidden; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: transparent;
@@ -579,7 +589,9 @@ const StreamingPositionedPhoneMockup = memo(function StreamingPositionedPhoneMoc
   <meta name="viewport" content="width=${PHONE_WIDTH}, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"><\/script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -ms-overflow-style: none; scrollbar-width: none; }
+    *::-webkit-scrollbar { display: none; }
+    html, body { overflow: hidden; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: transparent;
@@ -670,7 +682,9 @@ const StreamingPositionedBrowserMockup = memo(function StreamingPositionedBrowse
   <meta name="viewport" content="width=${DESKTOP_WIDTH}, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"><\/script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -ms-overflow-style: none; scrollbar-width: none; }
+    *::-webkit-scrollbar { display: none; }
+    html, body { overflow: hidden; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: transparent;
@@ -702,7 +716,9 @@ const StreamingPositionedBrowserMockup = memo(function StreamingPositionedBrowse
   <meta name="viewport" content="width=${DESKTOP_WIDTH}, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"><\/script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -ms-overflow-style: none; scrollbar-width: none; }
+    *::-webkit-scrollbar { display: none; }
+    html, body { overflow: hidden; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: transparent;
