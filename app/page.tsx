@@ -889,18 +889,12 @@ function PhoneMockup({
   isHero?: boolean;
   onClick?: () => void;
 }) {
+  const isIdeate = label === "Ideate";
   return (
     <div
-      className={`relative cursor-pointer transition-transform hover:scale-[1.02] ${isHero ? "" : "opacity-80 hover:opacity-100"}`}
+      className={`relative cursor-pointer transition-transform hover:scale-[1.02] ${isHero ? "" : "opacity-90 hover:opacity-100"}`}
       onClick={onClick}
     >
-      <div className={`absolute -top-3 left-1/2 -translate-x-1/2 z-10 text-sm font-medium px-4 py-1 rounded-full ${
-        isHero
-          ? "bg-[#B8956F] text-white"
-          : "bg-[#F5F2EF] text-[#6B6B6B] border border-[#E8E4E0]"
-      }`}>
-        {label}
-      </div>
       <div className={`relative bg-[#1A1A1A] rounded-[2.5rem] p-2 ${isHero ? "shadow-2xl" : "shadow-lg"}`}>
         <div className="relative bg-[#FAF8F5] rounded-[2rem] overflow-hidden aspect-[390/844]">
           <img
@@ -909,6 +903,15 @@ function PhoneMockup({
             className={`w-full h-full object-cover object-top ${isHero ? "" : "grayscale-[20%]"}`}
           />
         </div>
+      </div>
+      {/* Large label below the mockup */}
+      <div className="mt-4 text-center">
+        <span className={`text-lg font-semibold ${isIdeate ? "text-[#B8956F]" : "text-[#6B6B6B]"}`}>
+          {isIdeate && "🏆 "}{label}
+        </span>
+        {!isIdeate && (
+          <span className="block text-xs text-[#9A9A9A] mt-0.5">Other AI Tool</span>
+        )}
       </div>
     </div>
   );
@@ -927,28 +930,22 @@ function BrowserMockup({
   compact?: boolean;
   onClick?: () => void;
 }) {
+  const isIdeate = label === "Ideate";
   return (
     <div
-      className={`relative cursor-pointer transition-transform hover:scale-[1.01] ${isHero ? "" : "opacity-80 hover:opacity-100"}`}
+      className={`relative cursor-pointer transition-transform hover:scale-[1.01] ${isHero ? "" : "opacity-90 hover:opacity-100"}`}
       onClick={onClick}
     >
-      <div className={`absolute -top-2.5 left-6 z-10 text-xs font-medium px-3 py-1 rounded-full ${
-        isHero
-          ? "bg-[#B8956F] text-white"
-          : "bg-[#F5F2EF] text-[#6B6B6B] border border-[#E8E4E0]"
-      }`}>
-        {label}
-      </div>
-      <div className={`bg-white rounded-xl overflow-hidden border ${isHero ? "border-[#B8956F] border-2 shadow-xl" : "border-[#E8E4E0] shadow-md"}`}>
-        <div className={`bg-[#F5F2EF] flex items-center gap-2 border-b border-[#E8E4E0] ${compact ? "px-3 py-1.5" : "px-4 py-2.5"}`}>
+      <div className={`bg-white rounded-xl overflow-hidden border ${isIdeate ? "border-[#B8956F] border-2 shadow-xl" : "border-[#E8E4E0] shadow-md"}`}>
+        <div className="bg-[#F5F2EF] flex items-center gap-2 border-b border-[#E8E4E0] px-3 py-1.5">
           <div className="flex items-center gap-1.5">
-            <div className={`rounded-full bg-[#FF5F57] ${compact ? "w-2 h-2" : "w-3 h-3"}`} />
-            <div className={`rounded-full bg-[#FEBC2E] ${compact ? "w-2 h-2" : "w-3 h-3"}`} />
-            <div className={`rounded-full bg-[#28C840] ${compact ? "w-2 h-2" : "w-3 h-3"}`} />
+            <div className="w-2 h-2 rounded-full bg-[#FF5F57]" />
+            <div className="w-2 h-2 rounded-full bg-[#FEBC2E]" />
+            <div className="w-2 h-2 rounded-full bg-[#28C840]" />
           </div>
-          <div className="flex-1 ml-2">
-            <div className={`bg-white rounded-md text-[#9A9A9A] border border-[#E8E4E0] ${compact ? "px-2 py-0.5 text-[10px] max-w-[120px]" : "px-3 py-1.5 text-xs max-w-[180px]"}`}>
-              localhost:3000
+          <div className="flex-1">
+            <div className="bg-white rounded text-[10px] text-[#9A9A9A] border border-[#E8E4E0] px-2 py-0.5 max-w-[140px]">
+              {isIdeate ? "ideate.build" : "v0.app"}
             </div>
           </div>
         </div>
@@ -956,9 +953,18 @@ function BrowserMockup({
           <img
             src={image}
             alt={`${label} desktop output`}
-            className={`w-full h-full object-cover object-top ${isHero ? "" : "grayscale-[20%]"}`}
+            className={`w-full h-full object-cover object-top ${isIdeate ? "" : "grayscale-[20%]"}`}
           />
         </div>
+      </div>
+      {/* Large label below the mockup */}
+      <div className="mt-4 text-center">
+        <span className={`text-lg font-semibold ${isIdeate ? "text-[#B8956F]" : "text-[#6B6B6B]"}`}>
+          {isIdeate && "🏆 "}{label}
+        </span>
+        {!isIdeate && (
+          <span className="block text-xs text-[#9A9A9A] mt-0.5">Other AI Tool</span>
+        )}
       </div>
     </div>
   );
@@ -1061,7 +1067,6 @@ function ComparisonSection() {
   const desktopImages = [
     { src: COMPARISON_IMAGES.desktop.opendesign, label: "Ideate" },
     { src: COMPARISON_IMAGES.desktop.v0, label: "v0" },
-    { src: COMPARISON_IMAGES.desktop.lovable, label: "Lovable" },
   ];
 
   return (
@@ -1091,7 +1096,7 @@ function ComparisonSection() {
           className="text-center mb-16"
         >
           <h2 className="font-serif text-4xl md:text-5xl text-[#1A1A1A] tracking-tight mb-4">
-            Design that stands out
+            Ideate vs Other AI Tools
           </h2>
           <p className="text-lg text-[#6B6B6B] max-w-xl mx-auto">
             Same prompt. Better design. 10x faster.
@@ -1210,27 +1215,17 @@ function ComparisonSection() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-[3fr_2fr] gap-6 items-center max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-6 items-center max-w-5xl mx-auto">
             <BrowserMockup
               image={COMPARISON_IMAGES.desktop.opendesign}
               label="Ideate"
-              isHero
               onClick={() => setLightbox({ type: "desktop", index: 0 })}
             />
-            <div className="flex flex-col gap-4">
-              <BrowserMockup
-                image={COMPARISON_IMAGES.desktop.v0}
-                label="v0"
-                compact
-                onClick={() => setLightbox({ type: "desktop", index: 1 })}
-              />
-              <BrowserMockup
-                image={COMPARISON_IMAGES.desktop.lovable}
-                label="Lovable"
-                compact
-                onClick={() => setLightbox({ type: "desktop", index: 2 })}
-              />
-            </div>
+            <BrowserMockup
+              image={COMPARISON_IMAGES.desktop.v0}
+              label="v0"
+              onClick={() => setLightbox({ type: "desktop", index: 1 })}
+            />
           </div>
         </motion.div>
 
@@ -1520,81 +1515,6 @@ function PricingSection() {
   );
 }
 
-// ============================================================================
-// Final CTA Section
-// ============================================================================
-
-function CTASection() {
-  const [prompt, setPrompt] = useState("");
-  const [platform, setPlatform] = useState<Platform>("mobile");
-  const router = useRouter();
-  const { isSignedIn } = useUser();
-  const { savePendingPrompt } = usePendingPrompt();
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!prompt.trim()) return;
-
-    savePendingPrompt(prompt.trim(), platform);
-
-    if (isSignedIn) {
-      router.push("/home");
-    } else {
-      router.push("/sign-in");
-    }
-  };
-
-  return (
-    <section className="py-32 px-6 bg-[#1A1A1A]">
-      <motion.div
-        variants={slideUp}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        className="max-w-2xl mx-auto text-center"
-      >
-        {/* The Question */}
-        <h2 className="font-serif text-4xl md:text-5xl text-white tracking-tight mb-12">
-          What will you build?
-        </h2>
-
-        {/* Input Form - Full Circle */}
-        <form onSubmit={handleSubmit} className="mb-8">
-          <div className="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-2">
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Describe your app..."
-              rows={2}
-              className="w-full bg-transparent text-white placeholder-white/40 text-lg px-4 py-3 resize-none focus:outline-none text-center"
-            />
-            <div className="flex items-center justify-between px-2 pb-1">
-              <PlatformSelector selected={platform} onChange={setPlatform} variant="dark" />
-              <button
-                type="submit"
-                className="flex items-center gap-2 bg-[#B8956F] text-white font-medium px-6 py-2.5 rounded-xl hover:bg-[#A6845F] transition-colors"
-              >
-                Build it
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </form>
-
-        {/* Secondary CTA */}
-        <a
-          href="https://github.com/papay0/opendesign"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors"
-        >
-          <Github className="w-5 h-5" />
-          Open source on GitHub
-        </a>
-      </motion.div>
-    </section>
-  );
-}
 
 // ============================================================================
 // Footer
@@ -1686,7 +1606,6 @@ export default function LandingPage() {
         <ComparisonSection />
         <BuildersSection />
         <PricingSection />
-        <CTASection />
       </main>
       <Footer />
     </div>
