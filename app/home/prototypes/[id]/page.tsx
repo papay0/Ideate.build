@@ -1338,6 +1338,7 @@ export default function PrototypePage() {
                   isEditingExistingScreen={isEditingExistingScreen}
                   platform={project?.platform || "mobile"}
                   prototypeId={projectId}
+                  isAdmin={isAdmin}
                 />
               ) : (
                 <CodeView
@@ -1450,6 +1451,7 @@ export default function PrototypePage() {
             platform={project?.platform || "mobile"}
             isMobileView={true}
             prototypeId={projectId}
+            isAdmin={isAdmin}
           />
         )}
 

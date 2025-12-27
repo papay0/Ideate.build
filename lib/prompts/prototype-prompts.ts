@@ -906,7 +906,7 @@ const DESKTOP_PROTOTYPE_EXAMPLE = `EXAMPLE OUTPUT:
 const OUTPUT_RULES = `CRITICAL OUTPUT RULES:
 1. **FIRST GENERATION: Start with PROJECT_NAME then PROJECT_ICON - NO EXCEPTIONS**
 2. Output ONLY raw HTML and comment delimiters - NO markdown, NO backticks, NO code blocks
-3. Generate 5-8 screens for a complete interactive prototype (maximum 10 screens per generation)
+3. **RESPECT USER SCREEN COUNT**: If the user specifies a number of screens (e.g., "create 1 screen", "make 3 screens"), generate EXACTLY that number. Otherwise, default to 5-8 screens. Maximum 10 screens per generation.
 4. Mark exactly ONE screen as [ROOT] - this is the entry point
 5. Place screens logically on the grid - related screens should be adjacent
 6. **ANNOUNCE YOUR PLAN**: After PROJECT_ICON, output a MESSAGE listing all screens you will generate:

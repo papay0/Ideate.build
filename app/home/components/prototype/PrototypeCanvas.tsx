@@ -86,6 +86,7 @@ interface PrototypeCanvasProps {
   platform: Platform;
   isMobileView?: boolean;
   prototypeId?: string;
+  isAdmin?: boolean;
 }
 
 /**
@@ -115,10 +116,12 @@ const PhoneMockupContent = memo(function PhoneMockupContent({
   screen,
   isEditing = false,
   streamingHtml,
+  isAdmin = false,
 }: {
   screen: ParsedScreen;
   isEditing?: boolean;
   streamingHtml?: string | null;
+  isAdmin?: boolean;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const mockupRef = useRef<HTMLDivElement>(null);
@@ -300,10 +303,12 @@ const PhoneMockupContent = memo(function PhoneMockupContent({
         </button>
       </div>
 
-      {/* Grid position indicator */}
-      <div className="text-xs text-[#9A9A9A] font-mono">
-        [{screen.gridCol ?? 0}, {screen.gridRow ?? 0}]
-      </div>
+      {/* Grid position indicator (admin only) */}
+      {isAdmin && (
+        <div className="text-xs text-[#9A9A9A] font-mono">
+          [{screen.gridCol ?? 0}, {screen.gridRow ?? 0}]
+        </div>
+      )}
     </>
   );
 });
@@ -316,10 +321,12 @@ const BrowserMockupContent = memo(function BrowserMockupContent({
   screen,
   isEditing = false,
   streamingHtml,
+  isAdmin = false,
 }: {
   screen: ParsedScreen;
   isEditing?: boolean;
   streamingHtml?: string | null;
+  isAdmin?: boolean;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const mockupRef = useRef<HTMLDivElement>(null);
@@ -511,10 +518,12 @@ const BrowserMockupContent = memo(function BrowserMockupContent({
         </button>
       </div>
 
-      {/* Grid position indicator */}
-      <div className="text-xs text-[#9A9A9A] font-mono">
-        [{screen.gridCol ?? 0}, {screen.gridRow ?? 0}]
-      </div>
+      {/* Grid position indicator (admin only) */}
+      {isAdmin && (
+        <div className="text-xs text-[#9A9A9A] font-mono">
+          [{screen.gridCol ?? 0}, {screen.gridRow ?? 0}]
+        </div>
+      )}
     </>
   );
 });
@@ -529,6 +538,7 @@ const StreamingPositionedPhoneMockup = memo(function StreamingPositionedPhoneMoc
   y,
   gridCol,
   gridRow,
+  isAdmin = false,
 }: {
   html: string;
   screenName: string;
@@ -536,6 +546,7 @@ const StreamingPositionedPhoneMockup = memo(function StreamingPositionedPhoneMoc
   y: number;
   gridCol: number;
   gridRow: number;
+  isAdmin?: boolean;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const initializedRef = useRef(false);
@@ -641,7 +652,9 @@ const StreamingPositionedPhoneMockup = memo(function StreamingPositionedPhoneMoc
       </div>
 
       <span className="text-sm text-[#B8956F] font-medium">{screenName}</span>
-      <div className="text-xs text-[#9A9A9A] font-mono">[{gridCol}, {gridRow}]</div>
+      {isAdmin && (
+        <div className="text-xs text-[#9A9A9A] font-mono">[{gridCol}, {gridRow}]</div>
+      )}
     </div>
   );
 });
@@ -656,6 +669,7 @@ const StreamingPositionedBrowserMockup = memo(function StreamingPositionedBrowse
   y,
   gridCol,
   gridRow,
+  isAdmin = false,
 }: {
   html: string;
   screenName: string;
@@ -663,6 +677,7 @@ const StreamingPositionedBrowserMockup = memo(function StreamingPositionedBrowse
   y: number;
   gridCol: number;
   gridRow: number;
+  isAdmin?: boolean;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const initializedRef = useRef(false);
@@ -778,7 +793,9 @@ const StreamingPositionedBrowserMockup = memo(function StreamingPositionedBrowse
       </div>
 
       <span className="text-sm text-[#B8956F] font-medium">{screenName}</span>
-      <div className="text-xs text-[#9A9A9A] font-mono">[{gridCol}, {gridRow}]</div>
+      {isAdmin && (
+        <div className="text-xs text-[#9A9A9A] font-mono">[{gridCol}, {gridRow}]</div>
+      )}
     </div>
   );
 });
@@ -879,6 +896,7 @@ export function PrototypeCanvas({
   platform,
   isMobileView = false,
   prototypeId,
+  isAdmin = false,
 }: PrototypeCanvasProps) {
   const hasScreens =
     completedScreens.length > 0 ||
@@ -1229,6 +1247,7 @@ export function PrototypeCanvas({
                             isEditingExistingScreen,
                             currentStreamingHtml
                           )}
+                          isAdmin={isAdmin}
                         />
                       ) : (
                         <BrowserMockupContent
@@ -1240,6 +1259,7 @@ export function PrototypeCanvas({
                             isEditingExistingScreen,
                             currentStreamingHtml
                           )}
+                          isAdmin={isAdmin}
                         />
                       )}
                     </DraggableScreen>
@@ -1267,6 +1287,7 @@ export function PrototypeCanvas({
                         y={y}
                         gridCol={streamingPos.gridCol}
                         gridRow={streamingPos.gridRow}
+                        isAdmin={isAdmin}
                       />
                     ) : (
                       <StreamingPositionedBrowserMockup
@@ -1276,6 +1297,7 @@ export function PrototypeCanvas({
                         y={y}
                         gridCol={streamingPos.gridCol}
                         gridRow={streamingPos.gridRow}
+                        isAdmin={isAdmin}
                       />
                     );
                   })()}
