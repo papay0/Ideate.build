@@ -385,11 +385,10 @@ function Header() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex items-center justify-between h-16 border-b border-[#E8E4E0]">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-1">
+          <Link href="/" className="flex items-center">
             <span className="font-serif text-xl text-[#1A1A1A] tracking-tight">
-              Ideate
+              Ideate<span className="text-[#B8956F]">.</span>
             </span>
-            <span className="text-[#B8956F] text-xl">.</span>
           </Link>
 
           {/* Desktop Navigation */}
