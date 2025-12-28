@@ -329,6 +329,7 @@ function ChatInput({
               userPlan={userPlan}
               isBYOKActive={isBYOKActive}
               userId={userId}
+              isAdmin={isAdmin}
             />
             {isBYOKActive && (
               <>

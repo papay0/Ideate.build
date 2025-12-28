@@ -10,7 +10,7 @@
  */
 
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, Check, Cpu, Zap, Lock, Crown } from "lucide-react";
+import { ChevronDown, Check, Cpu, Zap, Lock, Crown, Sparkles, Brain, Bot } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { type PlanType, isModelAllowedForPlan } from "@/lib/constants/plans";
 import { getUserStorageItem, setUserStorageItem } from "@/lib/utils/user-storage";
@@ -26,6 +26,7 @@ export const AVAILABLE_MODELS = [
     shortName: "Pro",
     description: "Best quality",
     icon: Cpu,
+    adminOnly: false,
   },
   {
     id: "gemini-3-flash-preview",
@@ -33,6 +34,31 @@ export const AVAILABLE_MODELS = [
     shortName: "Flash",
     description: "Faster, cheaper",
     icon: Zap,
+    adminOnly: false,
+  },
+  {
+    id: "anthropic/claude-opus-4.5",
+    name: "Claude Opus 4.5",
+    shortName: "Opus 4.5",
+    description: "Most capable",
+    icon: Sparkles,
+    adminOnly: true,
+  },
+  {
+    id: "anthropic/claude-sonnet-4.5",
+    name: "Claude Sonnet 4.5",
+    shortName: "Sonnet 4.5",
+    description: "Fast & capable",
+    icon: Brain,
+    adminOnly: true,
+  },
+  {
+    id: "openai/gpt-5.2",
+    name: "GPT 5.2",
+    shortName: "GPT 5.2",
+    description: "OpenAI flagship",
+    icon: Bot,
+    adminOnly: true,
   },
 ] as const;
 
@@ -90,6 +116,8 @@ interface ModelSelectorProps {
   onUpgradeClick?: () => void;
   /** User ID for scoped localStorage */
   userId?: string;
+  /** When true, admin-only models are shown */
+  isAdmin?: boolean;
 }
 
 export function ModelSelector({
@@ -100,11 +128,15 @@ export function ModelSelector({
   isBYOKActive = false,
   onUpgradeClick,
   userId,
+  isAdmin = false,
 }: ModelSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const selectedModel = AVAILABLE_MODELS.find((m) => m.id === value) || AVAILABLE_MODELS[0];
+  // Filter models based on admin status
+  const visibleModels = AVAILABLE_MODELS.filter((m) => !m.adminOnly || isAdmin);
+
+  const selectedModel = visibleModels.find((m) => m.id === value) || visibleModels[0];
   const Icon = selectedModel.icon;
 
   // Close dropdown when clicking outside
@@ -122,9 +154,14 @@ export function ModelSelector({
   }, [isOpen]);
 
   const handleSelect = (modelId: ModelId) => {
+    // Check if model is admin-only
+    const modelConfig = AVAILABLE_MODELS.find((m) => m.id === modelId);
+    const isAdminOnlyModel = modelConfig?.adminOnly ?? false;
+
+    // Admin users can access admin-only models regardless of plan
     // BYOK users can use any model - they pay their own API costs
-    // Only check restrictions for non-BYOK users
-    if (!isBYOKActive && !isModelAllowedForPlan(modelId, userPlan)) {
+    // Only check restrictions for non-BYOK, non-admin users
+    if (!isAdminOnlyModel && !isBYOKActive && !isAdmin && !isModelAllowedForPlan(modelId, userPlan)) {
       // Trigger upgrade modal instead
       if (onUpgradeClick) {
         onUpgradeClick();
@@ -167,11 +204,13 @@ export function ModelSelector({
             className="absolute bottom-full left-0 mb-2 w-52 bg-white rounded-xl border border-[#E8E4E0] shadow-lg overflow-hidden z-50"
           >
             <div className="p-1">
-              {AVAILABLE_MODELS.map((model) => {
+              {visibleModels.map((model) => {
                 const ModelIcon = model.icon;
                 const isSelected = value === model.id;
+                // Admin-only models are always allowed for admins
                 // BYOK users have all models unlocked
-                const isAllowed = isBYOKActive || isModelAllowedForPlan(model.id, userPlan);
+                // Otherwise check plan
+                const isAllowed = model.adminOnly || isBYOKActive || isModelAllowedForPlan(model.id, userPlan);
 
                 return (
                   <button

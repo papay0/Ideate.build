@@ -78,6 +78,22 @@ export function isModelAllowedForPlan(model: string, planId: PlanType): boolean 
 }
 
 /**
+ * Admin-only models (require user.role === 'admin')
+ */
+export const ADMIN_ONLY_MODELS = [
+  'anthropic/claude-opus-4.5',
+  'anthropic/claude-sonnet-4.5',
+  'openai/gpt-5.2',
+] as const;
+
+/**
+ * Check if a model is admin-only
+ */
+export function isAdminOnlyModel(model: string): boolean {
+  return ADMIN_ONLY_MODELS.includes(model as typeof ADMIN_ONLY_MODELS[number]);
+}
+
+/**
  * Get the default model for a plan
  */
 export function getDefaultModelForPlan(planId: PlanType): string {

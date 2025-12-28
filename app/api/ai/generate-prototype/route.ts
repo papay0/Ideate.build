@@ -21,7 +21,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { getPrototypeSystemPrompt, type PrototypePlatform } from "@/lib/prompts/prototype-prompts";
 import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
-import { isModelAllowedForPlan, PLANS, type PlanType } from "@/lib/constants/plans";
+import { isModelAllowedForPlan, isAdminOnlyModel, PLANS, type PlanType } from "@/lib/constants/plans";
 import { logAuditEvent } from "@/lib/audit/log-event";
 
 // Lazy initialization to avoid build-time errors
@@ -158,9 +158,23 @@ export async function POST(request: Request): Promise<Response> {
 
     // Model access check
     const userPlan = (dbUser.plan || "free") as PlanType;
+    const isUserAdmin = dbUser.role === "admin";
     const modelToUse = requestedModel || "gemini-3-pro-preview";
 
-    if (!userApiKey && !isModelAllowedForPlan(modelToUse, userPlan) && !isModelAllowedForPlan(`google/${modelToUse}`, userPlan)) {
+    // Check if model is admin-only
+    if (isAdminOnlyModel(modelToUse) && !isUserAdmin) {
+      return new Response(
+        JSON.stringify({
+          error: "This model is only available for admin users.",
+          code: "ADMIN_MODEL_RESTRICTED",
+          requestedModel: modelToUse,
+        }),
+        { status: 403, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Check plan-based model access (skip for BYOK and admin users)
+    if (!userApiKey && !isUserAdmin && !isModelAllowedForPlan(modelToUse, userPlan) && !isModelAllowedForPlan(`google/${modelToUse}`, userPlan)) {
       return new Response(
         JSON.stringify({
           error: "This model is only available for Pro users.",
@@ -234,7 +248,13 @@ IMPORTANT - OUTPUT FORMAT:
     }
 
     // Model selection
-    const SUPPORTED_MODELS = ["gemini-3-pro-preview", "gemini-3-flash-preview"];
+    const SUPPORTED_MODELS = [
+      "gemini-3-pro-preview",
+      "gemini-3-flash-preview",
+      "anthropic/claude-opus-4.5",
+      "anthropic/claude-sonnet-4.5",
+      "openai/gpt-5.2",
+    ];
     const selectedModel = requestedModel && SUPPORTED_MODELS.includes(requestedModel)
       ? requestedModel
       : "gemini-3-pro-preview";
@@ -243,12 +263,18 @@ IMPORTANT - OUTPUT FORMAT:
 
     // Create model instance
     let model;
-    if (provider === "gemini") {
+    const isGeminiModel = selectedModel.startsWith("gemini");
+
+    if (provider === "gemini" && isGeminiModel) {
+      // Direct Gemini API (only for Gemini models)
       const google = createGoogleGenerativeAI({ apiKey });
       model = google(selectedModel);
     } else {
+      // OpenRouter for all other cases
       const openrouter = createOpenRouter({ apiKey });
-      model = openrouter.chat(`google/${selectedModel}`);
+      // Gemini models need google/ prefix, others already have provider prefix
+      const openrouterModelId = isGeminiModel ? `google/${selectedModel}` : selectedModel;
+      model = openrouter.chat(openrouterModelId);
     }
 
     // Build messages array
@@ -311,7 +337,10 @@ IMPORTANT - OUTPUT FORMAT:
           // Get token usage
           try {
             const usage = await result.usage;
-            const modelName = provider === "gemini" ? selectedModel : `google/${selectedModel}`;
+            // For logging: Gemini models get google/ prefix when using OpenRouter, others keep their provider prefix
+            const modelName = provider === "gemini" && isGeminiModel
+              ? selectedModel
+              : (isGeminiModel ? `google/${selectedModel}` : selectedModel);
 
             const usageData = `data: ${JSON.stringify({
               usage: {

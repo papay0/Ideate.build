@@ -18,6 +18,7 @@ import {
   FileText,
   TrendingUp,
   ShieldCheck,
+  FlaskConical,
 } from "lucide-react";
 import {
   Sidebar,
@@ -38,6 +39,12 @@ const adminNavItems = [
     url: "/admin",
     icon: BarChart3,
     description: "Costs & usage",
+  },
+  {
+    title: "Playground",
+    url: "/admin/playground",
+    icon: FlaskConical,
+    description: "Compare models",
   },
   {
     title: "Users",
