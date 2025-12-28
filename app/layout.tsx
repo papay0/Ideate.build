@@ -42,21 +42,21 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://ideate.build"),
   title: {
-    default: "Ideate - AI App Designer | Create Mobile & Desktop Mockups",
+    default: "Ideate - AI App Designer | Create Mobile & Desktop Prototypes",
     template: "%s | Ideate",
   },
   description:
-    "Turn your ideas into beautiful mobile and desktop app mockups instantly with AI. Open source, free to use. Bring your own API key. No design skills required.",
+    "Turn your ideas into beautiful mobile and desktop app prototypes instantly with AI. Open source, free to use. Bring your own API key. No design skills required.",
   keywords: [
     "AI app designer",
-    "AI mockup generator",
+    "AI prototype generator",
     "AI UI design",
     "app design tool",
-    "mobile app mockup",
+    "mobile app prototype",
     "desktop app design",
     "free AI design tool",
     "open source design",
-    "UI mockup generator",
+    "UI prototype generator",
     "app prototype",
   ],
   authors: [{ name: "Ideate" }],
@@ -78,9 +78,9 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://ideate.build",
     siteName: "Ideate",
-    title: "Ideate - AI App Designer | Mobile & Desktop Mockups in Minutes",
+    title: "Ideate - AI App Designer | Mobile & Desktop Prototypes in Minutes",
     description:
-      "Turn your ideas into beautiful app mockups instantly with AI. Open source, free to use, bring your own API key.",
+      "Turn your ideas into beautiful app prototypes instantly with AI. Open source, free to use, bring your own API key.",
     images: [
       {
         url: "/api/og",
@@ -95,7 +95,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Ideate - AI App Designer",
     description:
-      "Turn ideas into beautiful mobile & desktop app mockups with AI. Open source & free.",
+      "Turn ideas into beautiful mobile & desktop app prototypes with AI. Open source & free.",
     images: ["/api/og"],
     creator: "@opendesignai",
     site: "@opendesignai",
@@ -122,7 +122,7 @@ const jsonLd = {
   "@type": "SoftwareApplication",
   name: "Ideate",
   description:
-    "AI-powered app design mockup generator for mobile and desktop. Create beautiful UI mockups from text descriptions.",
+    "AI-powered app design prototype generator for mobile and desktop. Create beautiful UI prototypes from text descriptions.",
   url: "https://ideate.build",
   applicationCategory: "DesignApplication",
   operatingSystem: "Web",
@@ -133,7 +133,7 @@ const jsonLd = {
   },
   featureList: [
     "AI-powered design generation",
-    "Mobile and desktop mockups",
+    "Mobile and desktop prototypes",
     "Real-time streaming preview",
     "BYOK (Bring Your Own Key)",
     "HTML + Tailwind CSS export",

@@ -1,7 +1,7 @@
 {
   "name": "Ideate - AI App Designer",
   "short_name": "Ideate",
-  "description": "Turn your ideas into beautiful mobile and desktop app mockups instantly with AI. Open source, free to use.",
+  "description": "Turn your ideas into beautiful mobile and desktop app prototypes instantly with AI. Open source, free to use.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FAF8F5",
