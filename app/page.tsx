@@ -444,9 +444,8 @@ function Header() {
           <div className="md:hidden flex items-center gap-4">
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="text-sm text-[#6B6B6B] hover:text-[#B8956F] transition-colors relative group">
+                <button className="text-sm font-medium text-[#B8956F] hover:text-[#9A7B5B] transition-colors">
                   Sign In
-                  <span className="absolute -bottom-0.5 left-0 w-0 h-[1.5px] bg-[#B8956F] group-hover:w-full transition-all duration-300" />
                 </button>
               </SignInButton>
             </SignedOut>
