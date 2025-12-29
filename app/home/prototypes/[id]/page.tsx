@@ -57,7 +57,7 @@ import {
   uploadImage,
 } from "@/lib/upload/image-upload";
 import { CostIndicator } from "../../components/CostIndicator";
-import { ModelSelector, setSelectedModel, type ModelId } from "../../components/ModelSelector";
+import { ModelSelector, setSelectedModel, AVAILABLE_MODELS, type ModelId } from "../../components/ModelSelector";
 import { calculateCost } from "@/lib/constants/pricing";
 import { useUserSync } from "@/lib/hooks/useUserSync";
 import { useSubscription } from "@/lib/hooks/useSubscription";
@@ -1027,8 +1027,13 @@ export default function PrototypePage() {
 
       setProject(projectData);
 
+      // Validate model - only set if it's a valid model ID, otherwise keep default (flash)
       if (projectData.model) {
-        setSelectedModelState(projectData.model as ModelId);
+        const validModelIds: string[] = AVAILABLE_MODELS.map(m => m.id);
+        if (validModelIds.includes(projectData.model)) {
+          setSelectedModelState(projectData.model as ModelId);
+        }
+        // If invalid model, keep the default "gemini-3-flash-preview"
       }
 
       // Fetch existing screens
