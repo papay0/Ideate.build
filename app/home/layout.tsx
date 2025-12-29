@@ -44,7 +44,7 @@ export default function AuthenticatedLayout({
   if (isPrototypePage) {
     return (
       <AuthCleanupProvider>
-        <div className="min-h-screen bg-[#FAF8F5]">
+        <div className="h-dvh overflow-hidden bg-[#FAF8F5]">
           {children}
         </div>
       </AuthCleanupProvider>
