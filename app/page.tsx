@@ -35,7 +35,6 @@ import {
   MousePointerClick,
   Lightbulb,
   Wand2,
-  Smartphone,
   Monitor,
   Dumbbell,
   ChefHat,
@@ -107,16 +106,9 @@ const HERO_PHONES = {
 };
 
 const COMPARISON_IMAGES = {
-  mobile: {
-    opendesign: `${SUPABASE_ASSETS}/comparison-mobile-opendesign`,
-    v0: `${SUPABASE_ASSETS}/comparison-mobile-v0`,
-    lovable: `${SUPABASE_ASSETS}/comparison-mobile-lovable`,
-    prompt: "Music streaming app",
-  },
   desktop: {
     opendesign: `${SUPABASE_ASSETS}/comparison-desktop-opendesign`,
     v0: `${SUPABASE_ASSETS}/comparison-desktop-v0`,
-    lovable: `${SUPABASE_ASSETS}/comparison-desktop-lovable`,
     prompt: "Recipe collection website",
   },
 };
@@ -890,45 +882,6 @@ function ProcessSection() {
 // Comparison Section
 // ============================================================================
 
-function PhoneMockup({
-  image,
-  label,
-  isHero = false,
-  onClick,
-}: {
-  image: string;
-  label: string;
-  isHero?: boolean;
-  onClick?: () => void;
-}) {
-  const isIdeate = label === "Ideate";
-  return (
-    <div
-      className={`relative cursor-pointer transition-transform hover:scale-[1.02] ${isHero ? "" : "opacity-90 hover:opacity-100"}`}
-      onClick={onClick}
-    >
-      <div className={`relative bg-[#1A1A1A] rounded-[2.5rem] p-2 ${isHero ? "shadow-2xl" : "shadow-lg"}`}>
-        <div className="relative bg-[#FAF8F5] rounded-[2rem] overflow-hidden aspect-[390/844]">
-          <img
-            src={image}
-            alt={`${label} mobile app output`}
-            className={`w-full h-full object-cover object-top ${isHero ? "" : "grayscale-[20%]"}`}
-          />
-        </div>
-      </div>
-      {/* Large label below the mockup */}
-      <div className="mt-4 text-center">
-        <span className={`text-lg font-semibold ${isIdeate ? "text-[#B8956F]" : "text-[#6B6B6B]"}`}>
-          {isIdeate && "🏆 "}{label}
-        </span>
-        {!isIdeate && (
-          <span className="block text-xs text-[#9A9A9A] mt-0.5">Other AI Tool</span>
-        )}
-      </div>
-    </div>
-  );
-}
-
 function BrowserMockup({
   image,
   label,
@@ -1068,13 +1021,7 @@ function ComparisonLightbox({
 }
 
 function ComparisonSection() {
-  const [lightbox, setLightbox] = useState<{ type: "mobile" | "desktop"; index: number } | null>(null);
-
-  const mobileImages = [
-    { src: COMPARISON_IMAGES.mobile.opendesign, label: "Ideate" },
-    { src: COMPARISON_IMAGES.mobile.v0, label: "v0" },
-    { src: COMPARISON_IMAGES.mobile.lovable, label: "Lovable" },
-  ];
+  const [lightbox, setLightbox] = useState<{ index: number } | null>(null);
 
   const desktopImages = [
     { src: COMPARISON_IMAGES.desktop.opendesign, label: "Ideate" },
@@ -1083,14 +1030,7 @@ function ComparisonSection() {
 
   return (
     <section className="py-24 px-6 bg-[#FAF8F5]">
-      {lightbox?.type === "mobile" && (
-        <ComparisonLightbox
-          images={mobileImages}
-          initialIndex={lightbox.index}
-          onClose={() => setLightbox(null)}
-        />
-      )}
-      {lightbox?.type === "desktop" && (
+      {lightbox && (
         <ComparisonLightbox
           images={desktopImages}
           initialIndex={lightbox.index}
@@ -1166,50 +1106,6 @@ function ComparisonSection() {
           </div>
         </motion.div>
 
-        {/* Mobile Comparison */}
-        <motion.div
-          variants={slideUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="mb-20"
-        >
-          {/* Prompt label */}
-          <div className="flex justify-center mb-8">
-            <div className="inline-flex items-center gap-3 bg-white border border-[#E8E4E0] rounded-full px-6 py-3 shadow-sm">
-              <Smartphone className="w-4 h-4 text-[#6B6B6B]" />
-              <span className="text-sm text-[#6B6B6B]">Mobile App</span>
-              <span className="text-[#D4CFC9]">•</span>
-              <code className="text-sm font-mono text-[#1A1A1A]">&ldquo;Music streaming app&rdquo;</code>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap justify-center items-end gap-6 md:gap-10">
-            <div className="w-48 md:w-56 lg:w-64">
-              <PhoneMockup
-                image={COMPARISON_IMAGES.mobile.opendesign}
-                label="Ideate"
-                isHero
-                onClick={() => setLightbox({ type: "mobile", index: 0 })}
-              />
-            </div>
-            <div className="w-48 md:w-56 lg:w-64">
-              <PhoneMockup
-                image={COMPARISON_IMAGES.mobile.v0}
-                label="v0"
-                onClick={() => setLightbox({ type: "mobile", index: 1 })}
-              />
-            </div>
-            <div className="w-48 md:w-56 lg:w-64">
-              <PhoneMockup
-                image={COMPARISON_IMAGES.mobile.lovable}
-                label="Lovable"
-                onClick={() => setLightbox({ type: "mobile", index: 2 })}
-              />
-            </div>
-          </div>
-        </motion.div>
-
         {/* Desktop Comparison */}
         <motion.div
           variants={slideUp}
@@ -1231,12 +1127,12 @@ function ComparisonSection() {
             <BrowserMockup
               image={COMPARISON_IMAGES.desktop.opendesign}
               label="Ideate"
-              onClick={() => setLightbox({ type: "desktop", index: 0 })}
+              onClick={() => setLightbox({ index: 0 })}
             />
             <BrowserMockup
               image={COMPARISON_IMAGES.desktop.v0}
               label="v0"
-              onClick={() => setLightbox({ type: "desktop", index: 1 })}
+              onClick={() => setLightbox({ index: 1 })}
             />
           </div>
         </motion.div>
