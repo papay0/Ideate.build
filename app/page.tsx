@@ -696,7 +696,36 @@ function HeroSection() {
             <Sparkles className="w-4 h-4 text-[#B8956F]" />
             Need inspiration?
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+
+          {/* Mobile: Horizontal scroll carousel - edge to edge */}
+          <div className="sm:hidden -mx-6">
+            <div className="flex gap-3 overflow-x-auto pb-4 px-6 scrollbar-hide snap-x snap-mandatory scroll-px-6">
+              {examplePrompts.map((example) => {
+                const IconComponent = example.icon;
+                return (
+                  <motion.button
+                    key={example.label}
+                    variants={fadeIn}
+                    onClick={() => handleExampleClick(example)}
+                    className="flex-shrink-0 snap-start bg-white border border-[#E8E4E0] rounded-xl p-3 hover:border-[#B8956F] transition-all group w-[140px]"
+                  >
+                    <div className="w-10 h-10 mx-auto mb-2 rounded-lg bg-[#FAF8F5] border border-[#E8E4E0] flex items-center justify-center group-hover:bg-[#FFF8F0] group-hover:border-[#F5E6D3] transition-colors">
+                      <IconComponent className="w-5 h-5 text-[#B8956F]" />
+                    </div>
+                    <h3 className="font-medium text-[#1A1A1A] text-sm text-center mb-1">
+                      {example.label}
+                    </h3>
+                    <span className="block text-[10px] bg-[#F5F2EF] text-[#6B6B6B] px-2 py-0.5 rounded-full text-center">
+                      {example.styleTag}
+                    </span>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Desktop: Grid layout */}
+          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {examplePrompts.map((example) => {
               const IconComponent = example.icon;
               return (
