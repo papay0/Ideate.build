@@ -1,7 +1,7 @@
 ---
 title: "Ideate vs v0 vs Lovable: AI Prototyping Tools Compared (2025)"
 description: "An honest comparison of the top AI prototyping tools. See how Ideate, v0, and Lovable stack up on speed, design quality, and ease of use."
-date: "2025-12-10"
+date: "2025-12-27"
 author: "Ideate Team"
 tags: ["Tool Comparison", "AI Tools", "Prototyping", "v0", "Lovable"]
 ---

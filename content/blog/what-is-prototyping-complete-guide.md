@@ -1,7 +1,7 @@
 ---
 title: "What Is Prototyping? A Complete Guide for Product Teams in 2025"
 description: "Learn what prototyping is, why it matters for product development, and how designers and product managers use prototypes to build better products faster."
-date: "2025-02-12"
+date: "2025-12-10"
 author: "Ideate Team"
 tags: ["Prototyping", "Product Design", "UX Design", "Product Management"]
 ---

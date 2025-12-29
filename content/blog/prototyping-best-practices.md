@@ -1,7 +1,7 @@
 ---
 title: "7 Prototyping Best Practices Every Designer Should Know"
 description: "Master the art of prototyping with these proven best practices. Learn when to prototype, what fidelity to use, how to test effectively, and common mistakes to avoid."
-date: "2025-04-18"
+date: "2025-12-15"
 author: "Ideate Team"
 tags: ["Prototyping", "Best Practices", "UX Design", "Design Process"]
 ---
