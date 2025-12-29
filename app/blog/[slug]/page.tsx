@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { getAllSlugs, getPostBySlug } from "@/lib/blog";
 import { ArrowLeft, Calendar, Clock, ArrowRight } from "lucide-react";
 import { Logo } from "@/components/Logo";
@@ -143,7 +144,7 @@ export default async function BlogPostPage({ params }: Props) {
 
           {/* Content */}
           <div className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-[#1A1A1A] prose-headings:tracking-tight prose-p:text-[#4A4A4A] prose-p:leading-relaxed prose-a:text-[#B8956F] prose-a:no-underline hover:prose-a:underline prose-strong:text-[#1A1A1A] prose-code:text-[#6B6B6B] prose-code:bg-[#F5F2EF] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-medium prose-code:before:content-none prose-code:after:content-none prose-pre:bg-[#F5F2EF] prose-pre:text-[#4A4A4A] prose-pre:border prose-pre:border-[#E8E4E0] prose-pre:rounded-xl [&_pre_code]:text-[#4A4A4A] [&_pre_code]:bg-transparent [&_pre_code]:p-0 prose-blockquote:border-l-[#B8956F] prose-blockquote:text-[#6B6B6B] prose-li:text-[#4A4A4A] prose-th:text-[#1A1A1A] prose-td:text-[#4A4A4A]">
-            <ReactMarkdown>{post.content}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
           </div>
         </div>
       </article>
