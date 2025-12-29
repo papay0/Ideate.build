@@ -239,7 +239,7 @@ const PhoneMockupContent = memo(function PhoneMockupContent({
       {/* Phone Frame */}
       <div
         ref={mockupRef}
-        className={`relative bg-[#1A1A1A] rounded-[3rem] p-3 shadow-2xl overflow-hidden transition-all duration-300 ${
+        className={`relative bg-[#1A1A1A] rounded-[2.5rem] p-2 shadow-2xl overflow-hidden transition-all duration-300 ${
           isEditing ? "ring-4 ring-blue-500/50 animate-pulse" : ""
         }`}
         data-screen-name={screen.name}
@@ -253,8 +253,13 @@ const PhoneMockupContent = memo(function PhoneMockupContent({
         )}
 
         <div
-          className="bg-[#1A1A1A] rounded-[2.25rem] overflow-hidden"
-          style={{ width: PHONE_WIDTH, height: PHONE_HEIGHT }}
+          className="bg-black rounded-[2rem] overflow-hidden"
+          style={{
+            width: PHONE_WIDTH,
+            height: PHONE_HEIGHT,
+            WebkitMaskImage: 'radial-gradient(white, white)',
+            maskImage: 'radial-gradient(white, white)',
+          }}
         >
           <iframe
             ref={iframeRef}
@@ -475,7 +480,7 @@ const BrowserMockupContent = memo(function BrowserMockupContent({
         <div style={{ width: DESKTOP_WIDTH, height: DESKTOP_HEIGHT }}>
           <iframe
             ref={iframeRef}
-            className="w-full h-full border-0"
+            className="w-full h-full border-0 rounded-[2rem]"
             title={screen.name}
             sandbox="allow-scripts allow-same-origin"
             style={{ pointerEvents: "none" }}
@@ -631,15 +636,20 @@ const StreamingPositionedPhoneMockup = memo(function StreamingPositionedPhoneMoc
       className="absolute flex flex-col items-center gap-3"
       style={{ left: x, top: y }}
     >
-      <div className="relative bg-[#1A1A1A] rounded-[3rem] p-3 shadow-2xl overflow-hidden">
+      <div className="relative bg-[#1A1A1A] rounded-[2.5rem] p-2 shadow-2xl overflow-hidden">
         <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-20 bg-[#B8956F] text-white text-xs px-3 py-1 rounded-full flex items-center gap-2">
           <Loader2 className="w-3 h-3 animate-spin" />
           Generating {screenName}...
         </div>
 
         <div
-          className="bg-[#1A1A1A] rounded-[2.25rem] overflow-hidden"
-          style={{ width: PHONE_WIDTH, height: PHONE_HEIGHT }}
+          className="bg-black rounded-[2rem] overflow-hidden"
+          style={{
+            width: PHONE_WIDTH,
+            height: PHONE_HEIGHT,
+            WebkitMaskImage: 'radial-gradient(white, white)',
+            maskImage: 'radial-gradient(white, white)',
+          }}
         >
           <iframe
             ref={iframeRef}
@@ -651,7 +661,7 @@ const StreamingPositionedPhoneMockup = memo(function StreamingPositionedPhoneMoc
         </div>
 
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-zinc-700 rounded-full" />
-        <div className="absolute inset-0 rounded-[3rem] ring-4 ring-[#B8956F]/50 animate-pulse" />
+        <div className="absolute inset-0 rounded-[2.5rem] ring-4 ring-[#B8956F]/50 animate-pulse" />
       </div>
 
       <span className="text-sm text-[#B8956F] font-medium">{screenName}</span>

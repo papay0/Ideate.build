@@ -163,6 +163,7 @@ export function StreamingScreenPreview({
   <script src="https://cdn.tailwindcss.com"><\/script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { overflow: hidden; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: transparent;
@@ -199,7 +200,7 @@ export function StreamingScreenPreview({
     <div className="flex flex-col items-center gap-3">
       {/* Phone Frame */}
       <div
-        className="relative bg-[#1A1A1A] rounded-[3rem] p-3 shadow-2xl overflow-hidden"
+        className="relative bg-[#1A1A1A] rounded-[2.5rem] p-2 shadow-2xl overflow-hidden"
         style={{ transformOrigin: "top center" }}
       >
         {/* Streaming indicator */}
@@ -215,8 +216,13 @@ export function StreamingScreenPreview({
 
         {/* Screen */}
         <div
-          className="bg-[#1A1A1A] rounded-[2.25rem] overflow-hidden"
-          style={{ width: PHONE_WIDTH, height: contentHeight }}
+          className="bg-black rounded-[2rem] overflow-hidden"
+          style={{
+            width: PHONE_WIDTH,
+            height: contentHeight,
+            WebkitMaskImage: 'radial-gradient(white, white)',
+            maskImage: 'radial-gradient(white, white)',
+          }}
         >
           <iframe
             ref={iframeRef}
@@ -232,7 +238,7 @@ export function StreamingScreenPreview({
 
         {/* Pulsing ring while streaming */}
         {isStreaming && (
-          <div className="absolute inset-0 rounded-[3rem] ring-4 ring-[#B8956F]/50 animate-pulse" />
+          <div className="absolute inset-0 rounded-[2.5rem] ring-4 ring-[#B8956F]/50 animate-pulse" />
         )}
       </div>
 
