@@ -180,13 +180,23 @@ export function PrototypePlayer({
           </div>
 
           {/* Device Frame + Iframe */}
-          <div ref={containerRef} className="flex-1 flex items-center justify-center p-6 overflow-hidden">
+          <div
+            ref={containerRef}
+            className="flex-1 flex items-center justify-center p-6 overflow-hidden"
+            onClick={(e) => {
+              // Close when clicking directly on backdrop, not on device
+              if (e.target === e.currentTarget) {
+                onClose();
+              }
+            }}
+          >
             <div
               className="flex items-center justify-center transition-transform duration-150"
               style={{
                 transform: `scale(${scale})`,
                 transformOrigin: "center center",
               }}
+              onClick={(e) => e.stopPropagation()}
             >
               {platform === "mobile" ? (
                 <MobileFrame>
