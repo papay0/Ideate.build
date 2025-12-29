@@ -64,6 +64,12 @@ export const AVAILABLE_MODELS = [
 
 export type ModelId = typeof AVAILABLE_MODELS[number]["id"];
 
+/**
+ * Default model for free users and new projects
+ * Update this single constant when Gemini model names change
+ */
+export const DEFAULT_MODEL: ModelId = "gemini-3-flash-preview";
+
 const BASE_STORAGE_KEY = "opendesign_selected_model";
 
 // ============================================================================
@@ -71,7 +77,7 @@ const BASE_STORAGE_KEY = "opendesign_selected_model";
 // ============================================================================
 
 export function getDefaultModelForPlan(): ModelId {
-  return "gemini-3-flash-preview";
+  return DEFAULT_MODEL;
 }
 
 /**

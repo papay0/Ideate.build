@@ -57,7 +57,7 @@ import {
   uploadImage,
 } from "@/lib/upload/image-upload";
 import { CostIndicator } from "../../components/CostIndicator";
-import { ModelSelector, setSelectedModel, AVAILABLE_MODELS, type ModelId } from "../../components/ModelSelector";
+import { ModelSelector, setSelectedModel, AVAILABLE_MODELS, DEFAULT_MODEL, type ModelId } from "../../components/ModelSelector";
 import { calculateCost } from "@/lib/constants/pricing";
 import { useUserSync } from "@/lib/hooks/useUserSync";
 import { useSubscription } from "@/lib/hooks/useSubscription";
@@ -467,7 +467,7 @@ export default function PrototypePage() {
   const [mobileActiveTab, setMobileActiveTab] = useState<MobileTab>("chat");
   const [usageLogs, setUsageLogs] = useState<UsageLog[]>([]);
   const [totalSessionCost, setTotalSessionCost] = useState(0);
-  const [selectedModel, setSelectedModelState] = useState<ModelId>("gemini-3-flash-preview");
+  const [selectedModel, setSelectedModelState] = useState<ModelId>(DEFAULT_MODEL);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const [playerHtml, setPlayerHtml] = useState<string | null>(null);
   const [isLoadingPlayer, setIsLoadingPlayer] = useState(false);

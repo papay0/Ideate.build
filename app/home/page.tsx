@@ -37,7 +37,7 @@ import { PlatformSelector } from "./components/PlatformSelector";
 import { DashboardSkeleton, ProjectsGridSkeleton } from "./components/Skeleton";
 import { ImageUploadButton } from "./components/ImageUploadButton";
 import { ImageLightbox, ClickableImage } from "./components/ImageLightbox";
-import { ModelSelector, getSelectedModel, type ModelId } from "./components/ModelSelector";
+import { ModelSelector, getSelectedModel, DEFAULT_MODEL, type ModelId } from "./components/ModelSelector";
 import type { PlanType } from "@/lib/constants/plans";
 import { useUserSync } from "@/lib/hooks/useUserSync";
 import { useSubscription } from "@/lib/hooks/useSubscription";
@@ -241,7 +241,7 @@ function PromptInput({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isPasting, setIsPasting] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
-  const [selectedModel, setSelectedModelState] = useState<ModelId>("gemini-3-flash-preview");
+  const [selectedModel, setSelectedModelState] = useState<ModelId>(DEFAULT_MODEL);
   // Generate a temporary project ID for uploading before project creation
   const [tempProjectId] = useState(() => crypto.randomUUID());
 
@@ -551,6 +551,7 @@ export default function DashboardPage() {
           app_idea: pendingPrompt!.prompt,
           platform: pendingPrompt!.platform || "mobile",
           initial_image_url: null,
+          model: DEFAULT_MODEL,
         })
         .select()
         .single();
