@@ -1,7 +1,7 @@
 ---
 title: "How Product Managers Use Prototypes to Validate Ideas Faster"
 description: "Learn how product managers leverage prototyping to test assumptions, get stakeholder buy-in, and ship better products. Practical strategies from real PM workflows."
-date: "2025-01-10"
+date: "2025-06-24"
 author: "Ideate Team"
 tags: ["Product Management", "Prototyping", "Validation", "Stakeholder Management"]
 ---

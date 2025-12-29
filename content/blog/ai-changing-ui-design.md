@@ -1,7 +1,7 @@
 ---
 title: "From Prompt to Prototype: How AI Is Changing UI Design"
 description: "Explore how AI-powered design tools are transforming the UI/UX industry. Learn about prompt-driven design, the new creative workflow, and what it means for designers and product teams."
-date: "2025-01-08"
+date: "2025-09-05"
 author: "Ideate Team"
 tags: ["AI", "UI Design", "Design Tools", "Future of Design", "Generative AI"]
 ---
