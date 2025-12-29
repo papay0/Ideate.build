@@ -1,6 +1,11 @@
 import { createClient } from "@/lib/supabase/client";
+import imageCompression from "browser-image-compression";
 
-export const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
+// Max input size (before compression) - generous limit for screenshots
+export const MAX_IMAGE_SIZE = 50 * 1024 * 1024; // 50MB
+// Target size after compression
+const TARGET_SIZE_MB = 1.8; // Slightly under 2MB for safety margin
+
 export const ALLOWED_IMAGE_TYPES = [
   "image/jpeg",
   "image/png",
@@ -40,7 +45,38 @@ export function validateImage(file: File): UploadError | null {
 }
 
 /**
+ * Compresses an image to be under 2MB using browser-image-compression
+ * Skips compression if already under target size
+ */
+async function compressImage(file: File): Promise<File> {
+  const targetSizeBytes = TARGET_SIZE_MB * 1024 * 1024;
+
+  // Skip compression if already under target
+  if (file.size <= targetSizeBytes) {
+    return file;
+  }
+
+  console.log(
+    `[Image Compression] Compressing ${(file.size / 1024 / 1024).toFixed(2)}MB image...`
+  );
+
+  const compressedFile = await imageCompression(file, {
+    maxSizeMB: TARGET_SIZE_MB,
+    maxWidthOrHeight: 4096,
+    useWebWorker: true,
+    fileType: "image/webp",
+  });
+
+  console.log(
+    `[Image Compression] Compressed to ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`
+  );
+
+  return compressedFile;
+}
+
+/**
  * Uploads an image to Supabase Storage
+ * Automatically compresses large images to under 2MB before upload
  * Path format: {userId}/{projectId}/{timestamp}-{random}.{ext}
  */
 export async function uploadImage(
@@ -50,15 +86,22 @@ export async function uploadImage(
 ): Promise<UploadResult> {
   const supabase = createClient();
 
+  // Compress image if needed (will skip if already under 2MB)
+  const processedFile = await compressImage(file);
+
+  // Use webp extension if compressed, otherwise keep original
+  const wasCompressed = processedFile !== file;
+  const ext = wasCompressed ? "webp" : file.name.split(".").pop() || "jpg";
+
   // Generate unique filename
-  const ext = file.name.split(".").pop() || "jpg";
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 8);
   const path = `${userId}/${projectId}/${timestamp}-${random}.${ext}`;
 
   const { data, error } = await supabase.storage
     .from("uploads")
-    .upload(path, file, {
+    .upload(path, processedFile, {
+      contentType: wasCompressed ? "image/webp" : file.type,
       cacheControl: "3600",
       upsert: false,
     });

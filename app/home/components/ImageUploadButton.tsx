@@ -7,7 +7,6 @@ import {
   uploadImage,
   createPreviewUrl,
   revokePreviewUrl,
-  MAX_IMAGE_SIZE,
 } from "@/lib/upload/image-upload";
 
 interface ImageUploadButtonProps {
@@ -123,7 +122,7 @@ export function ImageUploadButton({
           onClick={() => fileInputRef.current?.click()}
           disabled={disabled || isUploading}
           className="w-8 h-8 rounded-full flex items-center justify-center text-[#9A9A9A] hover:text-[#B8956F] hover:bg-[#B8956F]/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 group"
-          title={`Attach image (max ${MAX_IMAGE_SIZE / 1024 / 1024}MB)`}
+          title="Attach image (auto-compressed if needed)"
           type="button"
         >
           {isUploading ? (

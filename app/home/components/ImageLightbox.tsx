@@ -92,12 +92,12 @@ export function ClickableImage({ src, alt = "Image", className = "", onClick }: 
   return (
     <button
       onClick={onClick}
-      className={`relative group cursor-zoom-in ${className}`}
+      className={`relative group cursor-zoom-in inline-flex ${className}`}
       type="button"
     >
-      <img src={src} alt={alt} className="w-full h-full object-cover" />
+      <img src={src} alt={alt} className="max-w-full max-h-full object-contain rounded-lg" />
       {/* Hover overlay with zoom icon */}
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-lg">
         <ZoomIn className="w-6 h-6 text-white drop-shadow-lg" />
       </div>
     </button>

@@ -243,7 +243,9 @@ function PromptInput({
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [selectedModel, setSelectedModelState] = useState<ModelId>(DEFAULT_MODEL);
   // Generate a temporary project ID for uploading before project creation
-  const [tempProjectId] = useState(() => crypto.randomUUID());
+  const [tempProjectId] = useState(() =>
+    `temp-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
+  );
 
   // Load selected model on mount, respecting user's plan
   useEffect(() => {
