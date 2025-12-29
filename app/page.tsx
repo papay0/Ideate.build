@@ -440,13 +440,26 @@ function Header() {
             </SignedIn>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden text-[#6B6B6B] hover:text-[#1A1A1A]"
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Mobile Auth + Menu */}
+          <div className="md:hidden flex items-center gap-4">
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="text-sm text-[#6B6B6B] hover:text-[#B8956F] transition-colors relative group">
+                  Sign In
+                  <span className="absolute -bottom-0.5 left-0 w-0 h-[1.5px] bg-[#B8956F] group-hover:w-full transition-all duration-300" />
+                </button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
