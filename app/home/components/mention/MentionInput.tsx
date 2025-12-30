@@ -223,9 +223,6 @@ export const MentionInput = forwardRef<MentionInputRef, MentionInputProps>(
           "grammarly-desktop-disable": "true",
           "aria-multiline": "false",
           "autocomplete": "off",
-          "autocorrect": "off",
-          "autocapitalize": "off",
-          "spellcheck": "false",
         },
         handleKeyDown: (view, event) => {
           // Forward Enter key to parent for form submission
@@ -285,10 +282,7 @@ export const MentionInput = forwardRef<MentionInputRef, MentionInputProps>(
         proseMirror.setAttribute('data-enable-grammarly', 'false');
         proseMirror.setAttribute('grammarly-desktop-disable', 'true');
         proseMirror.setAttribute('data-lt-active', 'false');
-        proseMirror.setAttribute('spellcheck', 'false');
         proseMirror.setAttribute('autocomplete', 'off');
-        proseMirror.setAttribute('autocorrect', 'off');
-        proseMirror.setAttribute('autocapitalize', 'off');
       }
     }, [editor]);
 
