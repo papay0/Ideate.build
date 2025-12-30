@@ -29,6 +29,7 @@ import {
   Camera,
   GitBranch,
   Move,
+  GripHorizontal,
 } from "lucide-react";
 import { captureElement, downloadBlob, toScreenFilename } from "@/lib/utils/screenshot";
 import type { ParsedScreen } from "../StreamingScreenPreview";
@@ -989,6 +990,39 @@ export function PrototypeCanvas({
     savePositionOverrides({}, prototypeId);
   }, [prototypeId]);
 
+  // Arrange all screens in a single horizontal row for screenshot purposes
+  const handleArrangeInRow = useCallback(() => {
+    const newOverrides: PositionOverrides = {};
+    const gridConfig = getGridConfig(platform);
+
+    // Use a tighter gap for row arrangement (20px instead of the standard 120px/150px)
+    const tightGap = 20;
+    const screenTotalWidth = gridConfig.screenWidth + gridConfig.frameWidth * 2;
+
+    completedScreens.forEach((screen, index) => {
+      // Get current grid position
+      const currentPos = gridToPixels(
+        screen.gridCol ?? 0,
+        screen.gridRow ?? 0,
+        platform
+      );
+
+      // Target row position: all in row 0 with tight spacing
+      const targetX = index * (screenTotalWidth + tightGap);
+      const targetY = 0;
+
+      // Calculate delta needed
+      newOverrides[screen.name] = {
+        deltaX: targetX - currentPos.x,
+        deltaY: targetY - currentPos.y,
+      };
+    });
+
+    setPositionOverrides(newOverrides);
+    positionOverridesRef.current = newOverrides;
+    savePositionOverrides(newOverrides, prototypeId);
+  }, [completedScreens, platform, prototypeId]);
+
   // Check if any positions have been modified (use ref for current state)
   const hasPositionOverrides = Object.keys(positionOverridesRef.current).length > 0;
 
@@ -1159,19 +1193,33 @@ export function PrototypeCanvas({
           <>
             {/* Controls */}
             <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2 bg-white rounded-lg shadow-lg p-1 border border-[#E8E4E0]">
+              {/* Arrange in row button (visible when there are screens) */}
+              {completedScreens.length > 0 && (
+                <button
+                  onClick={handleArrangeInRow}
+                  className="p-2 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F2EF] rounded transition-colors flex items-center gap-1"
+                  title="Arrange screens in a row for screenshots"
+                >
+                  <GripHorizontal className="w-4 h-4" />
+                  <span className="text-xs font-medium">Row</span>
+                </button>
+              )}
+
               {/* Reset positions (only show if there are overrides) */}
               {hasPositionOverrides && (
-                <>
-                  <button
-                    onClick={handleResetPositions}
-                    className="p-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded transition-colors flex items-center gap-1"
-                    title="Reset screen positions to original"
-                  >
-                    <Move className="w-4 h-4" />
-                    <span className="text-xs font-medium">Reset</span>
-                  </button>
-                  <div className="w-px h-6 bg-[#E8E4E0]" />
-                </>
+                <button
+                  onClick={handleResetPositions}
+                  className="p-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded transition-colors flex items-center gap-1"
+                  title="Reset screen positions to original grid"
+                >
+                  <Move className="w-4 h-4" />
+                  <span className="text-xs font-medium">Reset</span>
+                </button>
+              )}
+
+              {/* Divider after row/reset buttons */}
+              {completedScreens.length > 0 && (
+                <div className="w-px h-6 bg-[#E8E4E0]" />
               )}
 
               {/* Flow toggle */}
