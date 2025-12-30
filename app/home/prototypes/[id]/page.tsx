@@ -78,6 +78,13 @@ import {
 } from "@/components/ui/resizable";
 import type { PlanType } from "@/lib/constants/plans";
 import { PrototypePlayer } from "../../components/prototype/PrototypePlayer";
+import { MentionInput } from "../../components/mention";
+import {
+  embedScreenIdInHtml,
+  parseMentions,
+  buildMentionContext,
+  type ScreenInfo,
+} from "../../lib/mention-utils";
 
 // ============================================================================
 // Types
@@ -208,6 +215,7 @@ function ChatInput({
   isAdmin,
   lastRawOutput,
   onDebugClick,
+  screens,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -226,16 +234,9 @@ function ChatInput({
   onModelChange: (model: ModelId) => void;
   userPlan: PlanType;
   isBYOKActive: boolean;
+  screens: ScreenInfo[];
 }) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isPasting, setIsPasting] = useState(false);
-
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
-  }, [value]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -345,21 +346,19 @@ function ChatInput({
           </div>
         )}
 
-        <textarea
-          ref={textareaRef}
+        <MentionInput
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={onChange}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
+          screens={screens}
           placeholder={
             disabled
               ? "Configure API key first..."
               : "Describe your prototype..."
           }
           disabled={disabled || isPasting}
-          rows={1}
-          className="w-full bg-white text-[#1A1A1A] placeholder-[#B5B0A8] resize-none max-h-32 disabled:opacity-50 disabled:cursor-not-allowed text-[15px] leading-relaxed"
-          style={{ border: 'none', boxShadow: 'none', outline: 'none', WebkitAppearance: 'none' }}
+          autoFocus
         />
 
         <div className="flex items-center justify-between mt-2">
@@ -757,6 +756,26 @@ export default function PrototypePage() {
           console.error(`[Prototype] Failed to save screen "${screen.name}":`, error);
         }
       }
+
+      // Fetch screens with IDs to update savedScreens state
+      const { data: screensWithIds } = await supabase
+        .from("prototype_screens")
+        .select("*")
+        .eq("project_id", projectId)
+        .order("sort_order");
+
+      if (screensWithIds && screensWithIds.length > 0) {
+        setSavedScreens(
+          screensWithIds.map((s) => ({
+            id: s.id,
+            name: s.screen_name,
+            html: s.html_content,
+            gridCol: s.grid_col,
+            gridRow: s.grid_row,
+            isRoot: s.is_root,
+          }))
+        );
+      }
     },
     onRawOutput: async (rawOutput: string) => {
       // Store in state for debug UI
@@ -909,14 +928,16 @@ export default function PrototypePage() {
         }
       }
 
-      // Update local state by MERGING parsed screens
+      // Update local state by MERGING parsed screens (preserves streaming display)
+      // IDs will be fetched in onComplete after streaming finishes
       setSavedScreens((prevScreens) => {
         const mergedScreens = [...prevScreens];
         for (const newScreen of parsedScreens) {
           const existingIndex = mergedScreens.findIndex(s => s.name === newScreen.name);
           if (existingIndex >= 0) {
-            // Update existing screen
+            // Update existing screen, preserve ID if it exists
             mergedScreens[existingIndex] = {
+              ...mergedScreens[existingIndex], // Keep existing id
               name: newScreen.name,
               html: newScreen.html,
               gridCol: newScreen.gridCol,
@@ -924,7 +945,7 @@ export default function PrototypePage() {
               isRoot: newScreen.isRoot,
             };
           } else {
-            // Add new screen
+            // Add new screen (ID will be fetched in onComplete)
             mergedScreens.push({
               name: newScreen.name,
               html: newScreen.html,
@@ -1102,6 +1123,7 @@ export default function PrototypePage() {
       if (screens && screens.length > 0) {
         setSavedScreens(
           screens.map((s) => ({
+            id: s.id, // Include database ID for @mention feature
             name: s.screen_name,
             html: s.html_content,
             gridCol: s.grid_col,
@@ -1210,6 +1232,21 @@ export default function PrototypePage() {
     userMessageRef.current = null;
 
     const promptText = input.trim();
+
+    // Parse @mentions and build context for AI
+    const mentions = parseMentions(promptText, savedScreens.map(s => ({ name: s.name, id: s.id })));
+    const mentionContext = buildMentionContext(mentions);
+    const promptWithContext = mentionContext ? `${promptText}${mentionContext}` : promptText;
+
+    // Debug: Log what's being sent
+    console.log("=== MENTION DEBUG ===");
+    console.log("Raw input:", promptText);
+    console.log("Parsed mentions:", mentions);
+    console.log("Mention context:", mentionContext);
+    console.log("Final prompt sent to API:", promptWithContext);
+    console.log("Available screens:", savedScreens.map(s => ({ name: s.name, id: s.id })));
+    console.log("=====================");
+
     setInput("");
     setPendingImages([]);
 
@@ -1230,7 +1267,7 @@ export default function PrototypePage() {
     await startStreaming(
       "/api/ai/generate-prototype",
       {
-        prompt: promptText,
+        prompt: promptWithContext,
         projectId,
         existingScreens: savedScreens,
         conversationHistory: messages.map((m) => ({
@@ -1529,6 +1566,7 @@ export default function PrototypePage() {
                     isAdmin={isAdmin}
                     lastRawOutput={lastRawOutput}
                     onDebugClick={() => setIsDebugModalOpen(true)}
+                    screens={displayScreens}
                   />
                 )}
               </div>
@@ -1646,6 +1684,7 @@ export default function PrototypePage() {
                 isAdmin={isAdmin}
                 lastRawOutput={lastRawOutput}
                 onDebugClick={() => setIsDebugModalOpen(true)}
+                screens={displayScreens}
               />
             )}
           </div>

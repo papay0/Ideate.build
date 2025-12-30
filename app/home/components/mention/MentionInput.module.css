@@ -1,0 +1,259 @@
+/**
+ * MentionInput Styles
+ *
+ * Refined, warm aesthetic for TipTap-based mention input.
+ */
+
+/* Container */
+.mentionContainer {
+  position: relative;
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+}
+
+/* Hide Grammarly and other writing assistant extension elements */
+.mentionContainer :global(grammarly-extension),
+.mentionContainer :global(grammarly-popups),
+.mentionContainer :global(grammarly-ghost),
+.mentionContainer :global(grammarly-btn),
+.mentionContainer :global([data-grammarly-shadow-root]),
+.mentionContainer :global(g-gtranslate),
+.mentionContainer :global(.grammarly-desktop-integration) {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+/* Hide Grammarly underlines/highlights */
+.mentionContainer :global(.ProseMirror) :global(g),
+.mentionContainer :global(.ProseMirror) :global(grammarly-popups) {
+  display: none !important;
+}
+
+/* TipTap editor */
+.editor {
+  font-size: 15px;
+  line-height: 1.625;
+  letter-spacing: -0.01em;
+  color: #1A1A1A;
+  outline: none;
+  max-height: 128px;
+  overflow-y: auto;
+  caret-color: #B8956F;
+}
+
+.editor:focus {
+  outline: none;
+}
+
+/* Placeholder - TipTap uses .is-empty and .is-editor-empty classes */
+.mentionContainer :global(.ProseMirror p.is-editor-empty:first-child::before) {
+  content: attr(data-placeholder);
+  float: left;
+  color: #B5B0A8;
+  pointer-events: none;
+  height: 0;
+}
+
+.mentionContainer :global(.ProseMirror.is-empty::before) {
+  content: attr(data-placeholder);
+  float: left;
+  color: #B5B0A8;
+  pointer-events: none;
+  height: 0;
+}
+
+/* Mention node styling - TipTap uses data-type attribute */
+.mentionContainer :global([data-type="mention"]),
+.mentionContainer :global(.mention) {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(184, 149, 111, 0.15) 0%, rgba(184, 149, 111, 0.22) 100%);
+  color: #8B7355;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(184, 149, 111, 0.15),
+    0 1px 2px rgba(184, 149, 111, 0.08);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  margin: 0 2px;
+}
+
+/* Mention dropdown */
+.mentionDropdown {
+  background: #FFFFFF;
+  border: 1px solid #E8E4E0;
+  border-radius: 14px;
+  box-shadow:
+    0 4px 6px -1px rgba(139, 115, 85, 0.08),
+    0 10px 20px -5px rgba(139, 115, 85, 0.12),
+    0 0 0 1px rgba(184, 149, 111, 0.04);
+  overflow: hidden;
+  padding: 6px;
+  min-width: 240px;
+  max-width: 320px;
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(184, 149, 111, 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(184, 149, 111, 0.015) 0%, transparent 50%);
+}
+
+/* Scrollable suggestions area */
+.suggestionsScroll {
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #D4CFC7 transparent;
+}
+
+.suggestionsScroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.suggestionsScroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.suggestionsScroll::-webkit-scrollbar-thumb {
+  background: #D4CFC7;
+  border-radius: 3px;
+}
+
+.suggestionsScroll::-webkit-scrollbar-thumb:hover {
+  background: #C4BFB7;
+}
+
+/* Individual suggestion item */
+.suggestionItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  margin: 2px 0;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+}
+
+.suggestionItem:first-child {
+  margin-top: 0;
+}
+
+.suggestionItem:last-child {
+  margin-bottom: 0;
+}
+
+.suggestionItem:hover {
+  background: #FAF8F5;
+}
+
+.suggestionItemSelected {
+  background: #F5F2EF;
+  box-shadow:
+    inset 0 0 0 1px rgba(184, 149, 111, 0.12),
+    0 1px 2px rgba(184, 149, 111, 0.04);
+}
+
+.suggestionIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  background: #F5F2EF;
+  color: #8B7355;
+}
+
+.suggestionIconFocused {
+  background: linear-gradient(135deg, #C4A882 0%, #B8956F 100%);
+  color: white;
+  box-shadow:
+    0 2px 4px rgba(184, 149, 111, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.suggestionText {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6B6B6B;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.12s ease;
+}
+
+.suggestionTextFocused {
+  color: #1A1A1A;
+}
+
+/* Keyboard hints footer */
+.keyboardHints {
+  padding: 10px 12px;
+  border-top: 1px solid #E8E4E0;
+  background: linear-gradient(180deg, #FAF8F5 0%, #F7F4F0 100%);
+  margin: 6px -6px -6px -6px;
+  border-radius: 0 0 14px 14px;
+}
+
+.keyboardHintsText {
+  font-size: 11px;
+  color: #9A9A9A;
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 5px;
+  background: white;
+  border: 1px solid #E0DCD6;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #6B6B6B;
+  box-shadow:
+    0 1px 0 #E0DCD6,
+    inset 0 -1px 0 rgba(0, 0, 0, 0.02);
+  font-family: inherit;
+}
+
+.hintLabel {
+  color: #A8A39C;
+  margin-right: 6px;
+}
+
+/* Empty state */
+.emptyState {
+  padding: 16px;
+  text-align: center;
+}
+
+.emptyText {
+  font-size: 13px;
+  color: #9A9A9A;
+  font-weight: 450;
+  letter-spacing: -0.01em;
+}

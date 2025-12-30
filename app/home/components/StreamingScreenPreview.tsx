@@ -96,6 +96,8 @@ export interface ParsedScreen {
   name: string;
   html: string;
   isEdit?: boolean;
+  // Database ID (for @mention feature)
+  id?: string;
   // Prototype-specific fields (parsed from screen name)
   gridCol?: number;
   gridRow?: number;

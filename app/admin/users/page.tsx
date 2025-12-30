@@ -76,7 +76,7 @@ export default function AdminUsersPage() {
         </p>
       </motion.div>
 
-      <UserManagement />
+      <UserManagement currentUserId={dbUser.id} />
     </div>
   );
 }

@@ -156,6 +156,12 @@ export async function POST(request: Request): Promise<Response> {
     // Parse request body
     const { prompt, existingScreens, conversationHistory, platform, imageUrls, model: requestedModel, projectId } = await request.json();
 
+    // Debug: Log received prompt with mentions
+    console.log("=== BACKEND MENTION DEBUG ===");
+    console.log("Received prompt:", prompt);
+    console.log("Existing screens:", existingScreens?.map((s: any) => ({ name: s.name, id: s.id })));
+    console.log("=============================");
+
     // Model access check
     const userPlan = (dbUser.plan || "free") as PlanType;
     const isUserAdmin = dbUser.role === "admin";
