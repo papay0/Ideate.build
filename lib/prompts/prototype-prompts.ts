@@ -383,6 +383,190 @@ JAVASCRIPT RULES:
 - Always use vanilla JS - NO React, NO frameworks
 - Focus on UI behavior, not complex business logic`;
 
+// ============================================================================
+// ADVANCED INTERACTIVITY - MAKE PROTOTYPES COME ALIVE
+// ============================================================================
+
+const ADVANCED_INTERACTIVITY_RULES = `ADVANCED INTERACTIVITY - GO BEYOND STATIC UI:
+
+**CRITICAL MINDSET: Every prototype should feel ALIVE.**
+Before finishing ANY screen, ask yourself: "What can move, toggle, animate, or respond to interaction?"
+Users should tap a play button and see it work. They should tap a heart and see it fill. Progress bars should animate.
+Static mockups are boring - make it INTERACTIVE.
+
+**PROACTIVELY ADD these interactions WITHOUT being asked:**
+
+1. **MEDIA PLAYER CONTROLS** - When you see a music/video player UI:
+<div class="flex flex-col items-center">
+  <button onclick="togglePlay()" class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-transform">
+    <svg id="play-icon" class="w-8 h-8 text-black ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+    <svg id="pause-icon" class="w-8 h-8 text-black hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+  </button>
+  <div class="w-full mt-6 px-4">
+    <div class="flex items-center gap-3">
+      <span id="current-time" class="text-xs text-gray-400 w-10">0:00</span>
+      <div class="flex-1 h-1 bg-gray-700 rounded-full overflow-hidden cursor-pointer" onclick="seekTrack(event)">
+        <div id="progress-bar" class="h-full bg-green-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+      <span class="text-xs text-gray-400 w-10 text-right">3:45</span>
+    </div>
+  </div>
+</div>
+<script>
+let isPlaying = false;
+let progress = 0;
+let playInterval;
+const totalDuration = 225; // 3:45 in seconds
+function formatTime(sec) {
+  return Math.floor(sec/60) + ':' + String(Math.floor(sec%60)).padStart(2,'0');
+}
+function togglePlay() {
+  isPlaying = !isPlaying;
+  document.getElementById('play-icon').classList.toggle('hidden', isPlaying);
+  document.getElementById('pause-icon').classList.toggle('hidden', !isPlaying);
+  if (isPlaying) {
+    playInterval = setInterval(() => {
+      progress = Math.min(progress + (100/totalDuration), 100);
+      document.getElementById('progress-bar').style.width = progress + '%';
+      document.getElementById('current-time').textContent = formatTime((progress/100) * totalDuration);
+      if (progress >= 100) { togglePlay(); progress = 0; }
+    }, 1000);
+  } else {
+    clearInterval(playInterval);
+  }
+}
+function seekTrack(e) {
+  const bar = e.currentTarget;
+  const rect = bar.getBoundingClientRect();
+  progress = ((e.clientX - rect.left) / rect.width) * 100;
+  document.getElementById('progress-bar').style.width = progress + '%';
+  document.getElementById('current-time').textContent = formatTime((progress/100) * totalDuration);
+}
+</script>
+
+2. **LIKE/HEART BUTTON** - Any like, favorite, or heart button should toggle:
+<button onclick="toggleLike(this)" class="like-btn p-2 transition-transform active:scale-125">
+  <svg class="w-7 h-7 transition-colors duration-200" viewBox="0 0 24 24">
+    <path class="heart-path" fill="none" stroke="currentColor" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+  </svg>
+  <span class="like-count text-sm text-gray-400 ml-1">2.4k</span>
+</button>
+<script>
+function toggleLike(btn) {
+  const path = btn.querySelector('.heart-path');
+  const count = btn.querySelector('.like-count');
+  const isLiked = path.getAttribute('fill') !== 'none';
+  path.setAttribute('fill', isLiked ? 'none' : '#ef4444');
+  path.setAttribute('stroke', isLiked ? 'currentColor' : '#ef4444');
+  if (count) {
+    const num = parseFloat(count.textContent);
+    count.textContent = isLiked ? (num - 0.1).toFixed(1) + 'k' : (num + 0.1).toFixed(1) + 'k';
+  }
+  btn.classList.toggle('text-red-500', !isLiked);
+}
+</script>
+
+3. **TOGGLE SWITCH** - Settings toggles should slide smoothly:
+<button onclick="toggleSwitch(this)" class="toggle-switch relative w-12 h-7 bg-gray-600 rounded-full transition-colors duration-200">
+  <span class="toggle-knob absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200"></span>
+</button>
+<script>
+function toggleSwitch(btn) {
+  const isOn = btn.classList.contains('bg-green-500');
+  btn.classList.toggle('bg-green-500', !isOn);
+  btn.classList.toggle('bg-gray-600', isOn);
+  const knob = btn.querySelector('.toggle-knob');
+  knob.style.transform = isOn ? 'translateX(0)' : 'translateX(20px)';
+}
+</script>
+
+4. **TOOLTIP ON TAP/HOVER** - Info icons should show tooltips:
+<div class="relative inline-block">
+  <button onclick="toggleTooltip(this)" class="text-gray-400 hover:text-gray-200">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+  </button>
+  <div class="tooltip hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg whitespace-nowrap shadow-lg">
+    This is helpful information
+    <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+  </div>
+</div>
+<script>
+function toggleTooltip(btn) {
+  const tooltip = btn.nextElementSibling;
+  tooltip.classList.toggle('hidden');
+  setTimeout(() => tooltip.classList.add('hidden'), 3000);
+}
+</script>
+
+5. **ANIMATED COUNTER** - Stats/numbers can count up on load:
+<div class="stat-counter text-4xl font-bold" data-target="1234" data-suffix="+">0</div>
+<script>
+document.querySelectorAll('.stat-counter').forEach(counter => {
+  const target = parseInt(counter.dataset.target);
+  const suffix = counter.dataset.suffix || '';
+  const duration = 1500;
+  const start = performance.now();
+  function update(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    counter.textContent = Math.floor(target * eased).toLocaleString() + suffix;
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+});
+</script>
+
+6. **ANIMATED PROGRESS BAR** - Loading or skill bars that animate:
+<div class="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+  <div class="progress-fill h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-1000 ease-out" style="width: 0%" data-width="75%"></div>
+</div>
+<script>
+setTimeout(() => {
+  document.querySelectorAll('.progress-fill').forEach(bar => {
+    bar.style.width = bar.dataset.width;
+  });
+}, 300);
+</script>
+
+7. **SKELETON SHIMMER** - Loading placeholders with shimmer effect:
+<style>
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+</style>
+<div class="skeleton w-full h-4 rounded mb-2"></div>
+<div class="skeleton w-3/4 h-4 rounded mb-2"></div>
+<div class="skeleton w-1/2 h-4 rounded"></div>
+
+8. **VOLUME/SLIDER CONTROL** - Draggable slider for volume, brightness, etc:
+<div class="flex items-center gap-3">
+  <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3z"/></svg>
+  <input type="range" min="0" max="100" value="70" class="w-24 h-1 bg-gray-600 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full" oninput="updateVolume(this.value)">
+  <span id="volume-label" class="text-xs text-gray-400 w-8">70%</span>
+</div>
+<script>
+function updateVolume(val) {
+  document.getElementById('volume-label').textContent = val + '%';
+}
+</script>
+
+**INTERACTIVITY CHECKLIST - ASK BEFORE FINISHING EACH SCREEN:**
+□ Are there any play/pause buttons? → Add togglePlay() with progress animation
+□ Are there any like/favorite icons? → Add toggleLike() with fill animation
+□ Are there any toggle switches? → Add toggleSwitch() with slide animation
+□ Are there any info/help icons? → Add tooltip on tap
+□ Are there any statistics/numbers? → Consider animating them on load
+□ Are there any progress/skill bars? → Animate them filling up
+□ Is this a loading state? → Add skeleton shimmer
+□ Are there any sliders/controls? → Make them interactive with range inputs`;
+
 const SCROLLING_RULES = `SCROLLING - Content Can Scroll:
 Unlike fixed mockups, prototype screens can scroll. Use overflow-y-auto on containers:
 
@@ -1018,6 +1202,7 @@ const MOBILE_PROTOTYPE_PROMPT_BASE = [
   HTML_CSS_RULES,
   NAVIGATION_RULES,
   INTERACTIVITY_RULES,
+  ADVANCED_INTERACTIVITY_RULES,
   SCROLLING_RULES,
   IMAGE_RULES,
   ICON_RULES,
@@ -1037,6 +1222,7 @@ const DESKTOP_PROTOTYPE_PROMPT_BASE = [
   HTML_CSS_RULES,
   NAVIGATION_RULES,
   INTERACTIVITY_RULES,
+  ADVANCED_INTERACTIVITY_RULES,
   SCROLLING_RULES,
   IMAGE_RULES,
   ICON_RULES,
