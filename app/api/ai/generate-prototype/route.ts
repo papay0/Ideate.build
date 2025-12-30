@@ -154,7 +154,7 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     // Parse request body
-    const { prompt, existingScreens, conversationHistory, platform, imageUrl, model: requestedModel, projectId } = await request.json();
+    const { prompt, existingScreens, conversationHistory, platform, imageUrls, model: requestedModel, projectId } = await request.json();
 
     // Model access check
     const userPlan = (dbUser.plan || "free") as PlanType;
@@ -284,12 +284,15 @@ IMPORTANT - OUTPUT FORMAT:
     if (conversationHistory && Array.isArray(conversationHistory)) {
       const recentHistory = conversationHistory.slice(-6);
       for (const msg of recentHistory) {
-        if (msg.role === "user" && msg.imageUrl) {
+        // Handle messages with images (supports both old imageUrl and new imageUrls)
+        const msgImageUrls = msg.imageUrls?.length ? msg.imageUrls : (msg.imageUrl ? [msg.imageUrl] : []);
+
+        if (msg.role === "user" && msgImageUrls.length > 0) {
           messages.push({
             role: "user" as const,
             content: [
               { type: "text" as const, text: msg.content },
-              { type: "image" as const, image: msg.imageUrl },
+              ...msgImageUrls.map((url: string) => ({ type: "image" as const, image: url })),
             ],
           });
         } else if (msg.role === "user") {
@@ -300,13 +303,13 @@ IMPORTANT - OUTPUT FORMAT:
       }
     }
 
-    if (imageUrl) {
-      console.log(`[Prototype Stream] Including reference image`);
+    if (imageUrls && imageUrls.length > 0) {
+      console.log(`[Prototype Stream] Including ${imageUrls.length} reference image(s)`);
       messages.push({
         role: "user" as const,
         content: [
           { type: "text" as const, text: userPrompt },
-          { type: "image" as const, image: imageUrl },
+          ...imageUrls.map((url: string) => ({ type: "image" as const, image: url })),
         ],
       });
     } else {

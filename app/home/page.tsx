@@ -35,8 +35,8 @@ import { createClient } from "@/lib/supabase/client";
 import type { PrototypeProject } from "@/lib/supabase/types";
 import { PlatformSelector } from "./components/PlatformSelector";
 import { DashboardSkeleton, ProjectsGridSkeleton } from "./components/Skeleton";
-import { ImageUploadButton } from "./components/ImageUploadButton";
-import { ImageLightbox, ClickableImage } from "./components/ImageLightbox";
+import { MultiImageUpload, type UploadedImage } from "./components/MultiImageUpload";
+import { ImageLightbox, MultiImageLightbox } from "./components/ImageLightbox";
 import { ModelSelector, getSelectedModel, DEFAULT_MODEL, type ModelId } from "./components/ModelSelector";
 import type { PlanType } from "@/lib/constants/plans";
 import { useUserSync } from "@/lib/hooks/useUserSync";
@@ -228,7 +228,7 @@ function PromptInput({
   onUpgradeClick,
   isAdmin,
 }: {
-  onSubmit: (prompt: string, platform: Platform, imageUrl: string | null, model: ModelId) => Promise<void>;
+  onSubmit: (prompt: string, platform: Platform, imageUrls: string[], model: ModelId) => Promise<void>;
   isLoading: boolean;
   userId: string;
   userPlan: PlanType;
@@ -238,7 +238,8 @@ function PromptInput({
 }) {
   const [prompt, setPrompt] = useState("");
   const [platform, setPlatform] = useState<Platform>("mobile");
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [images, setImages] = useState<UploadedImage[]>([]);
+  const [imagesLightboxIndex, setImagesLightboxIndex] = useState<number | null>(null);
   const [isPasting, setIsPasting] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [selectedModel, setSelectedModelState] = useState<ModelId>(DEFAULT_MODEL);
@@ -255,10 +256,13 @@ function PromptInput({
   const handleSubmit = async () => {
     if (!prompt.trim() || isLoading) return;
     const submittedPrompt = prompt.trim();
-    const submittedImageUrl = imageUrl;
+    // Get URLs from uploaded images (filter out any still uploading)
+    const submittedImageUrls = images
+      .filter((img) => !img.isUploading && img.url)
+      .map((img) => img.url);
     setPrompt(""); // Clear input immediately
-    setImageUrl(null); // Clear image
-    await onSubmit(submittedPrompt, platform, submittedImageUrl, selectedModel);
+    setImages([]); // Clear images
+    await onSubmit(submittedPrompt, platform, submittedImageUrls, selectedModel);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -271,6 +275,9 @@ function PromptInput({
   const handlePaste = async (e: React.ClipboardEvent) => {
     const items = e.clipboardData?.items;
     if (!items) return;
+
+    // Check if we can add more images
+    if (images.length >= 5) return;
 
     // Find image in clipboard
     for (const item of items) {
@@ -287,12 +294,30 @@ function PromptInput({
           return;
         }
 
+        // Create placeholder with preview
+        const id = `img-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+        const previewUrl = URL.createObjectURL(file);
+        const newImage: UploadedImage = {
+          id,
+          url: "",
+          isUploading: true,
+          previewUrl,
+        };
+        setImages((prev) => [...prev, newImage]);
+
         // Upload
         setIsPasting(true);
         try {
           const result = await uploadImage(file, userId, tempProjectId);
-          setImageUrl(result.url);
+          setImages((prev) =>
+            prev.map((img) =>
+              img.id === id ? { ...img, url: result.url, isUploading: false } : img
+            )
+          );
         } catch (err) {
+          // Remove failed upload
+          setImages((prev) => prev.filter((img) => img.id !== id));
+          URL.revokeObjectURL(previewUrl);
           alert(err instanceof Error ? err.message : "Upload failed");
         } finally {
           setIsPasting(false);
@@ -331,41 +356,6 @@ function PromptInput({
           </div>
         </div>
 
-        {/* Image preview - elegant card when attached */}
-        {imageUrl && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4"
-          >
-            <div className="flex items-center gap-3 sm:gap-4 p-3 bg-gradient-to-r from-[#FAF8F5] to-[#F5F2EF] rounded-xl sm:rounded-2xl border border-[#E8E4E0]">
-              <div className="relative flex-shrink-0">
-                <ClickableImage
-                  src={imageUrl}
-                  alt="Reference"
-                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg sm:rounded-xl shadow-sm ring-2 ring-white overflow-hidden"
-                  onClick={() => setLightboxImage(imageUrl)}
-                />
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-[#B8956F] rounded-full flex items-center justify-center shadow-sm pointer-events-none">
-                  <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
-                </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[#1A1A1A]">Style reference</p>
-                <p className="text-xs text-[#9A9A9A] hidden sm:block">Click to preview • AI will match this aesthetic</p>
-                <p className="text-xs text-[#9A9A9A] sm:hidden">Tap to preview</p>
-              </div>
-              <button
-                onClick={() => setImageUrl(null)}
-                className="text-xs text-[#9A9A9A] hover:text-red-500 px-2 sm:px-3 py-1.5 rounded-lg hover:bg-white transition-all border border-transparent hover:border-red-100 flex-shrink-0"
-                type="button"
-              >
-                Remove
-              </button>
-            </div>
-          </motion.div>
-        )}
-
         {/* Input area */}
         <div className="relative">
           <textarea
@@ -399,19 +389,17 @@ function PromptInput({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             {/* Utility buttons row */}
             <div className="flex items-center gap-3">
-              {/* Hide upload button when image is attached (shown in preview card above) */}
-              {!imageUrl && (
-                <ImageUploadButton
-                  userId={userId}
-                  projectId={tempProjectId}
-                  onImageUploaded={setImageUrl}
-                  onImageRemoved={() => setImageUrl(null)}
-                  currentImageUrl={null}
-                  disabled={isLoading}
-                />
-              )}
+              {/* Multi-image upload */}
+              <MultiImageUpload
+                images={images}
+                onImagesChange={setImages}
+                userId={userId}
+                projectId={tempProjectId}
+                disabled={isLoading}
+                onImageClick={setImagesLightboxIndex}
+              />
               {/* Model selector */}
-              {!imageUrl && <div className="w-px h-5 bg-[#E8E4E0]" />}
+              <div className="w-px h-5 bg-[#E8E4E0]" />
               <ModelSelector
                 value={selectedModel}
                 onChange={setSelectedModelState}
@@ -470,6 +458,15 @@ function PromptInput({
         src={lightboxImage}
         onClose={() => setLightboxImage(null)}
       />
+
+      {/* Multi-image lightbox for uploads */}
+      {imagesLightboxIndex !== null && images.length > 0 && (
+        <MultiImageLightbox
+          images={images.map(img => img.previewUrl || img.url).filter(Boolean)}
+          initialIndex={imagesLightboxIndex}
+          onClose={() => setImagesLightboxIndex(null)}
+        />
+      )}
     </motion.div>
   );
 }
@@ -579,7 +576,7 @@ export default function DashboardPage() {
   }, [isLoaded, user, isAutoCreating, getPendingPrompt, clearPendingPrompt, router]);
 
   // Create new prototype from prompt
-  const handleCreateProject = async (prompt: string, platform: Platform, imageUrl: string | null, model: ModelId) => {
+  const handleCreateProject = async (prompt: string, platform: Platform, imageUrls: string[], model: ModelId) => {
     if (!user) return;
 
     setIsCreating(true);
@@ -592,7 +589,9 @@ export default function DashboardPage() {
         name: "Untitled Prototype",
         app_idea: prompt,
         platform: platform,
-        initial_image_url: imageUrl,
+        // Use first image for backward compatibility, store all in initial_image_urls
+        initial_image_url: imageUrls.length > 0 ? imageUrls[0] : null,
+        initial_image_urls: imageUrls,
         model: model,
       })
       .select()

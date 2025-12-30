@@ -295,7 +295,8 @@ export interface Database {
           app_idea: string | null          // User's initial app description
           icon: string                     // Emoji icon for the project
           platform: 'mobile' | 'desktop'   // Target platform
-          initial_image_url: string | null // Reference image URL
+          initial_image_url: string | null // Reference image URL (deprecated, use initial_image_urls)
+          initial_image_urls: string[] | null // Reference image URLs (up to 5)
           model: string                    // AI model to use
           prototype_url: string | null     // Published prototype URL on R2
           created_at: string
@@ -309,6 +310,7 @@ export interface Database {
           icon?: string
           platform: 'mobile' | 'desktop'
           initial_image_url?: string | null
+          initial_image_urls?: string[] | null
           model?: string
           prototype_url?: string | null
           created_at?: string
@@ -322,6 +324,7 @@ export interface Database {
           icon?: string
           platform?: 'mobile' | 'desktop'
           initial_image_url?: string | null
+          initial_image_urls?: string[] | null
           model?: string
           prototype_url?: string | null
           created_at?: string
@@ -391,7 +394,8 @@ export interface Database {
           project_id: string               // Foreign key to prototype_projects
           role: 'user' | 'assistant'       // Message sender
           content: string                  // Message text
-          image_url: string | null         // Optional reference image URL
+          image_url: string | null         // Optional reference image URL (deprecated, use image_urls)
+          image_urls: string[] | null      // Reference image URLs (up to 5)
           created_at: string
         }
         Insert: {
@@ -400,6 +404,7 @@ export interface Database {
           role: 'user' | 'assistant'
           content: string
           image_url?: string | null
+          image_urls?: string[] | null
           created_at?: string
         }
         Update: {
@@ -408,6 +413,7 @@ export interface Database {
           role?: 'user' | 'assistant'
           content?: string
           image_url?: string | null
+          image_urls?: string[] | null
           created_at?: string
         }
         Relationships: [

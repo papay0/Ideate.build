@@ -47,8 +47,9 @@ import { PrototypeCanvas } from "../../components/prototype/PrototypeCanvas";
 import { CodeView } from "../../components/CodeView";
 import { ExportMenu } from "../../components/ExportMenu";
 import { ProjectSkeleton } from "../../components/Skeleton";
-import { ImageUploadButton } from "../../components/ImageUploadButton";
-import { ImageLightbox, ClickableImage } from "../../components/ImageLightbox";
+import { MultiImageUpload, type UploadedImage } from "../../components/MultiImageUpload";
+import { ImageGallery } from "../../components/ImageGallery";
+import { ImageLightbox, MultiImageLightbox } from "../../components/ImageLightbox";
 import { SegmentedControl } from "../../components/SegmentedControl";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import ReactMarkdown from "react-markdown";
@@ -86,7 +87,7 @@ interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
-  imageUrl?: string | null;
+  imageUrls: string[];
   timestamp: Date;
 }
 
@@ -100,11 +101,11 @@ type MobileTab = "chat" | "canvas" | "code";
 function ChatMessage({
   message,
   userImageUrl,
-  onImageClick,
+  onImagesClick,
 }: {
   message: Message;
   userImageUrl?: string;
-  onImageClick?: (imageUrl: string) => void;
+  onImagesClick?: (images: string[], index: number) => void;
 }) {
   const isUser = message.role === "user";
   const [copied, setCopied] = useState(false);
@@ -113,6 +114,13 @@ function ChatMessage({
     await navigator.clipboard.writeText(message.content);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleImageClick = (clickedUrl: string) => {
+    if (message.imageUrls && onImagesClick) {
+      const index = message.imageUrls.indexOf(clickedUrl);
+      onImagesClick(message.imageUrls, index >= 0 ? index : 0);
+    }
   };
 
   return (
@@ -155,13 +163,12 @@ function ChatMessage({
             )}
           </button>
         )}
-        {message.imageUrl && (
+        {message.imageUrls && message.imageUrls.length > 0 && (
           <div className="mb-2">
-            <ClickableImage
-              src={message.imageUrl}
-              alt="Reference"
-              className="max-w-[180px] max-h-[180px] rounded-lg overflow-hidden"
-              onClick={() => onImageClick?.(message.imageUrl!)}
+            <ImageGallery
+              images={message.imageUrls}
+              onImageClick={handleImageClick}
+              maxWidth="max-w-[200px]"
             />
           </div>
         )}
@@ -191,8 +198,8 @@ function ChatInput({
   disabled,
   userId,
   projectId,
-  imageUrl,
-  onImageChange,
+  images,
+  onImagesChange,
   onImageClick,
   selectedModel,
   onModelChange,
@@ -209,9 +216,9 @@ function ChatInput({
   disabled: boolean;
   userId: string;
   projectId: string;
-  imageUrl: string | null;
-  onImageChange: (url: string | null) => void;
-  onImageClick?: (imageUrl: string) => void;
+  images: UploadedImage[];
+  onImagesChange: (images: UploadedImage[]) => void;
+  onImageClick?: (index: number) => void;
   selectedModel: ModelId;
   isAdmin?: boolean;
   lastRawOutput?: string | null;
@@ -239,9 +246,18 @@ function ChatInput({
     }
   };
 
+  // Keep a ref to current images for async operations
+  const imagesRef = useRef(images);
+  useEffect(() => {
+    imagesRef.current = images;
+  }, [images]);
+
   const handlePaste = async (e: React.ClipboardEvent) => {
     const items = e.clipboardData?.items;
     if (!items) return;
+
+    // Check if we can add more images
+    if (imagesRef.current.length >= 5) return;
 
     for (const item of items) {
       if (item.type.startsWith("image/")) {
@@ -256,11 +272,29 @@ function ChatInput({
           return;
         }
 
+        // Create placeholder with preview
+        const id = `img-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+        const previewUrl = URL.createObjectURL(file);
+        const newImage: UploadedImage = {
+          id,
+          url: "",
+          isUploading: true,
+          previewUrl,
+        };
+        onImagesChange([...imagesRef.current, newImage]);
+
         setIsPasting(true);
         try {
           const result = await uploadImage(file, userId, projectId);
-          onImageChange(result.url);
+          const updated = imagesRef.current.map((img) =>
+            img.id === id ? { ...img, url: result.url, isUploading: false } : img
+          );
+          onImagesChange(updated);
         } catch (err) {
+          // Remove failed upload
+          const filtered = imagesRef.current.filter((img) => img.id !== id);
+          onImagesChange(filtered);
+          URL.revokeObjectURL(previewUrl);
           alert(err instanceof Error ? err.message : "Upload failed");
         } finally {
           setIsPasting(false);
@@ -273,24 +307,41 @@ function ChatInput({
   return (
     <div className="px-3 pb-3">
       <div className="relative bg-white rounded-[20px] px-4 py-3 shadow-[0_2px_12px_rgba(0,0,0,0.08)]">
-        {imageUrl && (
-          <div className="mb-3">
-            <div className="flex items-center gap-3 p-2 bg-white/60 rounded-xl">
-              <ClickableImage
-                src={imageUrl}
-                alt="Reference"
-                className="w-10 h-10 rounded-lg overflow-hidden"
-                onClick={() => onImageClick?.(imageUrl)}
-              />
-              <span className="text-sm text-[#6B6B6B] flex-1">Reference image</span>
-              <button
-                onClick={() => onImageChange(null)}
-                className="text-xs text-[#9A9A9A] hover:text-red-500 px-2 py-1 rounded-md hover:bg-red-50/80 transition-all"
-                type="button"
-              >
-                ✕
-              </button>
+        {/* Image carousel preview */}
+        {images.length > 0 && (
+          <div className="mb-3 -mx-1">
+            <div className="flex gap-2 overflow-x-auto pb-2 px-1 scrollbar-hide snap-x snap-mandatory">
+              {images.map((image, index) => (
+                <button
+                  key={image.id}
+                  type="button"
+                  onClick={() => !image.isUploading && onImageClick?.(index)}
+                  disabled={image.isUploading}
+                  className="relative flex-shrink-0 snap-start rounded-xl overflow-hidden group"
+                >
+                  <img
+                    src={image.previewUrl || image.url}
+                    alt={`Reference ${index + 1}`}
+                    className="h-24 w-auto max-w-[140px] object-cover rounded-xl ring-1 ring-[#E8E4E0]"
+                  />
+                  {image.isUploading && (
+                    <div className="absolute inset-0 bg-[#B8956F]/80 flex items-center justify-center backdrop-blur-sm rounded-xl">
+                      <Loader2 className="w-5 h-5 text-white animate-spin" />
+                    </div>
+                  )}
+                  {!image.isUploading && (
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-xl flex items-center justify-center">
+                      <span className="opacity-0 group-hover:opacity-100 text-white text-xs font-medium transition-opacity">
+                        View
+                      </span>
+                    </div>
+                  )}
+                </button>
+              ))}
             </div>
+            <p className="text-[11px] text-[#9A9A9A] mt-1 px-1">
+              {images.length} reference image{images.length > 1 ? 's' : ''} • Tap to preview
+            </p>
           </div>
         )}
 
@@ -313,13 +364,13 @@ function ChatInput({
 
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center gap-1">
-            <ImageUploadButton
+            <MultiImageUpload
+              images={images}
+              onImagesChange={onImagesChange}
               userId={userId}
               projectId={projectId}
-              onImageUploaded={onImageChange}
-              onImageRemoved={() => onImageChange(null)}
-              currentImageUrl={null}
-              disabled={disabled || isLoading || isPasting || !!imageUrl}
+              disabled={disabled || isLoading || isPasting}
+              onImageClick={onImageClick}
             />
             <div className="w-px h-5 bg-[#E8E4E0] mx-1" />
             <ModelSelector
@@ -457,7 +508,9 @@ export default function PrototypePage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [savedScreens, setSavedScreens] = useState<ParsedScreen[]>([]);
   const [input, setInput] = useState("");
-  const [pendingImageUrl, setPendingImageUrl] = useState<string | null>(null);
+  const [pendingImages, setPendingImages] = useState<UploadedImage[]>([]);
+  const [pendingImagesLightboxIndex, setPendingImagesLightboxIndex] = useState<number | null>(null);
+  const [messageImagesLightbox, setMessageImagesLightbox] = useState<{ images: string[]; index: number } | null>(null);
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [hasAutoGenerated, setHasAutoGenerated] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
@@ -624,6 +677,7 @@ export default function PrototypePage() {
         id: `llm-${Date.now()}-${Math.random()}`,
         role: "assistant",
         content: message,
+        imageUrls: [],
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, llmMessage]);
@@ -957,6 +1011,7 @@ export default function PrototypePage() {
         id: `error-${Date.now()}`,
         role: "assistant",
         content: `Error: ${error}`,
+        imageUrls: [],
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
@@ -970,6 +1025,7 @@ export default function PrototypePage() {
         content: data.plan === "free"
           ? "You've used all your free messages this month. Upgrade to Pro or configure your own API key to continue."
           : "You've used all your messages this month. Purchase more or configure your own API key.",
+        imageUrls: [],
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, friendlyMessage]);
@@ -1064,13 +1120,20 @@ export default function PrototypePage() {
 
       if (messageHistory && messageHistory.length > 0) {
         setMessages(
-          messageHistory.map((m) => ({
-            id: m.id,
-            role: m.role as "user" | "assistant",
-            content: m.content,
-            imageUrl: m.image_url,
-            timestamp: new Date(m.created_at),
-          }))
+          messageHistory.map((m) => {
+            // Use image_urls if available, fallback to image_url for backward compatibility
+            const messageWithUrls = m as typeof m & { image_urls?: string[] };
+            const imageUrls = messageWithUrls.image_urls?.length
+              ? messageWithUrls.image_urls
+              : m.image_url ? [m.image_url] : [];
+            return {
+              id: m.id,
+              role: m.role as "user" | "assistant",
+              content: m.content,
+              imageUrls,
+              timestamp: new Date(m.created_at),
+            };
+          })
         );
       }
 
@@ -1093,8 +1156,17 @@ export default function PrototypePage() {
         (!messageHistory || messageHistory.length === 0)
       ) {
         setInput(projectData.app_idea);
-        if (projectData.initial_image_url) {
-          setPendingImageUrl(projectData.initial_image_url);
+        // Load initial images - use initial_image_urls if available, fallback to initial_image_url
+        const projectWithUrls = projectData as typeof projectData & { initial_image_urls?: string[] };
+        const initialUrls = projectWithUrls.initial_image_urls?.length
+          ? projectWithUrls.initial_image_urls
+          : projectData.initial_image_url ? [projectData.initial_image_url] : [];
+        if (initialUrls.length > 0) {
+          setPendingImages(initialUrls.map((url, i) => ({
+            id: `initial-${i}`,
+            url,
+            isUploading: false,
+          })));
         }
       }
 
@@ -1110,12 +1182,16 @@ export default function PrototypePage() {
 
     setJustCompleted(false);
 
-    const currentImageUrl = pendingImageUrl;
+    // Get URLs from pending images (filter out still uploading)
+    const currentImageUrls = pendingImages
+      .filter((img) => !img.isUploading && img.url)
+      .map((img) => img.url);
+
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       role: "user",
       content: input.trim(),
-      imageUrl: currentImageUrl,
+      imageUrls: currentImageUrls,
       timestamp: new Date(),
     };
 
@@ -1126,14 +1202,16 @@ export default function PrototypePage() {
       project_id: projectId,
       role: "user",
       content: userMessage.content,
-      image_url: currentImageUrl,
+      // Backward compatibility: store first image in image_url, all in image_urls
+      image_url: currentImageUrls.length > 0 ? currentImageUrls[0] : null,
+      image_urls: currentImageUrls,
     });
 
     userMessageRef.current = null;
 
     const promptText = input.trim();
     setInput("");
-    setPendingImageUrl(null);
+    setPendingImages([]);
 
     const apiConfig = user?.id ? getApiConfig(user.id) : null;
     const headers: Record<string, string> = {};
@@ -1158,15 +1236,15 @@ export default function PrototypePage() {
         conversationHistory: messages.map((m) => ({
           role: m.role,
           content: m.content,
-          imageUrl: m.imageUrl,
+          imageUrls: m.imageUrls,
         })),
         platform: project?.platform || "mobile",
-        imageUrl: currentImageUrl,
+        imageUrls: currentImageUrls,
         model: selectedModel,
       },
       headers
     );
-  }, [input, isStreaming, canSendMessage, startStreaming, projectId, savedScreens, messages, project?.platform, pendingImageUrl, selectedModel, user?.id]);
+  }, [input, isStreaming, canSendMessage, startStreaming, projectId, savedScreens, messages, project?.platform, pendingImages, selectedModel, user?.id]);
 
   submitRef.current = handleSubmit;
 
@@ -1386,7 +1464,7 @@ export default function PrototypePage() {
                       key={message.id}
                       message={message}
                       userImageUrl={user?.imageUrl}
-                      onImageClick={setLightboxImage}
+                      onImagesClick={(images, index) => setMessageImagesLightbox({ images, index })}
                     />
                   ))}
 
@@ -1441,9 +1519,9 @@ export default function PrototypePage() {
                     disabled={!canSendMessage}
                     userId={user?.id || ""}
                     projectId={projectId}
-                    imageUrl={pendingImageUrl}
-                    onImageChange={setPendingImageUrl}
-                    onImageClick={setLightboxImage}
+                    images={pendingImages}
+                    onImagesChange={setPendingImages}
+                    onImageClick={setPendingImagesLightboxIndex}
                     selectedModel={selectedModel}
                     onModelChange={handleModelChange}
                     userPlan={userPlan}
@@ -1503,7 +1581,7 @@ export default function PrototypePage() {
                   key={message.id}
                   message={message}
                   userImageUrl={user?.imageUrl}
-                  onImageClick={setLightboxImage}
+                  onImagesClick={(images, index) => setMessageImagesLightbox({ images, index })}
                 />
               ))}
 
@@ -1558,9 +1636,9 @@ export default function PrototypePage() {
                 disabled={!canSendMessage}
                 userId={user?.id || ""}
                 projectId={projectId}
-                imageUrl={pendingImageUrl}
-                onImageChange={setPendingImageUrl}
-                onImageClick={setLightboxImage}
+                images={pendingImages}
+                onImagesChange={setPendingImages}
+                onImageClick={setPendingImagesLightboxIndex}
                 selectedModel={selectedModel}
                 onModelChange={handleModelChange}
                 userPlan={userPlan}
@@ -1603,6 +1681,24 @@ export default function PrototypePage() {
         src={lightboxImage}
         onClose={() => setLightboxImage(null)}
       />
+
+      {/* Multi-image lightbox for pending uploads */}
+      {pendingImagesLightboxIndex !== null && pendingImages.length > 0 && (
+        <MultiImageLightbox
+          images={pendingImages.map(img => img.previewUrl || img.url).filter(Boolean)}
+          initialIndex={pendingImagesLightboxIndex}
+          onClose={() => setPendingImagesLightboxIndex(null)}
+        />
+      )}
+
+      {/* Multi-image lightbox for message images */}
+      {messageImagesLightbox && (
+        <MultiImageLightbox
+          images={messageImagesLightbox.images}
+          initialIndex={messageImagesLightbox.index}
+          onClose={() => setMessageImagesLightbox(null)}
+        />
+      )}
 
       {/* Prototype Player Modal */}
       {playerHtml && (
