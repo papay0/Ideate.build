@@ -11,7 +11,7 @@
  * - Reset message count
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   Users,
@@ -27,10 +27,11 @@ import {
   Search,
   ChevronDown,
   ChevronUp,
+  User,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-interface User {
+interface UserRecord {
   id: string;
   clerk_id: string;
   email: string;
@@ -50,8 +51,14 @@ interface ActionState {
   message?: string;
 }
 
-export function UserManagement() {
-  const [users, setUsers] = useState<User[]>([]);
+interface UserManagementProps {
+  currentUserId?: string;
+}
+
+export function UserManagement({ currentUserId }: UserManagementProps) {
+  const [users, setUsers] = useState<UserRecord[]>([]);
+  const [highlightedUserId, setHighlightedUserId] = useState<string | null>(null);
+  const userRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [actionState, setActionState] = useState<ActionState | null>(null);
@@ -85,6 +92,31 @@ export function UserManagement() {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  // Find and scroll to current user
+  const findMe = () => {
+    if (!currentUserId) return;
+
+    // Clear search to ensure user is visible
+    setSearchQuery("");
+
+    // Expand the user's row
+    setExpandedUser(currentUserId);
+
+    // Highlight the user
+    setHighlightedUserId(currentUserId);
+
+    // Scroll to the user after a brief delay to allow DOM updates
+    setTimeout(() => {
+      const userElement = userRefs.current[currentUserId];
+      if (userElement) {
+        userElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+
+      // Clear highlight after animation
+      setTimeout(() => setHighlightedUserId(null), 2000);
+    }, 100);
+  };
 
   // Execute admin action
   const executeAction = async (userId: string, action: string, params?: Record<string, unknown>) => {
@@ -228,13 +260,25 @@ export function UserManagement() {
               <p className="text-xs text-[#9A9A9A]">{users.length} total users</p>
             </div>
           </div>
-          <button
-            onClick={fetchUsers}
-            className="p-2 rounded-lg hover:bg-[#F5F2EF] transition-colors"
-            title="Refresh"
-          >
-            <RefreshCw className="w-4 h-4 text-[#6B6B6B]" />
-          </button>
+          <div className="flex items-center gap-2">
+            {currentUserId && (
+              <button
+                onClick={findMe}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-[#B8956F] hover:bg-[#A6845F] text-white transition-colors"
+                title="Find my user"
+              >
+                <User className="w-3.5 h-3.5" />
+                Find Me
+              </button>
+            )}
+            <button
+              onClick={fetchUsers}
+              className="p-2 rounded-lg hover:bg-[#F5F2EF] transition-colors"
+              title="Refresh"
+            >
+              <RefreshCw className="w-4 h-4 text-[#6B6B6B]" />
+            </button>
+          </div>
         </div>
 
         {/* Search */}
@@ -253,7 +297,17 @@ export function UserManagement() {
       {/* User List */}
       <div className="divide-y divide-[#E8E4E0]">
         {filteredUsers.map((user) => (
-          <div key={user.id} className="p-4 hover:bg-[#FAF8F5] transition-colors">
+          <div
+            key={user.id}
+            ref={(el) => {
+              userRefs.current[user.id] = el;
+            }}
+            className={`p-4 transition-all ${
+              highlightedUserId === user.id
+                ? "bg-[#B8956F]/10 ring-2 ring-[#B8956F] ring-inset"
+                : "hover:bg-[#FAF8F5]"
+            }`}
+          >
             {/* User Row */}
             <div
               className="flex items-center justify-between cursor-pointer"
@@ -279,6 +333,11 @@ export function UserManagement() {
                 <div>
                   <p className="text-sm font-medium text-[#1A1A1A]">
                     {user.email || "No email"}
+                    {user.id === currentUserId && (
+                      <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-600 rounded font-medium">
+                        You
+                      </span>
+                    )}
                     {user.role === "admin" && (
                       <span className="ml-2 text-xs px-1.5 py-0.5 bg-[#B8956F]/10 text-[#B8956F] rounded">
                         Admin
