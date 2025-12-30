@@ -480,7 +480,7 @@ const BrowserMockupContent = memo(function BrowserMockupContent({
         <div style={{ width: DESKTOP_WIDTH, height: DESKTOP_HEIGHT }}>
           <iframe
             ref={iframeRef}
-            className="w-full h-full border-0 rounded-[2rem]"
+            className="w-full h-full border-0"
             title={screen.name}
             sandbox="allow-scripts allow-same-origin"
             style={{ pointerEvents: "none" }}
