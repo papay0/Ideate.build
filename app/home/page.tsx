@@ -43,6 +43,8 @@ import { useUserSync } from "@/lib/hooks/useUserSync";
 import { useSubscription } from "@/lib/hooks/useSubscription";
 import { useBYOK } from "@/lib/hooks/useBYOK";
 import { usePendingPrompt } from "@/lib/hooks/usePendingPrompt";
+import { useOrganizationContext } from "@/lib/hooks/useOrganizationContext";
+import { useProjects } from "@/lib/hooks/useProjects";
 import { QuotaExceededBanner } from "./components/QuotaExceededBanner";
 import {
   Tooltip,
@@ -481,9 +483,9 @@ export default function DashboardPage() {
   const { dbUser } = useUserSync();
   const { messagesRemaining, bonusMessagesRemaining, isLoading: isSubscriptionLoading } = useSubscription();
   const { isBYOKActive, isInitialized: isBYOKInitialized } = useBYOK();
+  const { context } = useOrganizationContext();
+  const { projects, isLoading: isProjectsLoading, deleteProject } = useProjects();
 
-  const [projects, setProjects] = useState<PrototypeProject[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
 
   // Pending prompt from landing page
@@ -496,32 +498,6 @@ export default function DashboardPage() {
   const isQuotaExceeded = !isBYOKActive && !isSubscriptionLoading && totalMessagesRemaining <= 0;
   // User can generate if: has API key OR (subscription loaded AND has messages remaining in either pool)
   const userCanGenerate = isBYOKActive || (!isSubscriptionLoading && totalMessagesRemaining > 0);
-
-  // Fetch prototypes on mount
-  useEffect(() => {
-    if (!isLoaded || !user) return;
-
-    const userId = user.id;
-
-    async function fetchProjects() {
-      const supabase = createClient();
-
-      const { data, error } = await supabase
-        .from("prototype_projects")
-        .select("*")
-        .eq("user_id", userId)
-        .order("updated_at", { ascending: false });
-
-      if (error) {
-        console.error("Error fetching prototypes:", error);
-      }
-
-      setProjects(data || []);
-      setIsLoading(false);
-    }
-
-    fetchProjects();
-  }, [isLoaded, user]);
 
   // Check for pending prompt from landing page and auto-create prototype
   useEffect(() => {
@@ -542,10 +518,14 @@ export default function DashboardPage() {
     async function createFromPendingPrompt() {
       const supabase = createClient();
 
+      // Determine organization_id based on current context
+      const organizationId = context.type === "organization" ? context.organizationId : null;
+
       const { data, error } = await supabase
         .from("prototype_projects")
         .insert({
           user_id: user!.id,
+          organization_id: organizationId,
           name: "Untitled Prototype",
           app_idea: pendingPrompt!.prompt,
           platform: pendingPrompt!.platform || "mobile",
@@ -573,7 +553,7 @@ export default function DashboardPage() {
     }
 
     createFromPendingPrompt();
-  }, [isLoaded, user, isAutoCreating, getPendingPrompt, clearPendingPrompt, router]);
+  }, [isLoaded, user, isAutoCreating, getPendingPrompt, clearPendingPrompt, router, context]);
 
   // Create new prototype from prompt
   const handleCreateProject = async (prompt: string, platform: Platform, imageUrls: string[], model: ModelId) => {
@@ -582,10 +562,14 @@ export default function DashboardPage() {
     setIsCreating(true);
     const supabase = createClient();
 
+    // Determine organization_id based on current context
+    const organizationId = context.type === "organization" ? context.organizationId : null;
+
     const { data, error } = await supabase
       .from("prototype_projects")
       .insert({
         user_id: user.id,
+        organization_id: organizationId,
         name: "Untitled Prototype",
         app_idea: prompt,
         platform: platform,
@@ -617,29 +601,18 @@ export default function DashboardPage() {
 
   // Delete prototype
   const handleDeleteProject = async (projectId: string) => {
-    const supabase = createClient();
-
-    const { error } = await supabase
-      .from("prototype_projects")
-      .delete()
-      .eq("id", projectId);
-
-    if (error) {
+    try {
+      await deleteProject(projectId);
+    } catch (error) {
       console.error("Error deleting prototype:", error);
       alert("Failed to delete prototype. Please try again.");
-      return;
     }
-
-    setProjects((prev) => prev.filter((p) => p.id !== projectId));
   };
 
   // Loading states - separated for independent loading
   // 1. User state loading: need Clerk user, BYOK status, and subscription (if no BYOK)
   const isWaitingForSubscription = !isBYOKActive && isSubscriptionLoading;
   const isUserStateLoading = !isLoaded || !isBYOKInitialized || isWaitingForSubscription;
-
-  // 2. Projects loading: fetching from Supabase (independent of user state)
-  const isProjectsLoading = isLoading;
 
   // Show full skeleton only while auto-creating OR user state not ready
   if (isAutoCreating || isUserStateLoading) {

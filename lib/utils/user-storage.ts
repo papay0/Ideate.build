@@ -10,7 +10,7 @@
 // Types
 // ============================================================================
 
-export type UserStorageKey = "opendesign_api_config" | "opendesign_selected_model";
+export type UserStorageKey = "opendesign_api_config" | "opendesign_selected_model" | "opendesign_org_context";
 
 // ============================================================================
 // Helpers
@@ -29,7 +29,7 @@ export function getUserStorageKey(baseKey: UserStorageKey, userId: string): stri
  * Get all possible user-scoped keys for a given user
  */
 function getAllUserKeys(userId: string): string[] {
-  const keys: UserStorageKey[] = ["opendesign_api_config", "opendesign_selected_model"];
+  const keys: UserStorageKey[] = ["opendesign_api_config", "opendesign_selected_model", "opendesign_org_context"];
   return keys.map((key) => getUserStorageKey(key, userId));
 }
 

@@ -280,6 +280,86 @@ export interface Database {
       }
 
       // ========================================================================
+      // ORGANIZATION TABLES
+      // ========================================================================
+
+      /**
+       * Organizations table - team workspaces for sharing templates/projects
+       */
+      organizations: {
+        Row: {
+          id: string
+          name: string                    // Organization display name
+          icon: string                    // Emoji icon (e.g., "🏢")
+          invite_code: string             // Unique code for joining (e.g., "meta-a7x9k2")
+          require_approval: boolean       // If true, join requests need owner approval
+          owner_id: string                // Clerk ID of creator
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          icon?: string
+          invite_code: string
+          require_approval?: boolean
+          owner_id: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          icon?: string
+          invite_code?: string
+          require_approval?: boolean
+          owner_id?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+
+      /**
+       * Organization members table - tracks membership in organizations
+       */
+      organization_members: {
+        Row: {
+          id: string
+          organization_id: string         // Foreign key to organizations
+          user_id: string                 // Clerk ID of member
+          role: 'owner' | 'member'        // Member role
+          status: 'pending' | 'active'    // Membership status
+          joined_at: string
+        }
+        Insert: {
+          id?: string
+          organization_id: string
+          user_id: string
+          role?: 'owner' | 'member'
+          status?: 'pending' | 'active'
+          joined_at?: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          user_id?: string
+          role?: 'owner' | 'member'
+          status?: 'pending' | 'active'
+          joined_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+
+      // ========================================================================
       // PROTOTYPE TABLES
       // ========================================================================
 
@@ -291,6 +371,7 @@ export interface Database {
         Row: {
           id: string
           user_id: string                  // Clerk user ID
+          organization_id: string | null   // Foreign key to organizations (null = personal)
           name: string                     // Project display name
           app_idea: string | null          // User's initial app description
           icon: string                     // Emoji icon for the project
@@ -305,6 +386,7 @@ export interface Database {
         Insert: {
           id?: string
           user_id: string
+          organization_id?: string | null
           name: string
           app_idea?: string | null
           icon?: string
@@ -319,6 +401,7 @@ export interface Database {
         Update: {
           id?: string
           user_id?: string
+          organization_id?: string | null
           name?: string
           app_idea?: string | null
           icon?: string
@@ -330,7 +413,15 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "prototype_projects_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          }
+        ]
       }
 
       /**
@@ -553,3 +644,34 @@ export type PrototypeMessageUpdate = Database['public']['Tables']['prototype_mes
 export type PrototypeDebugLog = Database['public']['Tables']['prototype_debug_logs']['Row']
 /** Prototype debug log insert type */
 export type PrototypeDebugLogInsert = Database['public']['Tables']['prototype_debug_logs']['Insert']
+
+// ============================================================================
+// Organization Helper Types
+// ============================================================================
+
+/** Organization row type */
+export type Organization = Database['public']['Tables']['organizations']['Row']
+/** Organization insert type */
+export type OrganizationInsert = Database['public']['Tables']['organizations']['Insert']
+/** Organization update type */
+export type OrganizationUpdate = Database['public']['Tables']['organizations']['Update']
+
+/** Organization member row type */
+export type OrganizationMember = Database['public']['Tables']['organization_members']['Row']
+/** Organization member insert type */
+export type OrganizationMemberInsert = Database['public']['Tables']['organization_members']['Insert']
+/** Organization member update type */
+export type OrganizationMemberUpdate = Database['public']['Tables']['organization_members']['Update']
+
+/** Organization with user's role and member count (for list views) */
+export type OrganizationWithRole = Organization & {
+  role: 'owner' | 'member'
+  member_count: number
+}
+
+/** Organization member with user details (for member list) */
+export type OrganizationMemberWithUser = OrganizationMember & {
+  name: string
+  email: string
+  avatar_url: string | null
+}

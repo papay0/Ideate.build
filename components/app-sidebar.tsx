@@ -13,7 +13,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Settings, Layers } from "lucide-react";
+import { Home, Settings, Layers, Building2 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -26,6 +26,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useOrganizationContext } from "@/lib/hooks/useOrganizationContext";
 
 const navigationItems = [
   {
@@ -43,6 +44,7 @@ const navigationItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
+  const { context, currentOrg } = useOrganizationContext();
 
   const handleNavClick = () => {
     // Close mobile sidebar when navigating
@@ -91,6 +93,32 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Organization section - only visible when in org context */}
+        {context.type === 'organization' && currentOrg && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Organization</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === `/home/organization/${context.organizationId}/settings`}
+                    tooltip={currentOrg.name}
+                  >
+                    <Link
+                      href={`/home/organization/${context.organizationId}/settings`}
+                      onClick={handleNavClick}
+                    >
+                      <Building2 className="h-4 w-4" />
+                      <span>{currentOrg.name}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
     </Sidebar>
   );

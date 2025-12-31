@@ -26,6 +26,8 @@ import { Separator } from "@/components/ui/separator";
 import { useUserSync } from "@/lib/hooks/useUserSync";
 import { useBYOK } from "@/lib/hooks/useBYOK";
 import { AuthCleanupProvider } from "@/app/providers/AuthCleanupProvider";
+import { OrganizationSwitcher } from "@/app/home/components/OrganizationSwitcher";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function AuthenticatedLayout({
   children,
@@ -60,6 +62,9 @@ export default function AuthenticatedLayout({
           <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b border-[#E8E4E0] bg-[#FAF8F5]/90 backdrop-blur-sm px-4">
             <SidebarTrigger className="-ml-1 text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F5F2EF]" />
             <Separator orientation="vertical" className="h-4 bg-[#E8E4E0]" />
+
+            {/* Organization Switcher */}
+            <OrganizationSwitcher />
 
             {/* Spacer */}
             <div className="flex-1" />
@@ -101,6 +106,7 @@ export default function AuthenticatedLayout({
             {children}
           </main>
         </SidebarInset>
+        <Toaster position="bottom-right" />
       </SidebarProvider>
     </AuthCleanupProvider>
   );
